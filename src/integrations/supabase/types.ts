@@ -249,6 +249,25 @@ export type Database = {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
       }
+      match_account_embeddings: {
+        Args: {
+          query_embedding: string
+          match_threshold: number
+          match_count: number
+          filter_user_id?: string
+        }
+        Returns: {
+          id: string
+          original_account_name: string
+          mapped_account_name: string
+          confidence_score: number
+          reasoning: string
+          similarity: number
+          validated: boolean
+          created_at: string
+          user_id: string
+        }[]
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown
