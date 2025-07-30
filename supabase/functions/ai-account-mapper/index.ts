@@ -7,9 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -20,8 +20,8 @@ serve(async (req) => {
   try {
     const { accounts, sessionId, userId } = await req.json();
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!anthropicApiKey) {
+      throw new Error('Anthropic API key not configured');
     }
 
     if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
@@ -64,32 +64,30 @@ Respond with a JSON array where each object has this structure:
   "reasoning": "explanation of the mapping decision"
 }`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
+          'x-api-key': anthropicApiKey,
           'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { 
-              role: 'system', 
-              content: 'You are a financial account mapping expert. Always respond with valid JSON only, no additional text.' 
-            },
-            { role: 'user', content: prompt }
-          ],
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
           temperature: 0.1,
-          max_tokens: 2000
+          system: 'You are a financial account mapping expert. Always respond with valid JSON only, no additional text.',
+          messages: [
+            { role: 'user', content: prompt }
+          ]
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
+        throw new Error(`Anthropic API error: ${response.status}`);
       }
 
       const aiResponse = await response.json();
-      const aiContent = aiResponse.choices[0].message.content;
+      const aiContent = aiResponse.content[0].text;
       
       let batchMappings;
       try {
