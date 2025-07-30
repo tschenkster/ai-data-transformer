@@ -14,6 +14,8 @@ export default function Auth() {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
   
@@ -41,7 +43,7 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupEmail || !signupPassword || !confirmPassword) return;
+    if (!signupEmail || !signupPassword || !confirmPassword || !firstName || !lastName) return;
     
     if (signupPassword !== confirmPassword) {
       alert('Passwords do not match');
@@ -54,7 +56,7 @@ export default function Auth() {
     }
     
     setLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword);
+    const { error } = await signUp(signupEmail, signupPassword, firstName, lastName);
     setLoading(false);
     
     if (!error) {
@@ -62,6 +64,8 @@ export default function Auth() {
       setSignupEmail('');
       setSignupPassword('');
       setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
     }
   };
 
@@ -133,6 +137,30 @@ export default function Auth() {
               
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first-name">First Name</Label>
+                      <Input
+                        id="first-name"
+                        type="text"
+                        placeholder="Enter your first name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last-name">Last Name</Label>
+                      <Input
+                        id="last-name"
+                        type="text"
+                        placeholder="Enter your last name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input
@@ -169,7 +197,7 @@ export default function Auth() {
                   <Button 
                     type="submit" 
                     className="w-full" 
-                    disabled={loading || !signupEmail || !signupPassword || !confirmPassword}
+                    disabled={loading || !signupEmail || !signupPassword || !confirmPassword || !firstName || !lastName}
                   >
                     {loading ? (
                       <>
