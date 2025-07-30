@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Footer from '@/components/Footer';
 
 export default function Dashboard() {
   const { user, userAccount, signOut, isAdmin } = useAuth();
@@ -151,6 +152,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Footer from '@/components/Footer';
 
 interface UserAccount {
   id: string;
@@ -400,6 +401,7 @@ export default function Admin() {
         </TabsContent>
       </Tabs>
       </div>
+      <Footer />
     </div>
   );
 }
