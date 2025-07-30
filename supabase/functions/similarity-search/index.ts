@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
@@ -20,8 +20,8 @@ serve(async (req) => {
   try {
     const { accountName, userId, limit = 5 } = await req.json();
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!googleApiKey) {
+      throw new Error('Google AI API key not configured');
     }
 
     if (!accountName || typeof accountName !== 'string') {
@@ -31,25 +31,24 @@ serve(async (req) => {
     console.log(`Searching for similar accounts to: ${accountName}`);
 
     // Generate embedding for the search account
-    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+    const embeddingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${googleApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: accountName,
-        encoding_format: 'float'
+        content: {
+          parts: [{ text: accountName }]
+        }
       }),
     });
 
     if (!embeddingResponse.ok) {
-      throw new Error(`OpenAI embedding API error: ${embeddingResponse.status}`);
+      throw new Error(`Google AI embedding API error: ${embeddingResponse.status}`);
     }
 
     const embeddingData = await embeddingResponse.json();
-    const queryEmbedding = embeddingData.data[0].embedding;
+    const queryEmbedding = embeddingData.embedding.values;
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
@@ -20,8 +20,8 @@ serve(async (req) => {
   try {
     const { accounts, batchSize = 10 } = await req.json();
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!googleApiKey) {
+      throw new Error('Google AI API key not configured');
     }
 
     if (!accounts || !Array.isArray(accounts)) {
@@ -41,25 +41,24 @@ serve(async (req) => {
       for (const account of batch) {
         try {
           // Generate embedding for the account name
-          const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+          const embeddingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${googleApiKey}`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${openAIApiKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: 'text-embedding-3-small',
-              input: account.original_account_name || account.account_name,
-              encoding_format: 'float'
+              content: {
+                parts: [{ text: account.original_account_name || account.account_name }]
+              }
             }),
           });
 
           if (!embeddingResponse.ok) {
-            throw new Error(`OpenAI embedding API error: ${embeddingResponse.status}`);
+            throw new Error(`Google AI embedding API error: ${embeddingResponse.status}`);
           }
 
           const embeddingData = await embeddingResponse.json();
-          const embedding = embeddingData.data[0].embedding;
+          const embedding = embeddingData.embedding.values;
 
           // Store or update the account mapping with embedding
           const { data, error } = await supabase

@@ -195,7 +195,7 @@ export const MemoryUpload = () => {
               <Database className="h-4 w-4" />
               <AlertDescription>
                 This process may take a few minutes depending on the file size. 
-                We're generating high-quality embeddings for each account to enable precise similarity search.
+                We're using Google Gemini to generate high-quality embeddings for each account to enable precise similarity search.
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -228,7 +228,7 @@ export const MemoryUpload = () => {
             </div>
             <div className="flex items-start gap-3">
               <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">2</div>
-              <div className="text-sm">AI generates vector embeddings for each account</div>
+              <div className="text-sm">Google Gemini generates vector embeddings for each account</div>
             </div>
             <div className="flex items-start gap-3">
               <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">3</div>
