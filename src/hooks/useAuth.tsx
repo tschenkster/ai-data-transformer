@@ -178,8 +178,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isApproved = profile?.status === 'approved';
   
-  // Admin detection - add your admin email(s) here
-  const ADMIN_EMAILS = ['admin@example.com']; // Replace with actual admin email
+  // Admin detection - replace with your actual admin email(s)
+  const ADMIN_EMAILS = ['admin@example.com']; // TODO: Replace with actual admin email
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
   const value = {
