@@ -51,11 +51,14 @@ export default function Dashboard() {
                 Upload File
               </CardTitle>
               <CardDescription>
-                Upload Excel files to start mapping accounts
+                Upload CSV or Excel files for AI-powered account mapping
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => window.location.href = '/upload'}
+              >
                 Start Upload
               </Button>
             </CardContent>
@@ -136,11 +139,15 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              Get started by uploading an Excel file with account names. Our AI will analyze 
-              and suggest mappings based on historical data and intelligent pattern recognition.
+              Get started by uploading a CSV or Excel file with account names. Our AI will analyze 
+              and suggest mappings based on intelligent pattern recognition and standardization.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm">
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => window.location.href = '/upload'}
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload First File
               </Button>
