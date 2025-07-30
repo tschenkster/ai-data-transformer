@@ -35,7 +35,7 @@ export default function Admin() {
   const fetchUserAccounts = async () => {
     try {
       const { data, error } = await supabase
-        .from('user_accounts')
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -82,7 +82,7 @@ export default function Admin() {
       }
 
       const { error } = await supabase
-        .from('user_accounts')
+        .from('profiles')
         .update(updates)
         .eq('user_id', userId);
 
