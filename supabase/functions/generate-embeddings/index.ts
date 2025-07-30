@@ -40,31 +40,43 @@ serve(async (req) => {
 
       for (const account of batch) {
         try {
-          // Generate embedding for the account name - using correct Google Gemini API format
+          const accountName = account.original_account_name || account.account_name;
+          console.log(`Processing account: "${accountName}"`);
+          
+          // Generate embedding - simplified request format
+          const requestBody = {
+            content: {
+              parts: [{ text: accountName }]
+            }
+          };
+          
+          console.log(`Sending request to Google AI for: "${accountName}"`);
+          console.log(`Request body:`, JSON.stringify(requestBody));
+          
           const embeddingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${googleApiKey}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              content: {
-                parts: [{ 
-                  text: account.original_account_name || account.account_name 
-                }]
-              },
-              taskType: "SEMANTIC_SIMILARITY",
-              title: "Account Name Embedding"
-            }),
+            body: JSON.stringify(requestBody),
           });
 
+          console.log(`Response status: ${embeddingResponse.status}`);
+          
           if (!embeddingResponse.ok) {
             const errorText = await embeddingResponse.text();
-            console.error(`Google AI API error for account "${account.original_account_name || account.account_name}":`, errorText);
-            console.error(`Response status: ${embeddingResponse.status}`);
+            console.error(`Google AI API error for account "${accountName}":`, errorText);
             throw new Error(`Google AI embedding API error: ${embeddingResponse.status} - ${errorText}`);
           }
 
           const embeddingData = await embeddingResponse.json();
+          console.log(`Received embedding data for "${accountName}":`, embeddingData);
+          
+          if (!embeddingData.embedding || !embeddingData.embedding.values) {
+            console.error(`Invalid embedding response for "${accountName}":`, embeddingData);
+            throw new Error(`Invalid embedding response format`);
+          }
+          
           const embedding = embeddingData.embedding.values;
 
           // Store or update the account mapping with embedding
