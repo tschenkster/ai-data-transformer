@@ -1,0 +1,102 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { accountName, userId, limit = 5 } = await req.json();
+
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    if (!accountName || typeof accountName !== 'string') {
+      throw new Error('Account name is required');
+    }
+
+    console.log(`Searching for similar accounts to: ${accountName}`);
+
+    // Generate embedding for the search account
+    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-small',
+        input: accountName,
+        encoding_format: 'float'
+      }),
+    });
+
+    if (!embeddingResponse.ok) {
+      throw new Error(`OpenAI embedding API error: ${embeddingResponse.status}`);
+    }
+
+    const embeddingData = await embeddingResponse.json();
+    const queryEmbedding = embeddingData.data[0].embedding;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Search for similar accounts using cosine similarity
+    const { data: similarAccounts, error } = await supabase.rpc('match_account_embeddings', {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.5,
+      match_count: limit,
+      filter_user_id: userId
+    });
+
+    if (error) {
+      console.error('Error searching similar accounts:', error);
+      throw new Error(`Database search error: ${error.message}`);
+    }
+
+    console.log(`Found ${similarAccounts?.length || 0} similar accounts`);
+
+    // Format the results with similarity scores
+    const formattedResults = similarAccounts?.map(account => ({
+      id: account.id,
+      original_account_name: account.original_account_name,
+      mapped_account_name: account.mapped_account_name,
+      confidence_score: account.confidence_score,
+      reasoning: account.reasoning,
+      similarity: account.similarity,
+      validated: account.validated,
+      created_at: account.created_at
+    })) || [];
+
+    return new Response(JSON.stringify({
+      success: true,
+      query: accountName,
+      results: formattedResults,
+      count: formattedResults.length
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('Error in similarity-search function:', error);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
