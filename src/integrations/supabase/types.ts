@@ -14,13 +14,267 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      account_mappings: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          embedding: string | null
+          id: string
+          mapped_account_name: string
+          original_account_name: string
+          reasoning: string | null
+          user_id: string
+          validated: boolean | null
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          mapped_account_name: string
+          original_account_name: string
+          reasoning?: string | null
+          user_id: string
+          validated?: boolean | null
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          mapped_account_name?: string
+          original_account_name?: string
+          reasoning?: string | null
+          user_id?: string
+          validated?: boolean | null
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: []
+      }
+      mapping_decisions: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          final_mapping: string | null
+          id: string
+          original_account_name: string
+          reasoning: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          session_id: string
+          similar_accounts: Json | null
+          status: string
+          suggested_mapping: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          final_mapping?: string | null
+          id?: string
+          original_account_name: string
+          reasoning?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_id: string
+          similar_accounts?: Json | null
+          status?: string
+          suggested_mapping: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          final_mapping?: string | null
+          id?: string
+          original_account_name?: string
+          reasoning?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_id?: string
+          similar_accounts?: Json | null
+          status?: string
+          suggested_mapping?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mapping_decisions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "mapping_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mapping_sessions: {
+        Row: {
+          approved_accounts: number | null
+          completed_at: string | null
+          created_at: string
+          filename: string
+          id: string
+          processed_accounts: number | null
+          status: string
+          total_accounts: number
+          user_id: string
+        }
+        Insert: {
+          approved_accounts?: number | null
+          completed_at?: string | null
+          created_at?: string
+          filename: string
+          id?: string
+          processed_accounts?: number | null
+          status?: string
+          total_accounts: number
+          user_id: string
+        }
+        Update: {
+          approved_accounts?: number | null
+          completed_at?: string | null
+          created_at?: string
+          filename?: string
+          id?: string
+          processed_accounts?: number | null
+          status?: string
+          total_accounts?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          email: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
