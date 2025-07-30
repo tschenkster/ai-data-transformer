@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Profile {
   id: string;
@@ -20,7 +21,7 @@ interface Profile {
 }
 
 export default function Admin() {
-  const { user } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,16 +165,43 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage user accounts and approvals</p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">AI Account Mapper</h1>
+            <p className="text-sm text-muted-foreground">Admin Panel - Manage user accounts</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm font-medium">{profile?.email}</p>
+              <p className="text-xs text-muted-foreground">
+                Admin Access
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard">
+                <Home className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
-        <div className="text-sm text-muted-foreground">
-          Logged in as: {user?.email}
+      </header>
+
+      {/* Main Content */}
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Admin Panel</h1>
+            <p className="text-muted-foreground">Manage user accounts and approvals</p>
+          </div>
         </div>
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -371,6 +399,7 @@ export default function Admin() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
