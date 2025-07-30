@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             try {
               const { data: userAccountData, error } = await supabase
-                .from('profiles')
+                .from('user_accounts')
                 .select('*')
                 .eq('user_id', session.user.id)
                 .single();
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(async () => {
           try {
             const { data: userAccountData, error } = await supabase
-              .from('profiles')
+              .from('user_accounts')
               .select('*')
               .eq('user_id', session.user.id)
               .single();
