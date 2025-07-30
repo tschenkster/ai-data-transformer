@@ -7,7 +7,7 @@ interface AdminRouteProps {
 }
 
 export function AdminRoute({ children }: AdminRouteProps) {
-  const { user, profile, loading, isAdmin, isApproved } = useAuth();
+  const { user, userAccount, loading, isAdmin, isApproved } = useAuth();
 
   if (loading) {
     return (
@@ -30,13 +30,13 @@ export function AdminRoute({ children }: AdminRouteProps) {
     );
   }
 
-  if (!profile) {
+  if (!userAccount) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-[400px]">
           <CardHeader>
-            <CardTitle>Profile Error</CardTitle>
-            <CardDescription>Unable to load your profile. Please try refreshing the page.</CardDescription>
+            <CardTitle>Account Error</CardTitle>
+            <CardDescription>Unable to load your account. Please try refreshing the page.</CardDescription>
           </CardHeader>
         </Card>
       </div>

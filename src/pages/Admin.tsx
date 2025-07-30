@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface Profile {
+interface UserAccount {
   id: string;
   user_id: string;
   email: string;
@@ -21,9 +21,9 @@ interface Profile {
 }
 
 export default function Admin() {
-  const { user, profile, signOut } = useAuth();
+  const { user, userAccount, signOut } = useAuth();
   const { toast } = useToast();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
@@ -32,22 +32,22 @@ export default function Admin() {
     rejected: 0,
   });
 
-  const fetchProfiles = async () => {
+  const fetchUserAccounts = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_accounts')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setProfiles((data || []) as Profile[]);
+      setUserAccounts((data || []) as UserAccount[]);
       
       // Calculate stats
       const stats = data?.reduce(
-        (acc, profile) => {
+        (acc, userAccount) => {
           acc.total++;
-          acc[profile.status]++;
+          acc[userAccount.status]++;
           return acc;
         },
         { total: 0, pending: 0, approved: 0, rejected: 0 }
@@ -55,10 +55,10 @@ export default function Admin() {
       
       setStats(stats);
     } catch (error) {
-      console.error('Error fetching profiles:', error);
+      console.error('Error fetching user accounts:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch user profiles",
+        description: "Failed to fetch user accounts",
         variant: "destructive",
       });
     } finally {
@@ -67,7 +67,7 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    fetchProfiles();
+    fetchUserAccounts();
   }, []);
 
   const updateUserStatus = async (userId: string, status: 'approved' | 'rejected') => {
@@ -82,7 +82,7 @@ export default function Admin() {
       }
 
       const { error } = await supabase
-        .from('profiles')
+        .from('user_accounts')
         .update(updates)
         .eq('user_id', userId);
 
@@ -93,7 +93,7 @@ export default function Admin() {
         description: `User ${status} successfully`,
       });
       
-      fetchProfiles();
+      fetchUserAccounts();
     } catch (error) {
       console.error('Error updating user status:', error);
       toast({
@@ -110,7 +110,7 @@ export default function Admin() {
     }
 
     try {
-      // Delete from auth.users will cascade to profiles table
+      // Delete from auth.users will cascade to user_accounts table
       const { error } = await supabase.auth.admin.deleteUser(userId);
 
       if (error) throw error;
@@ -120,7 +120,7 @@ export default function Admin() {
         description: "User deleted successfully",
       });
       
-      fetchProfiles();
+      fetchUserAccounts();
     } catch (error) {
       console.error('Error deleting user:', error);
       toast({
@@ -154,7 +154,7 @@ export default function Admin() {
     });
   };
 
-  const pendingUsers = profiles.filter(p => p.status === 'pending');
+  const pendingUsers = userAccounts.filter(ua => ua.status === 'pending');
 
   if (loading) {
     return (
@@ -175,7 +175,7 @@ export default function Admin() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <p className="text-sm font-medium">{profile?.email}</p>
+              <p className="text-sm font-medium">{userAccount?.email}</p>
               <p className="text-xs text-muted-foreground">
                 Admin Access
               </p>
@@ -277,16 +277,16 @@ export default function Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {pendingUsers.map((profile) => (
-                      <TableRow key={profile.id}>
-                        <TableCell className="font-medium">{profile.email}</TableCell>
-                        <TableCell>{formatDate(profile.created_at)}</TableCell>
-                        <TableCell>{getStatusBadge(profile.status)}</TableCell>
+                    {pendingUsers.map((userAccount) => (
+                      <TableRow key={userAccount.id}>
+                        <TableCell className="font-medium">{userAccount.email}</TableCell>
+                        <TableCell>{formatDate(userAccount.created_at)}</TableCell>
+                        <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
-                              onClick={() => updateUserStatus(profile.user_id, 'approved')}
+                              onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
                               className="bg-green-600 hover:bg-green-700"
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
@@ -295,7 +295,7 @@ export default function Admin() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => updateUserStatus(profile.user_id, 'rejected')}
+                              onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               Reject
@@ -331,21 +331,21 @@ export default function Admin() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {profiles.map((profile) => (
-                    <TableRow key={profile.id}>
-                      <TableCell className="font-medium">{profile.email}</TableCell>
-                      <TableCell>{formatDate(profile.created_at)}</TableCell>
-                      <TableCell>{getStatusBadge(profile.status)}</TableCell>
+                  {userAccounts.map((userAccount) => (
+                    <TableRow key={userAccount.id}>
+                      <TableCell className="font-medium">{userAccount.email}</TableCell>
+                      <TableCell>{formatDate(userAccount.created_at)}</TableCell>
+                      <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
                       <TableCell>
-                        {profile.approved_at ? formatDate(profile.approved_at) : '-'}
+                        {userAccount.approved_at ? formatDate(userAccount.approved_at) : '-'}
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          {profile.status === 'pending' && (
+                          {userAccount.status === 'pending' && (
                             <>
                               <Button
                                 size="sm"
-                                onClick={() => updateUserStatus(profile.user_id, 'approved')}
+                                onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
                                 className="bg-green-600 hover:bg-green-700"
                               >
                                 <CheckCircle className="w-4 h-4 mr-1" />
@@ -354,28 +354,28 @@ export default function Admin() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => updateUserStatus(profile.user_id, 'rejected')}
+                                onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
                               >
                                 <XCircle className="w-4 h-4 mr-1" />
                                 Reject
                               </Button>
                             </>
                           )}
-                          {profile.status === 'rejected' && (
+                          {userAccount.status === 'rejected' && (
                             <Button
                               size="sm"
-                              onClick={() => updateUserStatus(profile.user_id, 'approved')}
+                              onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
                               className="bg-green-600 hover:bg-green-700"
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Approve
                             </Button>
                           )}
-                          {profile.status === 'approved' && (
+                          {userAccount.status === 'approved' && (
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => updateUserStatus(profile.user_id, 'rejected')}
+                              onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               Reject
@@ -384,7 +384,7 @@ export default function Admin() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => deleteUser(profile.user_id)}
+                            onClick={() => deleteUser(userAccount.user_id)}
                           >
                             <Trash2 className="w-4 h-4 mr-1" />
                             Delete

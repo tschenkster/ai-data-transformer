@@ -5,7 +5,7 @@ import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield } from 'luc
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, userAccount, signOut, isAdmin } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,7 +18,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <p className="text-sm font-medium">{profile?.email}</p>
+              <p className="text-sm font-medium">{userAccount?.email}</p>
               <p className="text-xs text-muted-foreground">
                 Status: <span className="text-success font-medium">Approved</span>
               </p>

@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-interface Profile {
+interface UserAccount {
   id: string;
   user_id: string;
   email: string;
@@ -19,7 +19,7 @@ interface Profile {
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: Profile | null;
+  userAccount: UserAccount | null;
   loading: boolean;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -33,7 +33,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -45,27 +45,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch profile when user signs in
+        // Fetch user account when user signs in
         if (session?.user) {
           setTimeout(async () => {
             try {
-              const { data: profileData, error } = await supabase
-                .from('profiles')
+              const { data: userAccountData, error } = await supabase
+                .from('user_accounts')
                 .select('*')
                 .eq('user_id', session.user.id)
                 .single();
                 
               if (error) {
-                console.error('Error fetching profile:', error);
+                console.error('Error fetching user account:', error);
               } else {
-                setProfile(profileData as Profile);
+                setUserAccount(userAccountData as UserAccount);
               }
             } catch (err) {
-              console.error('Profile fetch error:', err);
+              console.error('User account fetch error:', err);
             }
           }, 0);
         } else {
-          setProfile(null);
+          setUserAccount(null);
         }
         
         setLoading(false);
@@ -78,22 +78,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Fetch profile for existing session
+        // Fetch user account for existing session
         setTimeout(async () => {
           try {
-            const { data: profileData, error } = await supabase
-              .from('profiles')
+            const { data: userAccountData, error } = await supabase
+              .from('user_accounts')
               .select('*')
               .eq('user_id', session.user.id)
               .single();
               
             if (error) {
-              console.error('Error fetching profile:', error);
+              console.error('Error fetching user account:', error);
             } else {
-              setProfile(profileData as Profile);
+              setUserAccount(userAccountData as UserAccount);
             }
           } catch (err) {
-            console.error('Profile fetch error:', err);
+            console.error('User account fetch error:', err);
           }
           setLoading(false);
         }, 0);
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isApproved = profile?.status === 'approved';
+  const isApproved = userAccount?.status === 'approved';
   
   // Admin detection - replace with your actual admin email(s)
   const ADMIN_EMAILS = ['thomas@cfo-team.de']; // Admin email configured
@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     session,
-    profile,
+    userAccount,
     loading,
     signUp,
     signIn,

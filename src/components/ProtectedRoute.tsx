@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, profile, loading, isApproved, signOut } = useAuth();
+  const { user, userAccount, loading, isApproved, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -27,15 +27,15 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return null;
   }
 
-  if (!profile) {
+  if (!userAccount) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <CardTitle>Profile Error</CardTitle>
+            <CardTitle>Account Error</CardTitle>
             <CardDescription>
-              Unable to load your profile. Please try logging in again.
+              Unable to load your account. Please try logging in again.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -48,7 +48,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (profile.status === 'pending') {
+  if (userAccount.status === 'pending') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
@@ -61,8 +61,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              <p><strong>Email:</strong> {profile.email}</p>
-              <p><strong>Requested:</strong> {new Date(profile.created_at).toLocaleDateString()}</p>
+              <p><strong>Email:</strong> {userAccount.email}</p>
+              <p><strong>Requested:</strong> {new Date(userAccount.created_at).toLocaleDateString()}</p>
             </div>
             <Button onClick={signOut} variant="outline" className="w-full">
               Logout
@@ -73,7 +73,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (profile.status === 'rejected') {
+  if (userAccount.status === 'rejected') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
