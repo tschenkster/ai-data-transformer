@@ -40,7 +40,7 @@ serve(async (req) => {
 
       for (const account of batch) {
         try {
-          // Generate embedding for the account name
+          // Generate embedding for the account name - using correct Google Gemini API format
           const embeddingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${googleApiKey}`, {
             method: 'POST',
             headers: {
@@ -48,14 +48,19 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               content: {
-                parts: [{ text: account.original_account_name || account.account_name }]
-              }
+                parts: [{ 
+                  text: account.original_account_name || account.account_name 
+                }]
+              },
+              taskType: "SEMANTIC_SIMILARITY",
+              title: "Account Name Embedding"
             }),
           });
 
           if (!embeddingResponse.ok) {
             const errorText = await embeddingResponse.text();
-            console.error(`Google AI API error response:`, errorText);
+            console.error(`Google AI API error for account "${account.original_account_name || account.account_name}":`, errorText);
+            console.error(`Response status: ${embeddingResponse.status}`);
             throw new Error(`Google AI embedding API error: ${embeddingResponse.status} - ${errorText}`);
           }
 
