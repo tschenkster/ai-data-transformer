@@ -44,7 +44,9 @@ serve(async (req) => {
     });
 
     if (!embeddingResponse.ok) {
-      throw new Error(`Google AI embedding API error: ${embeddingResponse.status}`);
+      const errorText = await embeddingResponse.text();
+      console.error(`Google AI API error response:`, errorText);
+      throw new Error(`Google AI embedding API error: ${embeddingResponse.status} - ${errorText}`);
     }
 
     const embeddingData = await embeddingResponse.json();
