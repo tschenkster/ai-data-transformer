@@ -31,7 +31,7 @@ serve(async (req) => {
     console.log(`Searching for similar accounts to: ${accountName}`);
 
     // Generate embedding for the search account - using correct Google Gemini API format
-    const embeddingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${googleApiKey}`, {
+    const embeddingResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${googleApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
