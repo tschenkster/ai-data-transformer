@@ -22,6 +22,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isApproved: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -176,6 +177,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isApproved = profile?.status === 'approved';
+  
+  // Admin detection - add your admin email(s) here
+  const ADMIN_EMAILS = ['admin@example.com']; // Replace with actual admin email
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
   const value = {
     user,
@@ -186,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signOut,
     isApproved,
+    isAdmin,
   };
 
   return (

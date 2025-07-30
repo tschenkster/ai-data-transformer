@@ -1,10 +1,11 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, BarChart3, Settings, LogOut, User } from 'lucide-react';
+import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -22,6 +23,14 @@ export default function Dashboard() {
                 Status: <span className="text-success font-medium">Approved</span>
               </p>
             </div>
+            {isAdmin && (
+              <Button asChild variant="outline" size="sm">
+                <Link to="/admin">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Admin Panel
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
