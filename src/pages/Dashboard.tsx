@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield } from 'lucide-react';
+import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield, Brain, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 
@@ -78,6 +78,27 @@ export default function Dashboard() {
             <CardContent>
               <Button variant="outline" className="w-full">
                 View Sessions
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Memory Enhancement */}
+          <Card className="shadow-elegant hover:shadow-glow transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Brain className="h-5 w-5 mr-2 text-primary" />
+                AI Memory
+              </CardTitle>
+              <CardDescription>
+                Upload historical data to enhance AI accuracy
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                className="w-full"
+                onClick={() => window.location.href = '/memory'}
+              >
+                Enhance Memory
               </Button>
             </CardContent>
           </Card>

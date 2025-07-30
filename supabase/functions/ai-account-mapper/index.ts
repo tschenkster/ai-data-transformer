@@ -38,20 +38,52 @@ serve(async (req) => {
 
     for (let i = 0; i < accounts.length; i += batchSize) {
       const batch = accounts.slice(i, i + batchSize);
-      
-      const prompt = `You are an expert at standardizing and mapping financial account names. 
-      
-Your task is to analyze the following account names and suggest standardized, professional mappings that follow these principles:
-- Use clear, descriptive names that reflect the account's purpose
-- Follow standard accounting terminology
-- Remove unnecessary codes, abbreviations, or formatting
-- Group similar accounts under consistent naming patterns
-- Maintain the essential meaning while improving clarity
+      console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(accounts.length / batchSize)}`);
 
-For each account, provide:
-1. A suggested standardized mapping
-2. A confidence score (0.0 to 1.0) based on how certain you are about the mapping
-3. A brief reasoning for your suggestion
+      // Get similar historical accounts for this batch
+      const similarAccountsPromises = batch.map(async (account) => {
+        try {
+          const { data: similarData } = await supabase.functions.invoke('similarity-search', {
+            body: { 
+              accountName: account,
+              userId: userId,
+              limit: 5
+            }
+          });
+          return {
+            account,
+            similar: similarData?.results || []
+          };
+        } catch (error) {
+          console.error(`Error finding similar accounts for ${account}:`, error);
+          return { account, similar: [] };
+        }
+      });
+
+      const similarResults = await Promise.all(similarAccountsPromises);
+
+      const prompt = `You are an expert financial account mapping assistant with access to historical mapping data. I will provide you with account names and their most similar historical mappings from our database.
+
+Use the historical mappings as precedents to make accurate mapping decisions. Pay special attention to accounts with high similarity scores (>0.8) as these are very reliable precedents.
+
+For each account, analyze the historical precedents and provide a JSON response with this structure:
+{
+  "original": "original account name",
+  "suggested": "standardized category name", 
+  "confidence": 0.85,
+  "reasoning": "explanation based on historical precedents and similarity analysis"
+}
+
+HISTORICAL PRECEDENTS:
+${similarResults.map(result => {
+  if (result.similar.length === 0) {
+    return `Account: "${result.account}" - No similar historical mappings found`;
+  }
+  return `Account: "${result.account}" - Similar historical mappings:
+${result.similar.map(sim => 
+  `  • "${sim.original_account_name}" → "${sim.mapped_account_name}" (similarity: ${(sim.similarity * 100).toFixed(1)}%, confidence: ${sim.confidence_score})`
+).join('\n')}`;
+}).join('\n\n')}
 
 Account names to process:
 ${batch.map((account, index) => `${i + index + 1}. "${account}"`).join('\n')}

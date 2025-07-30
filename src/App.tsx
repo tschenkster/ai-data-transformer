@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import UploadFile from "./pages/UploadFile";
+import { MemoryUpload } from "./pages/MemoryUpload";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,11 @@ function AuthenticatedRoutes() {
       <Route path="/upload" element={
         <ProtectedRoute>
           <UploadFile />
+        </ProtectedRoute>
+      } />
+      <Route path="/memory" element={
+        <ProtectedRoute>
+          <MemoryUpload />
         </ProtectedRoute>
       } />
       <Route path="/" element={<Navigate to={user ? "/dashboard" : "/auth"} replace />} />
