@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import UploadFile from "./pages/UploadFile";
 import { MemoryUpload } from "./pages/MemoryUpload";
@@ -24,10 +24,10 @@ function AuthenticatedRoutes() {
 
   return (
     <Routes>
-      <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/dashboard" replace />} />
-      <Route path="/dashboard" element={
+      <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/home" replace />} />
+      <Route path="/home" element={
         <ProtectedRoute>
-          <Dashboard />
+          <Home />
         </ProtectedRoute>
       } />
       <Route path="/admin" element={
@@ -45,7 +45,7 @@ function AuthenticatedRoutes() {
           <MemoryUpload />
         </ProtectedRoute>
       } />
-      <Route path="/" element={<Navigate to={user ? "/dashboard" : "/auth"} replace />} />
+      <Route path="/" element={<Navigate to={user ? "/home" : "/auth"} replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

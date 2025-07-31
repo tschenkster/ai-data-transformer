@@ -182,9 +182,9 @@ export default function Admin() {
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard">
+              <Link to="/home">
                 <Home className="h-4 w-4 mr-2" />
-                Back to Dashboard
+                Back to Home
               </Link>
             </Button>
             <Button variant="outline" size="sm" onClick={signOut}>

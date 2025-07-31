@@ -5,7 +5,7 @@ import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield, Database }
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 
-export default function Dashboard() {
+export default function Home() {
   const { user, userAccount, signOut, isAdmin } = useAuth();
 
   return (

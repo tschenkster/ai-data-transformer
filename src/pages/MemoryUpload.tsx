@@ -137,8 +137,8 @@ export const MemoryUpload = () => {
             </Alert>
 
             <div className="flex gap-4 justify-center">
-              <Button onClick={() => navigate('/dashboard')}>
-                Return to Dashboard
+              <Button onClick={() => navigate('/home')}>
+                Return to Home
               </Button>
               <Button variant="outline" onClick={() => window.location.reload()}>
                 Upload More Data

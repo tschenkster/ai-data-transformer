@@ -170,8 +170,8 @@ export default function UploadFile() {
         description: `Successfully processed ${mappingDecisions.length} accounts with ${approvedCount} approved mappings.`,
       });
 
-      // Navigate back to dashboard
-      navigate('/dashboard');
+      // Navigate back to home
+      navigate('/home');
       
     } catch (error) {
       console.error('Session completion error:', error);
@@ -187,9 +187,9 @@ export default function UploadFile() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/home')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Back to Home
           </Button>
           <h1 className="text-3xl font-bold">File Upload & Account Mapping</h1>
         </div>
