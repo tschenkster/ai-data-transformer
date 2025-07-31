@@ -166,35 +166,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">AI Account Mapper</h1>
-            <p className="text-sm text-muted-foreground">Admin Panel - Manage user accounts</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">{userAccount?.email}</p>
-              <p className="text-xs text-muted-foreground">
-                Admin Access
-              </p>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/home">
-                <Home className="h-4 w-4 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-background">
       {/* Main Content */}
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">

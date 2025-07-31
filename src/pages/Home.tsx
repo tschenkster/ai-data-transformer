@@ -9,36 +9,9 @@ export default function Home() {
   const { user, userAccount, signOut, isAdmin } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">AI Account Mapper</h1>
-            <p className="text-sm text-muted-foreground">Intelligent financial account mapping</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">{userAccount?.email}</p>
-            </div>
-            {isAdmin && (
-              <Button asChild variant="outline" size="sm">
-                <Link to="/admin">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Admin Panel
-                </Link>
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-background">
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Upload Card */}
           <Card className="shadow-elegant hover:shadow-glow transition-all duration-300">
