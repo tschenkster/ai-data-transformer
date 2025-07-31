@@ -20,9 +20,6 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <p className="text-sm font-medium">{userAccount?.email}</p>
-              <p className="text-xs text-muted-foreground">
-                Status: <span className="text-success font-medium">Approved</span>
-              </p>
             </div>
             {isAdmin && (
               <Button asChild variant="outline" size="sm">
