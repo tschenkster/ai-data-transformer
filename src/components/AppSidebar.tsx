@@ -45,10 +45,16 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className={getNavClass}
+                      className={({ isActive }) => 
+                        `flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors ${
+                          isActive 
+                            ? "bg-accent text-accent-foreground font-medium" 
+                            : "text-foreground hover:bg-accent/50"
+                        }`
+                      }
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -70,10 +76,16 @@ export function AppSidebar() {
                       <NavLink
                         to="/admin"
                         end
-                        className={getNavClass}
+                        className={({ isActive }) => 
+                          `flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors ${
+                            isActive 
+                              ? "bg-accent text-accent-foreground font-medium" 
+                              : "text-foreground hover:bg-accent/50"
+                          }`
+                        }
                       >
-                        <Settings className="h-4 w-4" />
-                        <span>Admin Panel</span>
+                        <Settings className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Admin Panel</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
