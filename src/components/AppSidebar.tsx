@@ -41,12 +41,12 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton>
                     <NavLink
                       to={item.url}
                       end
                       className={({ isActive }) => 
-                        `flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors ${
+                        `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
                           isActive 
                             ? "bg-accent text-accent-foreground font-medium" 
                             : "text-foreground hover:bg-accent/50"
@@ -72,12 +72,12 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton>
                       <NavLink
                         to="/admin"
                         end
                         className={({ isActive }) => 
-                          `flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors ${
+                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
                             isActive 
                               ? "bg-accent text-accent-foreground font-medium" 
                               : "text-foreground hover:bg-accent/50"
