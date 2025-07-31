@@ -48,7 +48,7 @@ export function AppSidebar() {
                       className={getNavClass}
                     >
                       <item.icon className="h-4 w-4" />
-                      {open && <span>{item.title}</span>}
+                      <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -73,7 +73,7 @@ export function AppSidebar() {
                         className={getNavClass}
                       >
                         <Settings className="h-4 w-4" />
-                        {open && <span>Admin Panel</span>}
+                        <span>Admin Panel</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -92,18 +92,16 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton disabled>
                   <User className="h-4 w-4" />
-                  {open && (
-                    <div className="flex flex-col items-start text-xs">
-                      <span className="truncate max-w-32">{userAccount?.first_name} {userAccount?.last_name}</span>
-                      <span className="text-muted-foreground truncate max-w-32">{user?.email}</span>
-                    </div>
-                  )}
+                  <div className="flex flex-col items-start text-xs">
+                    <span className="truncate max-w-32">{userAccount?.first_name} {userAccount?.last_name}</span>
+                    <span className="text-muted-foreground truncate max-w-32">{user?.email}</span>
+                  </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={signOut} className="text-destructive hover:bg-destructive/10">
                   <LogOut className="h-4 w-4" />
-                  {open && <span>Logout</span>}
+                  <span>Logout</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
