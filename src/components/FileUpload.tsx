@@ -10,6 +10,7 @@ import * as XLSX from 'xlsx';
 
 interface FileUploadProps {
   onFileProcessed: (data: { accounts: string[]; filename: string; totalAccounts: number }) => void;
+  mode?: 'accounts' | 'report-structure';
 }
 
 interface FileData {
@@ -18,7 +19,7 @@ interface FileData {
   type: string;
 }
 
-export function FileUpload({ onFileProcessed }: FileUploadProps) {
+export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
@@ -30,24 +31,42 @@ export function FileUpload({ onFileProcessed }: FileUploadProps) {
         skipEmptyLines: true,
         complete: (results) => {
           try {
-            const accounts: string[] = [];
-            const headers = results.meta.fields || [];
-            
-            // Find potential account name columns
-            const accountColumn = headers.find(header => 
-              header.toLowerCase().includes('account') || 
-              header.toLowerCase().includes('name') ||
-              header.toLowerCase().includes('description')
-            ) || headers[0];
-
-            results.data.forEach((row: any) => {
-              const accountName = row[accountColumn]?.toString().trim();
-              if (accountName && accountName !== '') {
-                accounts.push(accountName);
+            if (mode === 'report-structure') {
+              // For report structures, validate required columns and process as raw data
+              const headers = results.meta.fields || [];
+              const requiredColumns = ['report_line_item_key'];
+              
+              const missingColumns = requiredColumns.filter(col => 
+                !headers.some(header => header.toLowerCase().includes(col.toLowerCase()))
+              );
+              
+              if (missingColumns.length > 0) {
+                reject(new Error(`Missing required columns: ${missingColumns.join(', ')}`));
+                return;
               }
-            });
+              
+              // Return the raw data for report structure processing
+              resolve(results.data as any);
+            } else {
+              // Original account extraction logic
+              const accounts: string[] = [];
+              const headers = results.meta.fields || [];
+              
+              const accountColumn = headers.find(header => 
+                header.toLowerCase().includes('account') || 
+                header.toLowerCase().includes('name') ||
+                header.toLowerCase().includes('description')
+              ) || headers[0];
 
-            resolve(accounts);
+              results.data.forEach((row: any) => {
+                const accountName = row[accountColumn]?.toString().trim();
+                if (accountName && accountName !== '') {
+                  accounts.push(accountName);
+                }
+              });
+
+              resolve(accounts);
+            }
           } catch (error) {
             reject(error);
           }
@@ -66,30 +85,63 @@ export function FileUpload({ onFileProcessed }: FileUploadProps) {
           const workbook = XLSX.read(data, { type: 'array' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-          const accounts: string[] = [];
-          const headers = jsonData[0] as string[] || [];
           
-          // Find potential account name column
-          const accountColumnIndex = headers.findIndex(header => 
-            header?.toString().toLowerCase().includes('account') || 
-            header?.toString().toLowerCase().includes('name') ||
-            header?.toString().toLowerCase().includes('description')
-          );
-          
-          const columnIndex = accountColumnIndex !== -1 ? accountColumnIndex : 0;
-
-          // Skip header row
-          for (let i = 1; i < jsonData.length; i++) {
-            const row = jsonData[i] as any[];
-            const accountName = row[columnIndex]?.toString().trim();
-            if (accountName && accountName !== '') {
-              accounts.push(accountName);
+          if (mode === 'report-structure') {
+            // For report structures, use header row and return structured data
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            const headers = jsonData[0] as string[] || [];
+            
+            // Validate required columns
+            const requiredColumns = ['report_line_item_key'];
+            const missingColumns = requiredColumns.filter(col => 
+              !headers.some(header => header?.toString().toLowerCase().includes(col.toLowerCase()))
+            );
+            
+            if (missingColumns.length > 0) {
+              reject(new Error(`Missing required columns: ${missingColumns.join(', ')}`));
+              return;
             }
-          }
+            
+            // Convert to objects with headers
+            const structuredData = [];
+            for (let i = 1; i < jsonData.length; i++) {
+              const row = jsonData[i] as any[];
+              if (row.some(cell => cell !== null && cell !== undefined && cell !== '')) {
+                const rowObject: any = {};
+                headers.forEach((header, index) => {
+                  if (header && row[index] !== undefined) {
+                    rowObject[header.toString()] = row[index];
+                  }
+                });
+                structuredData.push(rowObject);
+              }
+            }
+            
+            resolve(structuredData as any);
+          } else {
+            // Original account extraction logic
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            const accounts: string[] = [];
+            const headers = jsonData[0] as string[] || [];
+            
+            const accountColumnIndex = headers.findIndex(header => 
+              header?.toString().toLowerCase().includes('account') || 
+              header?.toString().toLowerCase().includes('name') ||
+              header?.toString().toLowerCase().includes('description')
+            );
+            
+            const columnIndex = accountColumnIndex !== -1 ? accountColumnIndex : 0;
 
-          resolve(accounts);
+            for (let i = 1; i < jsonData.length; i++) {
+              const row = jsonData[i] as any[];
+              const accountName = row[columnIndex]?.toString().trim();
+              if (accountName && accountName !== '') {
+                accounts.push(accountName);
+              }
+            }
+
+            resolve(accounts);
+          }
         } catch (error) {
           reject(error);
         }
@@ -119,21 +171,37 @@ export function FileUpload({ onFileProcessed }: FileUploadProps) {
 
       setUploadProgress(75);
 
-      if (accounts.length === 0) {
-        throw new Error('No account names found in the file');
+      if (mode === 'report-structure') {
+        if (!Array.isArray(accounts) || accounts.length === 0) {
+          throw new Error('No valid report structure data found in the file');
+        }
+        
+        setUploadProgress(100);
+        
+        onFileProcessed({
+          accounts: accounts as any, // For report structure, this contains the raw data
+          filename: file.name,
+          totalAccounts: accounts.length
+        });
+      } else {
+        if (accounts.length === 0) {
+          throw new Error('No account names found in the file');
+        }
+
+        setUploadProgress(100);
+
+        onFileProcessed({
+          accounts,
+          filename: file.name,
+          totalAccounts: accounts.length
+        });
       }
-
-      setUploadProgress(100);
-
-      onFileProcessed({
-        accounts,
-        filename: file.name,
-        totalAccounts: accounts.length
-      });
 
       toast({
         title: "File processed successfully",
-        description: `Found ${accounts.length} account names ready for mapping.`,
+        description: mode === 'report-structure' 
+          ? `Processed ${accounts.length} report line items ready for upload.`
+          : `Found ${accounts.length} account names ready for mapping.`,
       });
 
     } catch (error) {
@@ -188,7 +256,10 @@ export function FileUpload({ onFileProcessed }: FileUploadProps) {
           Upload File
         </CardTitle>
         <CardDescription>
-          Upload a CSV or Excel file containing account names for AI-powered mapping
+          {mode === 'report-structure' 
+            ? 'Upload a CSV or Excel file containing your report structure with required columns'
+            : 'Upload a CSV or Excel file containing account names for AI-powered mapping'
+          }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

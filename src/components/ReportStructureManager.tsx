@@ -159,20 +159,45 @@ export default function ReportStructureManager() {
     }
   };
 
-  const handleFileProcessed = async (fileData: { accounts: string[]; filename: string; totalAccounts: number }) => {
+  const handleFileProcessed = async (fileData: { accounts: any[]; filename: string; totalAccounts: number }) => {
     if (!user) return;
 
     setUploading(true);
     try {
-      // Convert the accounts data to structure format for processing
-      const structureData = fileData.accounts.map((account, index) => ({
-        report_line_item_key: `ITEM_${index + 1}`,
-        level_1_line_item_description: account,
-        is_leaf: true,
-        sort_order: index,
-        display: true,
-        is_calculated: false
-      }));
+      console.log('Processing file data:', fileData);
+      
+      // Use the raw structure data from the file
+      const structureData = fileData.accounts.map((item: any, index: number) => {
+        // Map file columns to expected database format
+        const mapped = {
+          report_line_item_key: item.report_line_item_key || item['Report Line Item Key'] || `ITEM_${index + 1}`,
+          parent_report_line_item_key: item.parent_report_line_item_key || item['Parent Report Line Item Key'] || null,
+          sort_order: item.sort_order || item['Sort Order'] || index,
+          level_1_line_item_description: item.level_1_line_item_description || item['Level 1 Line Item Description'] || null,
+          level_2_line_item_description: item.level_2_line_item_description || item['Level 2 Line Item Description'] || null,
+          level_3_line_item_description: item.level_3_line_item_description || item['Level 3 Line Item Description'] || null,
+          level_4_line_item_description: item.level_4_line_item_description || item['Level 4 Line Item Description'] || null,
+          level_5_line_item_description: item.level_5_line_item_description || item['Level 5 Line Item Description'] || null,
+          level_6_line_item_description: item.level_6_line_item_description || item['Level 6 Line Item Description'] || null,
+          level_7_line_item_description: item.level_7_line_item_description || item['Level 7 Line Item Description'] || null,
+          is_leaf: item.is_leaf === true || item['Is Leaf'] === true || item.is_leaf === 'true' || item['Is Leaf'] === 'true',
+          is_calculated: item.is_calculated === true || item['Is Calculated'] === true || item.is_calculated === 'true' || item['Is Calculated'] === 'true',
+          display: item.display !== false && item['Display'] !== false && item.display !== 'false' && item['Display'] !== 'false',
+          line_item_type: item.line_item_type || item['Line Item Type'] || null,
+          description_of_leaf: item.description_of_leaf || item['Description of Leaf'] || null,
+          data_source: item.data_source || item['Data Source'] || null,
+        };
+        
+        console.log(`Mapped item ${index}:`, mapped);
+        return mapped;
+      });
+
+      console.log('Calling edge function with:', {
+        structureData: structureData.slice(0, 3), // Log first 3 items for debugging
+        filename: fileData.filename,
+        userId: user.id,
+        userEmail: user.email,
+      });
 
       // Call edge function to process the uploaded structure
       const { data: result, error } = await supabase.functions.invoke('process-report-structure', {
@@ -184,7 +209,12 @@ export default function ReportStructureManager() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      console.log('Edge function result:', result);
 
       toast({
         title: "Success",
@@ -196,7 +226,7 @@ export default function ReportStructureManager() {
       console.error('Error processing structure:', error);
       toast({
         title: "Error",
-        description: "Failed to process report structure",
+        description: error instanceof Error ? error.message : "Failed to process report structure",
         variant: "destructive",
       });
     } finally {
@@ -388,7 +418,7 @@ export default function ReportStructureManager() {
                 </div>
               </div>
               
-              <FileUpload onFileProcessed={handleFileProcessed} />
+              <FileUpload onFileProcessed={handleFileProcessed} mode="report-structure" />
             </div>
           </CardContent>
         </Card>
