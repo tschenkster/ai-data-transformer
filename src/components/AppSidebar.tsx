@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Upload, Brain, Settings, LogOut, User } from "lucide-react";
+import { Home, Upload, Brain, Settings, LogOut, User, Database } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -23,7 +23,7 @@ const navigationItems = [
 export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
-  const { user, userAccount, signOut, isAdmin } = useAuth();
+  const { user, userAccount, signOut, isAdmin, isSuperAdmin } = useAuth();
   
   const currentPath = location.pathname;
   const isActive = (path: string) => currentPath === path;
@@ -89,6 +89,26 @@ export function AppSidebar() {
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  {isSuperAdmin && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <NavLink
+                          to="/report-structures"
+                          end
+                          className={({ isActive }) => 
+                            `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
+                              isActive 
+                                ? "bg-accent text-accent-foreground font-medium" 
+                                : "text-foreground hover:bg-accent/50"
+                            }`
+                          }
+                        >
+                          <Database className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Report Structures</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

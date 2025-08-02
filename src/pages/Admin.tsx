@@ -7,10 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut, FileText, Settings } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
-import ReportStructureManager from '@/components/ReportStructureManager';
 
 interface UserAccount {
   id: string;
@@ -224,10 +223,6 @@ export default function Admin() {
             Pending Users ({stats.pending})
           </TabsTrigger>
           <TabsTrigger value="all">All Users</TabsTrigger>
-          <TabsTrigger value="report-structures">
-            <FileText className="w-4 h-4 mr-2" />
-            Report Structures
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="space-y-4">
@@ -377,9 +372,6 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="report-structures" className="space-y-4">
-          <ReportStructureManager />
-        </TabsContent>
       </Tabs>
       </div>
       <Footer />

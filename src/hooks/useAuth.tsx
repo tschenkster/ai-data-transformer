@@ -26,6 +26,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isApproved: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -189,7 +190,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Admin detection - replace with your actual admin email(s)
   const ADMIN_EMAILS = ['thomas@cfo-team.de']; // Admin email configured
+  const SUPER_ADMIN_EMAILS = ['thomas@cfo-team.de']; // Super Admin email configured
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+  const isSuperAdmin = user?.email ? SUPER_ADMIN_EMAILS.includes(user.email) : false;
 
   const value = {
     user,
@@ -201,6 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     isApproved,
     isAdmin,
+    isSuperAdmin,
   };
 
   return (

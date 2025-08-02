@@ -7,10 +7,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AppSidebar } from "@/components/AppSidebar";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import ReportStructures from "./pages/ReportStructures";
 import UploadFile from "./pages/UploadFile";
 import { MemoryUpload } from "./pages/MemoryUpload";
 import NotFound from "./pages/NotFound";
@@ -56,6 +58,11 @@ function AuthenticatedRoutes() {
                 <AdminRoute>
                   <Admin />
                 </AdminRoute>
+              } />
+              <Route path="/report-structures" element={
+                <SuperAdminRoute>
+                  <ReportStructures />
+                </SuperAdminRoute>
               } />
               <Route path="/upload" element={
                 <ProtectedRoute>
