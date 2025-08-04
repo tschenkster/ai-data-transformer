@@ -133,15 +133,26 @@ serve(async (req) => {
           created_by_user_name: userEmail,
           version: 1
         })
-        .select()
+        .select('id')
         .single();
 
       if (structureError) {
         console.error('Error creating structure:', structureError);
         throw new Error(`Failed to create report structure: ${structureError.message}`);
       }
+
+      // Update the record to set report_structure_id equal to the auto-generated id
+      const { error: updateError } = await supabase
+        .from('report_structures')
+        .update({ report_structure_id: structure.id })
+        .eq('id', structure.id);
+
+      if (updateError) {
+        console.error('Error updating report_structure_id:', updateError);
+        throw new Error(`Failed to set report_structure_id: ${updateError.message}`);
+      }
       
-      structureId = structure.report_structure_id;
+      structureId = structure.id;
       console.log(`Created new structure with ID: ${structureId}`);
     }
 
