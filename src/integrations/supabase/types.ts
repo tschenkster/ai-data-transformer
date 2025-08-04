@@ -166,6 +166,7 @@ export type Database = {
           description_of_leaf: string | null
           display: boolean | null
           hierarchy_path: string | null
+          id: number
           is_calculated: boolean | null
           is_leaf: boolean | null
           is_parent_key_existing: boolean | null
@@ -181,7 +182,9 @@ export type Database = {
           report_line_item_description: string | null
           report_line_item_id: string
           report_line_item_key: string
+          report_line_item_uuid: string
           report_structure_id: string
+          report_structure_id_int: number
           report_structure_name: string
           sort_order: number
         }
@@ -191,6 +194,7 @@ export type Database = {
           description_of_leaf?: string | null
           display?: boolean | null
           hierarchy_path?: string | null
+          id?: number
           is_calculated?: boolean | null
           is_leaf?: boolean | null
           is_parent_key_existing?: boolean | null
@@ -206,7 +210,9 @@ export type Database = {
           report_line_item_description?: string | null
           report_line_item_id?: string
           report_line_item_key: string
+          report_line_item_uuid: string
           report_structure_id: string
+          report_structure_id_int: number
           report_structure_name: string
           sort_order?: number
         }
@@ -216,6 +222,7 @@ export type Database = {
           description_of_leaf?: string | null
           display?: boolean | null
           hierarchy_path?: string | null
+          id?: number
           is_calculated?: boolean | null
           is_leaf?: boolean | null
           is_parent_key_existing?: boolean | null
@@ -231,7 +238,9 @@ export type Database = {
           report_line_item_description?: string | null
           report_line_item_id?: string
           report_line_item_key?: string
+          report_line_item_uuid?: string
           report_structure_id?: string
+          report_structure_id_int?: number
           report_structure_name?: string
           sort_order?: number
         }
@@ -250,9 +259,11 @@ export type Database = {
           created_at: string
           created_by_user_id: string
           created_by_user_name: string
+          id: number
           is_active: boolean
           report_structure_id: string
           report_structure_name: string
+          report_structure_uuid: string
           updated_at: string
           version: number
         }
@@ -260,9 +271,11 @@ export type Database = {
           created_at?: string
           created_by_user_id: string
           created_by_user_name: string
+          id?: number
           is_active?: boolean
           report_structure_id?: string
           report_structure_name: string
+          report_structure_uuid: string
           updated_at?: string
           version?: number
         }
@@ -270,9 +283,11 @@ export type Database = {
           created_at?: string
           created_by_user_id?: string
           created_by_user_name?: string
+          id?: number
           is_active?: boolean
           report_structure_id?: string
           report_structure_name?: string
+          report_structure_uuid?: string
           updated_at?: string
           version?: number
         }
