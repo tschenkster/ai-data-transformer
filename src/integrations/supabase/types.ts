@@ -57,15 +57,7 @@ export type Database = {
           validated_at?: string | null
           validated_by?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "account_mappings_report_line_item_id_fkey"
-            columns: ["report_line_item_id"]
-            isOneToOne: false
-            referencedRelation: "report_line_items"
-            referencedColumns: ["report_line_item_id"]
-          },
-        ]
+        Relationships: []
       }
       mapping_decisions: {
         Row: {
@@ -180,11 +172,9 @@ export type Database = {
           line_item_type: string | null
           parent_report_line_item_key: string | null
           report_line_item_description: string | null
-          report_line_item_id: string
           report_line_item_key: string
           report_line_item_uuid: string
-          report_structure_id: string
-          report_structure_id_int: number
+          report_structure_id: number
           report_structure_name: string
           sort_order: number
         }
@@ -208,11 +198,9 @@ export type Database = {
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
           report_line_item_description?: string | null
-          report_line_item_id?: string
           report_line_item_key: string
           report_line_item_uuid: string
-          report_structure_id: string
-          report_structure_id_int: number
+          report_structure_id: number
           report_structure_name: string
           sort_order?: number
         }
@@ -236,11 +224,9 @@ export type Database = {
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
           report_line_item_description?: string | null
-          report_line_item_id?: string
           report_line_item_key?: string
           report_line_item_uuid?: string
-          report_structure_id?: string
-          report_structure_id_int?: number
+          report_structure_id?: number
           report_structure_name?: string
           sort_order?: number
         }
@@ -250,7 +236,7 @@ export type Database = {
             columns: ["report_structure_id"]
             isOneToOne: false
             referencedRelation: "report_structures"
-            referencedColumns: ["report_structure_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -261,7 +247,6 @@ export type Database = {
           created_by_user_name: string
           id: number
           is_active: boolean
-          report_structure_id: string
           report_structure_name: string
           report_structure_uuid: string
           updated_at: string
@@ -273,7 +258,6 @@ export type Database = {
           created_by_user_name: string
           id?: number
           is_active?: boolean
-          report_structure_id?: string
           report_structure_name: string
           report_structure_uuid: string
           updated_at?: string
@@ -285,7 +269,6 @@ export type Database = {
           created_by_user_name?: string
           id?: number
           is_active?: boolean
-          report_structure_id?: string
           report_structure_name?: string
           report_structure_uuid?: string
           updated_at?: string
