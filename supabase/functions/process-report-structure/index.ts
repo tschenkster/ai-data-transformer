@@ -126,6 +126,7 @@ serve(async (req) => {
       const { data: structure, error: structureError } = await supabase
         .from('report_structures')
         .insert({
+          report_structure_uuid: crypto.randomUUID(),
           report_structure_name: structureName,
           is_active: false, // Will be set by trigger if it's the first one
           created_by_user_id: userId,
