@@ -35,6 +35,7 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               // For report structures, validate required columns and process as raw data
               const headers = results.meta.fields || [];
               const requiredColumns = ['report_line_item_key'];
+              const optionalColumns = ['report_line_item_description', 'hierarchy_path', 'parent_report_line_item_key'];
               
               const missingColumns = requiredColumns.filter(col => 
                 !headers.some(header => header.toLowerCase().includes(col.toLowerCase()))
@@ -44,6 +45,11 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
                 reject(new Error(`Missing required columns: ${missingColumns.join(', ')}`));
                 return;
               }
+              
+              console.log('Available columns:', headers);
+              console.log('Found optional columns:', optionalColumns.filter(col => 
+                headers.some(header => header.toLowerCase().includes(col.toLowerCase()))
+              ));
               
               // Return the raw data for report structure processing
               resolve(results.data as any);
@@ -93,6 +99,7 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
             
             // Validate required columns
             const requiredColumns = ['report_line_item_key'];
+            const optionalColumns = ['report_line_item_description', 'hierarchy_path', 'parent_report_line_item_key'];
             const missingColumns = requiredColumns.filter(col => 
               !headers.some(header => header?.toString().toLowerCase().includes(col.toLowerCase()))
             );
@@ -101,6 +108,11 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               reject(new Error(`Missing required columns: ${missingColumns.join(', ')}`));
               return;
             }
+            
+            console.log('Available columns:', headers);
+            console.log('Found optional columns:', optionalColumns.filter(col => 
+              headers.some(header => header?.toString().toLowerCase().includes(col.toLowerCase()))
+            ));
             
             // Convert to objects with headers
             const structuredData = [];

@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface ReportStructureData {
   report_line_item_key: string;
+  report_line_item_description?: string;
   parent_report_line_item_key?: string;
   sort_order: number;
   hierarchy_path?: string;
@@ -84,6 +85,7 @@ serve(async (req) => {
         report_structure_id: structure.report_structure_id,
         report_structure_name: structureName,
         report_line_item_key: item.report_line_item_key,
+        report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         is_parent_key_existing: !!item.parent_report_line_item_key,
         sort_order: item.sort_order || index,

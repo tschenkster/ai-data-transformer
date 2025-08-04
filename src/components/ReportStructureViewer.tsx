@@ -25,6 +25,7 @@ interface ReportLineItem {
   report_structure_id: string;
   report_structure_name: string;
   report_line_item_key: string;
+  report_line_item_description?: string;
   parent_report_line_item_key?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
@@ -173,19 +174,18 @@ export default function ReportStructureViewer({
   };
 
   const getItemDisplayName = (item: ReportLineItem) => {
-    // Find the most specific description
-    const descriptions = [
-      item.level_7_line_item_description,
-      item.level_6_line_item_description,
-      item.level_5_line_item_description,
-      item.level_4_line_item_description,
-      item.level_3_line_item_description,
-      item.level_2_line_item_description,
-      item.level_1_line_item_description,
-    ].filter(Boolean);
-
-    const description = descriptions[0] || item.description_of_leaf || item.report_line_item_key;
-    return `${item.report_line_item_key}: ${description}`;
+    // Use report_line_item_description as primary display field
+    if (item.report_line_item_description) {
+      return item.report_line_item_description;
+    }
+    
+    // Fallback to hierarchy path
+    if (item.hierarchy_path) {
+      return item.hierarchy_path;
+    }
+    
+    // Last fallback to the key
+    return item.report_line_item_key;
   };
 
   const handleStructureChange = (value: string) => {

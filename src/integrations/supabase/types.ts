@@ -167,6 +167,7 @@ export type Database = {
           level_7_line_item_description: string | null
           line_item_type: string | null
           parent_report_line_item_key: string | null
+          report_line_item_description: string | null
           report_line_item_id: string
           report_line_item_key: string
           report_structure_id: string
@@ -191,6 +192,7 @@ export type Database = {
           level_7_line_item_description?: string | null
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
+          report_line_item_description?: string | null
           report_line_item_id?: string
           report_line_item_key: string
           report_structure_id: string
@@ -215,6 +217,7 @@ export type Database = {
           level_7_line_item_description?: string | null
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
+          report_line_item_description?: string | null
           report_line_item_id?: string
           report_line_item_key?: string
           report_structure_id?: string
