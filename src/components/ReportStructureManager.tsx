@@ -13,9 +13,8 @@ import ReportStructureViewer from '@/components/ReportStructureViewer';
 import ReportStructureModifier from '@/components/ReportStructureModifier';
 
 interface ReportStructure {
-  id: number; // Internal integer ID for database joins
-  report_structure_id: number; // Internal integer ID (duplicate for backwards compatibility)
-  report_structure_uuid: string; // Public UUID for external references
+  id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
   is_active: boolean;
   created_at: string;
@@ -26,10 +25,9 @@ interface ReportStructure {
 }
 
 interface ReportLineItem {
-  id: number; // Internal integer ID for database joins
-  report_line_item_id: number; // Internal integer ID (duplicate for backwards compatibility)
-  report_line_item_uuid: string; // Public UUID for external references
-  report_structure_id: number; // Internal integer FK to report_structures.id
+  id: number;
+  report_line_item_uuid: string;
+  report_structure_id: number;
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;

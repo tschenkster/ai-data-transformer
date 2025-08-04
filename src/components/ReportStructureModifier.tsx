@@ -1,37 +1,45 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Edit2, Save, X, GripVertical, Calculator, Eye, EyeOff } from 'lucide-react';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
+import { 
+  DndContext, 
+  closestCenter, 
+  KeyboardSensor, 
+  PointerSensor, 
+  useSensor, 
   useSensors,
-  DragEndEvent,
+  DragEndEvent
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
-  useSortable,
+  useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { 
+  FileText, 
+  Folder, 
+  Calculator, 
+  Database, 
+  GripVertical,
+  Edit,
+  Check,
+  X
+} from 'lucide-react';
 
 interface ReportLineItem {
-  report_line_item_id: string;
-  report_structure_id: string;
+  id: number;
+  report_line_item_uuid: string;
+  report_structure_id: number;
   report_structure_name: string;
   report_line_item_key: string;
+  report_line_item_description?: string;
   parent_report_line_item_key?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
@@ -50,7 +58,6 @@ interface ReportLineItem {
   display: boolean;
   data_source?: string;
   comment?: number;
-  report_line_item_description?: string;
 }
 
 interface TreeNodeData {
@@ -65,122 +72,135 @@ interface TreeNodeData {
 interface SortableItemProps {
   node: TreeNodeData;
   level: number;
-  onEdit: (id: string, description: string) => void;
-  editingId: string | null;
-  setEditingId: (id: string | null) => void;
+  isEditing: boolean;
+  onEditStart: (key: string) => void;
+  onEditSave: (key: string, newDescription: string) => void;
+  onEditCancel: () => void;
   editingValue: string;
-  setEditingValue: (value: string) => void;
+  onEditingValueChange: (value: string) => void;
 }
 
-function SortableItem({ node, level, onEdit, editingId, setEditingId, editingValue, setEditingValue }: SortableItemProps) {
+function SortableItem({ 
+  node, 
+  level, 
+  isEditing, 
+  onEditStart, 
+  onEditSave, 
+  onEditCancel,
+  editingValue,
+  onEditingValueChange
+}: SortableItemProps) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging,
   } = useSortable({ id: node.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleEditStart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingId(node.id);
-    setEditingValue(node.description);
-  };
-
-  const handleEditSave = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit(node.id, editingValue);
-    setEditingId(null);
-  };
-
-  const handleEditCancel = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingId(null);
-    setEditingValue('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      onEdit(node.id, editingValue);
-      setEditingId(null);
-    }
-    if (e.key === 'Escape') {
-      setEditingId(null);
-      setEditingValue('');
-    }
-  };
+  const hasChildren = node.children.length > 0;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 p-2 border rounded-lg bg-card hover:bg-muted/50 transition-colors ${
-        level * 20
-      }px ml-${level * 4}`}
+      className="flex items-center gap-2 py-2 px-2 border rounded-md bg-background hover:bg-accent/50"
     >
-      <div {...attributes} {...listeners} className="cursor-grab hover:cursor-grabbing">
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab hover:cursor-grabbing"
+      >
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
       
-      <div className="flex-1 flex items-center gap-2">
-        {editingId === node.id ? (
-          <div className="flex-1 flex items-center gap-2">
+      <div style={{ marginLeft: level * 16 }} className="flex items-center gap-2 flex-1">
+        {node.item.is_leaf ? (
+          <FileText className="w-4 h-4 text-blue-500" />
+        ) : (
+          <Folder className="w-4 h-4 text-yellow-500" />
+        )}
+        
+        {isEditing ? (
+          <div className="flex items-center gap-2 flex-1">
             <Input
               value={editingValue}
-              onChange={(e) => setEditingValue(e.target.value)}
-              onKeyDown={handleKeyPress}
+              onChange={(e) => onEditingValueChange(e.target.value)}
               className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onEditSave(node.key, editingValue);
+                } else if (e.key === 'Escape') {
+                  onEditCancel();
+                }
+              }}
               autoFocus
             />
-            <Button size="sm" onClick={handleEditSave}>
-              <Save className="h-3 w-3" />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEditSave(node.key, editingValue)}
+            >
+              <Check className="w-4 h-4 text-green-600" />
             </Button>
-            <Button size="sm" variant="outline" onClick={handleEditCancel}>
-              <X className="h-3 w-3" />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onEditCancel}
+            >
+              <X className="w-4 h-4 text-red-600" />
             </Button>
           </div>
         ) : (
-          <>
-            <span className="flex-1 font-medium">{node.description}</span>
-            <div className="flex items-center gap-1">
-              {node.item.is_calculated && (
-                <Badge variant="secondary" className="text-xs">
-                  <Calculator className="h-3 w-3 mr-1" />
-                  Calc
-                </Badge>
-              )}
-              {!node.item.display && (
-                <Badge variant="outline" className="text-xs">
-                  <EyeOff className="h-3 w-3 mr-1" />
-                  Hidden
-                </Badge>
-              )}
-              {node.item.is_leaf && (
-                <Badge variant="default" className="text-xs">
-                  Leaf
-                </Badge>
-              )}
-              <Button size="sm" variant="ghost" onClick={handleEditStart}>
-                <Edit2 className="h-3 w-3" />
-              </Button>
-            </div>
-          </>
+          <div className="flex items-center gap-2 flex-1">
+            <span className="text-sm flex-1">{node.description}</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEditStart(node.key)}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+          </div>
         )}
+        
+        <div className="flex items-center gap-1">
+          {node.item.is_calculated && (
+            <Badge variant="secondary" className="text-xs">
+              <Calculator className="w-3 h-3 mr-1" />
+              Calc
+            </Badge>
+          )}
+          {node.item.data_source && (
+            <Badge variant="outline" className="text-xs">
+              <Database className="w-3 h-3 mr-1" />
+              {node.item.data_source}
+            </Badge>
+          )}
+          {!node.item.display && (
+            <Badge variant="destructive" className="text-xs">
+              Hidden
+            </Badge>
+          )}
+          {node.item.is_leaf && (
+            <Badge variant="default" className="text-xs">
+              Leaf
+            </Badge>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 interface ReportStructureModifierProps {
-  structureId: string;
-  onSave?: () => void;
+  structureId: number;
+  onSave: () => void;
 }
 
 export default function ReportStructureModifier({ structureId, onSave }: ReportStructureModifierProps) {
@@ -188,8 +208,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
 
   const sensors = useSensors(
@@ -198,6 +217,14 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  useEffect(() => {
+    fetchLineItems();
+  }, [structureId]);
+
+  useEffect(() => {
+    buildTreeData();
+  }, [lineItems]);
 
   const fetchLineItems = async () => {
     try {
@@ -224,150 +251,153 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
   };
 
   const buildTreeData = () => {
-    const itemMap = new Map<string, ReportLineItem>();
+    const itemMap = new Map<string, TreeNodeData>();
+    const rootItems: TreeNodeData[] = [];
+
+    // Create nodes for all items
     lineItems.forEach(item => {
-      itemMap.set(item.report_line_item_key, item);
-    });
-
-    const getItemDisplayName = (item: ReportLineItem): string => {
-      if (item.report_line_item_description) return item.report_line_item_description;
-      
-      for (let i = 1; i <= 7; i++) {
-        const desc = item[`level_${i}_line_item_description` as keyof ReportLineItem] as string;
-        if (desc) return desc;
-      }
-      
-      if (item.description_of_leaf) return item.description_of_leaf;
-      if (item.hierarchy_path) return item.hierarchy_path;
-      return item.report_line_item_key;
-    };
-
-    const buildNode = (item: ReportLineItem, level: number = 0): TreeNodeData => {
-      const children = lineItems
-        .filter(child => child.parent_report_line_item_key === item.report_line_item_key)
-        .sort((a, b) => a.sort_order - b.sort_order)
-        .map(child => buildNode(child, level + 1));
-
-      return {
-        id: item.report_line_item_id,
+      const node: TreeNodeData = {
+        id: item.report_line_item_key,
         key: item.report_line_item_key,
         description: getItemDisplayName(item),
-        level,
-        children,
-        item,
+        level: 0,
+        children: [],
+        item
       };
+      itemMap.set(item.report_line_item_key, node);
+    });
+
+    // Build hierarchy and calculate levels
+    lineItems.forEach(item => {
+      const node = itemMap.get(item.report_line_item_key);
+      if (!node) return;
+
+      if (item.parent_report_line_item_key) {
+        const parent = itemMap.get(item.parent_report_line_item_key);
+        if (parent) {
+          parent.children.push(node);
+          node.level = parent.level + 1;
+        } else {
+          rootItems.push(node);
+        }
+      } else {
+        rootItems.push(node);
+      }
+    });
+
+    // Sort children by sort_order
+    const sortChildren = (nodes: TreeNodeData[]) => {
+      nodes.sort((a, b) => a.item.sort_order - b.item.sort_order);
+      nodes.forEach(node => sortChildren(node.children));
     };
 
-    const rootItems = lineItems
-      .filter(item => !item.parent_report_line_item_key || !itemMap.has(item.parent_report_line_item_key))
-      .sort((a, b) => a.sort_order - b.sort_order);
-
-    return rootItems.map(item => buildNode(item));
+    sortChildren(rootItems);
+    setTreeData(rootItems);
   };
 
-  useEffect(() => {
-    if (structureId) {
-      fetchLineItems();
+  const getItemDisplayName = (item: ReportLineItem) => {
+    if (item.report_line_item_description) {
+      return item.report_line_item_description;
     }
-  }, [structureId]);
-
-  useEffect(() => {
-    if (lineItems.length > 0) {
-      setTreeData(buildTreeData());
+    if (item.hierarchy_path) {
+      return item.hierarchy_path;
     }
-  }, [lineItems]);
+    return item.report_line_item_key;
+  };
 
-  const handleEdit = async (itemId: string, newDescription: string) => {
-    if (!newDescription.trim()) return;
-
-    setSaving(true);
+  const handleEdit = async (key: string, newDescription: string) => {
     try {
       const { error } = await supabase
         .from('report_line_items')
-        .update({ report_line_item_description: newDescription.trim() })
-        .eq('report_line_item_id', itemId);
+        .update({ report_line_item_description: newDescription })
+        .eq('report_line_item_key', key)
+        .eq('report_structure_id', structureId);
 
       if (error) throw error;
 
       // Update local state
-      setLineItems(prev => prev.map(item =>
-        item.report_line_item_id === itemId
-          ? { ...item, report_line_item_description: newDescription.trim() }
+      setLineItems(prev => prev.map(item => 
+        item.report_line_item_key === key 
+          ? { ...item, report_line_item_description: newDescription }
           : item
       ));
 
+      setEditingItem(null);
+      setEditingValue('');
+
       toast({
         title: "Success",
-        description: "Line item updated successfully",
+        description: "Description updated successfully",
       });
-
-      onSave?.();
     } catch (error) {
-      console.error('Error updating line item:', error);
+      console.error('Error updating description:', error);
       toast({
         title: "Error",
-        description: "Failed to update line item",
+        description: "Failed to update description",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
-  };
-
-  const flattenTreeData = (nodes: TreeNodeData[]): TreeNodeData[] => {
-    const flat: TreeNodeData[] = [];
-    const traverse = (nodes: TreeNodeData[]) => {
-      nodes.forEach(node => {
-        flat.push(node);
-        if (node.children.length > 0) {
-          traverse(node.children);
-        }
-      });
-    };
-    traverse(nodes);
-    return flat;
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id) {
+      return;
+    }
 
-    const flatItems = flattenTreeData(treeData);
-    const oldIndex = flatItems.findIndex(item => item.id === active.id);
-    const newIndex = flatItems.findIndex(item => item.id === over.id);
+    // Find all items at the same level
+    const flatItems = getAllFlatItems(treeData);
+    const activeItem = flatItems.find(item => item.id === active.id);
+    const overItem = flatItems.find(item => item.id === over.id);
+
+    if (!activeItem || !overItem) return;
+
+    // Only allow reordering within the same parent
+    if (activeItem.item.parent_report_line_item_key !== overItem.item.parent_report_line_item_key) {
+      toast({
+        title: "Invalid Move",
+        description: "Items can only be reordered within the same parent",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get siblings (items with same parent)
+    const siblings = flatItems.filter(item => 
+      item.item.parent_report_line_item_key === activeItem.item.parent_report_line_item_key
+    );
+
+    const oldIndex = siblings.findIndex(item => item.id === active.id);
+    const newIndex = siblings.findIndex(item => item.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    setSaving(true);
+    const newOrder = arrayMove(siblings, oldIndex, newIndex);
+
     try {
-      const reorderedItems = arrayMove(flatItems, oldIndex, newIndex);
-      
-      // Update sort orders
-      const updates = reorderedItems.map((item, index) => ({
-        report_line_item_id: item.id,
-        sort_order: index,
+      // Update sort_order for all affected items
+      const updates = newOrder.map((item, index) => ({
+        id: item.item.id,
+        sort_order: index
       }));
 
-      // Batch update sort orders
       for (const update of updates) {
         const { error } = await supabase
           .from('report_line_items')
           .update({ sort_order: update.sort_order })
-          .eq('report_line_item_id', update.report_line_item_id);
+          .eq('id', update.id);
 
         if (error) throw error;
       }
 
       // Refresh data
-      await fetchLineItems();
+      fetchLineItems();
 
       toast({
         title: "Success",
-        description: "Item order updated successfully",
+        description: "Items reordered successfully",
       });
-
-      onSave?.();
     } catch (error) {
       console.error('Error reordering items:', error);
       toast({
@@ -375,26 +405,43 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
         description: "Failed to reorder items",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
-  const renderTreeNodes = (nodes: TreeNodeData[], level: number = 0): React.ReactNode[] => {
+  const getAllFlatItems = (nodes: TreeNodeData[]): TreeNodeData[] => {
+    const flat: TreeNodeData[] = [];
+    const traverse = (items: TreeNodeData[]) => {
+      items.forEach(item => {
+        flat.push(item);
+        traverse(item.children);
+      });
+    };
+    traverse(nodes);
+    return flat;
+  };
+
+  const renderTreeNodes = (nodes: TreeNodeData[]): JSX.Element[] => {
     return nodes.map(node => (
       <div key={node.id} className="space-y-2">
         <SortableItem
           node={node}
-          level={level}
-          onEdit={handleEdit}
-          editingId={editingId}
-          setEditingId={setEditingId}
+          level={node.level}
+          isEditing={editingItem === node.key}
+          onEditStart={(key) => {
+            setEditingItem(key);
+            setEditingValue(node.description);
+          }}
+          onEditSave={handleEdit}
+          onEditCancel={() => {
+            setEditingItem(null);
+            setEditingValue('');
+          }}
           editingValue={editingValue}
-          setEditingValue={setEditingValue}
+          onEditingValueChange={setEditingValue}
         />
         {node.children.length > 0 && (
-          <div className="ml-6 space-y-2">
-            {renderTreeNodes(node.children, level + 1)}
+          <div className="ml-4 space-y-2">
+            {renderTreeNodes(node.children)}
           </div>
         )}
       </div>
@@ -404,49 +451,79 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-lg">Loading structure...</div>
+        <div className="text-lg">Loading structure for modification...</div>
       </div>
     );
   }
 
   if (lineItems.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <p>No line items found for this structure</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Structure Modifier</CardTitle>
+          <CardDescription>No line items found for this structure</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>This structure appears to be empty</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  const flatItems = flattenTreeData(treeData);
+  const allItems = getAllFlatItems(treeData);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Edit2 className="h-5 w-5" />
-          Structure Modifier
-          {saving && <span className="text-sm font-normal text-muted-foreground">(Saving...)</span>}
-        </CardTitle>
+        <CardTitle>Structure Modifier</CardTitle>
         <CardDescription>
-          Drag and drop to reorder items, click the edit icon to modify descriptions.
-          Changes are saved automatically.
+          Edit descriptions and reorder line items within their hierarchy level. 
+          Drag items to reorder them within the same parent.
         </CardDescription>
       </CardHeader>
-      <CardContent className="max-h-[600px] overflow-y-auto">
+      <CardContent>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={flatItems.map(item => item.id)}
+            items={allItems.map(item => item.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-96 overflow-y-auto">
               {renderTreeNodes(treeData)}
             </div>
           </SortableContext>
         </DndContext>
+
+        <div className="mt-6 flex justify-end">
+          <Button onClick={onSave}>
+            Save Changes
+          </Button>
+        </div>
+        
+        <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <GripVertical className="w-4 h-4" />
+            <span>Drag to reorder</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Edit className="w-4 h-4" />
+            <span>Click to edit</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Folder className="w-4 h-4 text-yellow-500" />
+            <span>Folder</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <FileText className="w-4 h-4 text-blue-500" />
+            <span>Leaf</span>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

@@ -10,17 +10,26 @@ import { Search, Plus, Target, Check, Calculator, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface ReportStructure {
-  report_structure_id: string;
+  id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by_user_id: string;
+  created_by_user_name: string;
+  version: number;
 }
 
 interface ReportLineItem {
-  report_line_item_id: string;
-  report_structure_id: string;
+  id: number;
+  report_line_item_uuid: string;
+  report_structure_id: number;
   report_structure_name: string;
   report_line_item_key: string;
+  report_line_item_description?: string;
   parent_report_line_item_key?: string;
+  is_parent_key_existing: boolean;
   sort_order: number;
   hierarchy_path?: string;
   level_1_line_item_description?: string;
@@ -36,7 +45,7 @@ interface ReportLineItem {
   is_calculated: boolean;
   display: boolean;
   data_source?: string;
-  report_line_item_description?: string;
+  comment?: number;
 }
 
 interface TreeNodeData {
@@ -94,7 +103,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
     }
   };
 
-  const fetchLineItems = async (structureId: string) => {
+  const fetchLineItems = async (structureId: number) => {
     try {
       const { data, error } = await supabase
         .from('report_line_items')
@@ -141,7 +150,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
         .map(child => buildNode(child, level + 1));
 
       return {
-        id: item.report_line_item_id,
+        id: item.report_line_item_uuid,
         key: item.report_line_item_key,
         description: getItemDisplayName(item),
         level,
@@ -163,7 +172,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
 
   useEffect(() => {
     if (activeStructure) {
-      fetchLineItems(activeStructure.report_structure_id);
+      fetchLineItems(activeStructure.id);
     }
     setLoading(false);
   }, [activeStructure]);
@@ -199,7 +208,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
           user_id: user.id,
           original_account_name: originalAccount.trim(),
           mapped_account_name: getItemDisplayName(selectedLineItem),
-          report_line_item_id: selectedLineItem.report_line_item_id,
+          report_line_item_id: selectedLineItem.report_line_item_uuid,
           confidence_score: 1.0, // Manual mapping has 100% confidence
           reasoning: 'Manual mapping created by user',
           validated: true,
@@ -234,7 +243,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
   };
 
   const renderTreeNode = (node: TreeNodeData, level: number = 0): React.ReactNode => {
-    const isSelected = selectedLineItem?.report_line_item_id === node.item.report_line_item_id;
+    const isSelected = selectedLineItem?.report_line_item_uuid === node.item.report_line_item_uuid;
     
     return (
       <div key={node.id} className="space-y-1">
@@ -366,10 +375,10 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
                       <h4 className="font-medium text-sm text-muted-foreground">Search Results</h4>
                       {filteredItems.length > 0 ? (
                         filteredItems.map(item => {
-                          const isSelected = selectedLineItem?.report_line_item_id === item.report_line_item_id;
+                          const isSelected = selectedLineItem?.report_line_item_uuid === item.report_line_item_uuid;
                           return (
                             <div
-                              key={item.report_line_item_id}
+                              key={item.report_line_item_uuid}
                               onClick={() => setSelectedLineItem(item)}
                               className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
                                 isSelected ? 'bg-primary/10 border border-primary' : 'hover:bg-muted/50'

@@ -42,8 +42,14 @@ interface FileUploadProps {
 }
 
 interface ReportStructure {
-  report_structure_id: string;
+  id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by_user_id: string;
+  created_by_user_name: string;
   version: number;
 }
 
@@ -86,7 +92,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
     try {
       const { data, error } = await supabase
         .from('report_structures')
-        .select('report_structure_id, report_structure_name, version')
+        .select('id, report_structure_uuid, report_structure_name, version')
         .order('report_structure_name');
 
       if (error) throw error;
@@ -582,7 +588,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                             </SelectTrigger>
                             <SelectContent>
                               {structures.map(structure => (
-                                <SelectItem key={structure.report_structure_id} value={structure.report_structure_id}>
+                                <SelectItem key={structure.id} value={structure.id.toString()}>
                                   {structure.report_structure_name} (v{structure.version})
                                 </SelectItem>
                               ))}

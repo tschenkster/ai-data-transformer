@@ -11,7 +11,6 @@ import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Databa
 
 interface ReportStructure {
   id: number;
-  report_structure_id: number;
   report_structure_uuid: string;
   report_structure_name: string;
   is_active: boolean;
@@ -24,7 +23,6 @@ interface ReportStructure {
 
 interface ReportLineItem {
   id: number;
-  report_line_item_id: number;
   report_line_item_uuid: string;
   report_structure_id: number;
   report_structure_name: string;
@@ -108,7 +106,7 @@ export default function ReportStructureViewer({
     buildTreeData();
   }, [filteredItems]);
 
-  const fetchLineItems = async (structureId: string) => {
+  const fetchLineItems = async (structureId: number) => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -195,7 +193,8 @@ export default function ReportStructureViewer({
   const handleStructureChange = (value: string) => {
     setSelectedStructure(value);
     if (value) {
-      fetchLineItems(value);
+      const structureId = parseInt(value);
+      fetchLineItems(structureId);
     } else {
       setLineItems([]);
       onStructureChange(null);
@@ -284,7 +283,7 @@ export default function ReportStructureViewer({
             </SelectTrigger>
             <SelectContent>
               {structures.map((structure) => (
-                <SelectItem key={structure.report_structure_id} value={structure.report_structure_id}>
+                <SelectItem key={structure.id} value={structure.id.toString()}>
                   {structure.report_structure_name} 
                   {structure.is_active && ' (Active)'}
                 </SelectItem>
