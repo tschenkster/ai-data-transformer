@@ -13,7 +13,9 @@ import ReportStructureViewer from '@/components/ReportStructureViewer';
 import ReportStructureModifier from '@/components/ReportStructureModifier';
 
 interface ReportStructure {
-  report_structure_id: string;
+  id: number; // Internal integer ID for database joins
+  report_structure_id: number; // Internal integer ID (duplicate for backwards compatibility)
+  report_structure_uuid: string; // Public UUID for external references
   report_structure_name: string;
   is_active: boolean;
   created_at: string;
@@ -24,10 +26,13 @@ interface ReportStructure {
 }
 
 interface ReportLineItem {
-  report_line_item_id: string;
-  report_structure_id: string;
+  id: number; // Internal integer ID for database joins
+  report_line_item_id: number; // Internal integer ID (duplicate for backwards compatibility)
+  report_line_item_uuid: string; // Public UUID for external references
+  report_structure_id: number; // Internal integer FK to report_structures.id
   report_structure_name: string;
   report_line_item_key: string;
+  report_line_item_description?: string;
   parent_report_line_item_key?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
@@ -56,7 +61,7 @@ export default function ReportStructureManager() {
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [selectedStructureForModify, setSelectedStructureForModify] = useState<string | null>(null);
+  const [selectedStructureForModify, setSelectedStructureForModify] = useState<number | null>(null);
 
   const fetchStructures = async () => {
     try {
@@ -82,7 +87,7 @@ export default function ReportStructureManager() {
     }
   };
 
-  const fetchLineItems = async (structureId: string) => {
+  const fetchLineItems = async (structureId: number) => {
     try {
       const { data, error } = await supabase
         .from('report_line_items')
@@ -107,12 +112,12 @@ export default function ReportStructureManager() {
     fetchStructures();
   }, []);
 
-  const setActiveStructureHandler = async (structureId: string) => {
+  const setActiveStructureHandler = async (structureId: number) => {
     try {
       const { error } = await supabase
         .from('report_structures')
         .update({ is_active: true })
-        .eq('report_structure_id', structureId);
+        .eq('id', structureId);
 
       if (error) throw error;
 
@@ -132,7 +137,7 @@ export default function ReportStructureManager() {
     }
   };
 
-  const deleteStructure = async (structureId: string, structureName: string) => {
+  const deleteStructure = async (structureId: number, structureName: string) => {
     if (!confirm(`Are you sure you want to delete "${structureName}"? This action cannot be undone.`)) {
       return;
     }
@@ -141,7 +146,7 @@ export default function ReportStructureManager() {
       const { error } = await supabase
         .from('report_structures')
         .delete()
-        .eq('report_structure_id', structureId);
+        .eq('id', structureId);
 
       if (error) throw error;
 
@@ -299,7 +304,7 @@ export default function ReportStructureManager() {
                 </TableHeader>
                 <TableBody>
                   {structures.map((structure) => (
-                    <TableRow key={structure.report_structure_id}>
+                    <TableRow key={structure.id}>
                       <TableCell className="font-medium">
                         {structure.report_structure_name}
                       </TableCell>
@@ -321,7 +326,7 @@ export default function ReportStructureManager() {
                           {!structure.is_active && (
                             <Button
                               size="sm"
-                              onClick={() => setActiveStructureHandler(structure.report_structure_id)}
+                              onClick={() => setActiveStructureHandler(structure.id)}
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Set Active
@@ -331,7 +336,7 @@ export default function ReportStructureManager() {
                             size="sm"
                             variant="outline"
                             onClick={() => {
-                              fetchLineItems(structure.report_structure_id);
+                              fetchLineItems(structure.id);
                               // Switch to viewer tab
                               const viewerTab = document.querySelector('[data-state="inactive"][value="viewer"]') as HTMLElement;
                               if (viewerTab) viewerTab.click();
@@ -345,7 +350,7 @@ export default function ReportStructureManager() {
                               size="sm"
                               variant="secondary"
                               onClick={() => {
-                                setSelectedStructureForModify(structure.report_structure_id);
+                                setSelectedStructureForModify(structure.id);
                                 // Switch to modifier tab
                                 const modifierTab = document.querySelector('[data-state="inactive"][value="modifier"]') as HTMLElement;
                                 if (modifierTab) modifierTab.click();
@@ -358,7 +363,7 @@ export default function ReportStructureManager() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
+                            onClick={() => deleteStructure(structure.id, structure.report_structure_name)}
                             disabled={structure.is_active}
                           >
                             <X className="w-4 h-4 mr-1" />
