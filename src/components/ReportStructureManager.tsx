@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Eye, Settings, Plus, FileText, Check, X, Database, AlertTriangle } from 'lucide-react';
+import { Upload, Eye, Settings, Plus, FileText, Check, X, Database, AlertTriangle, Edit } from 'lucide-react';
 import { FileUpload } from '@/components/FileUpload';
 import ReportStructureViewer from '@/components/ReportStructureViewer';
+import ReportStructureModifier from '@/components/ReportStructureModifier';
 
 interface ReportStructure {
   report_structure_id: string;
@@ -48,13 +49,14 @@ interface ReportLineItem {
 }
 
 export default function ReportStructureManager() {
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [selectedStructureForModify, setSelectedStructureForModify] = useState<string | null>(null);
 
   const fetchStructures = async () => {
     try {
@@ -267,6 +269,12 @@ export default function ReportStructureManager() {
           <Eye className="w-4 h-4 mr-2" />
           Structure Viewer
         </TabsTrigger>
+        {isSuperAdmin && (
+          <TabsTrigger value="modifier">
+            <Edit className="w-4 h-4 mr-2" />
+            Structure Modifier
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="overview" className="space-y-4">
@@ -339,6 +347,21 @@ export default function ReportStructureManager() {
                             <Eye className="w-4 h-4 mr-1" />
                             View
                           </Button>
+                          {isSuperAdmin && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                setSelectedStructureForModify(structure.report_structure_id);
+                                // Switch to modifier tab
+                                const modifierTab = document.querySelector('[data-state="inactive"][value="modifier"]') as HTMLElement;
+                                if (modifierTab) modifierTab.click();
+                              }}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Modify
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="destructive"
@@ -447,6 +470,39 @@ export default function ReportStructureManager() {
           </CardContent>
         </Card>
       </TabsContent>
+
+      {isSuperAdmin && (
+        <TabsContent value="modifier" className="space-y-4">
+          {selectedStructureForModify ? (
+            <ReportStructureModifier
+              structureId={selectedStructureForModify}
+              onSave={() => {
+                fetchStructures();
+                toast({
+                  title: "Success",
+                  description: "Structure modifications saved successfully",
+                });
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Structure Modifier</CardTitle>
+                <CardDescription>
+                  Select a structure from the Overview tab to modify its hierarchy and descriptions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Edit className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No structure selected</p>
+                  <p className="text-sm">Click "Modify" on a structure in the Overview tab to start editing</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      )}
     </Tabs>
   );
 }

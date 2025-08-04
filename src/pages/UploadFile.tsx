@@ -123,12 +123,40 @@ export default function UploadFile() {
       if (status === 'approved' && finalMapping) {
         const decision = mappingDecisions.find(d => d.id === decisionId);
         if (decision) {
+          // Get the active report structure
+          const { data: activeStructure, error: structureError } = await supabase
+            .from('report_structures')
+            .select('report_structure_id')
+            .eq('is_active', true)
+            .single();
+
+          if (structureError) {
+            console.warn('No active structure found, creating mapping without report line item reference');
+          }
+
+          // Try to find matching report line item
+          let reportLineItemId = null;
+          if (activeStructure) {
+            const { data: lineItem, error: lineItemError } = await supabase
+              .from('report_line_items')
+              .select('report_line_item_id')
+              .eq('report_structure_id', activeStructure.report_structure_id)
+              .or(`report_line_item_description.ilike.%${finalMapping}%,level_1_line_item_description.ilike.%${finalMapping}%,level_2_line_item_description.ilike.%${finalMapping}%,level_3_line_item_description.ilike.%${finalMapping}%,level_4_line_item_description.ilike.%${finalMapping}%,level_5_line_item_description.ilike.%${finalMapping}%,level_6_line_item_description.ilike.%${finalMapping}%,level_7_line_item_description.ilike.%${finalMapping}%,description_of_leaf.ilike.%${finalMapping}%`)
+              .limit(1)
+              .maybeSingle();
+
+            if (!lineItemError && lineItem) {
+              reportLineItemId = lineItem.report_line_item_id;
+            }
+          }
+
           const { error: mappingError } = await supabase
             .from('account_mappings')
             .upsert({
               user_id: user.id,
               original_account_name: decision.originalAccount,
               mapped_account_name: finalMapping,
+              report_line_item_id: reportLineItemId,
               confidence_score: decision.confidenceScore,
               reasoning: decision.reasoning,
               validated: true,
