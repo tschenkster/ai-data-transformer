@@ -211,7 +211,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
         
         return {
           fileColumn: header,
-          dbColumn: dbMatch || '',
+          dbColumn: dbMatch || 'unmapped',
           mapped: !!dbMatch
         };
       });
@@ -243,7 +243,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
   const updateColumnMapping = (fileColumn: string, dbColumn: string) => {
     setColumnMappings(prev => prev.map(mapping => 
       mapping.fileColumn === fileColumn 
-        ? { ...mapping, dbColumn, mapped: !!dbColumn }
+        ? { ...mapping, dbColumn, mapped: !!dbColumn && dbColumn !== 'unmapped' }
         : mapping
     ));
   };
@@ -280,7 +280,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
         const unmappedRow: Record<string, any> = {};
 
         columnMappings.forEach(mapping => {
-          if (mapping.mapped && mapping.dbColumn) {
+          if (mapping.mapped && mapping.dbColumn && mapping.dbColumn !== 'unmapped') {
             mappedRow[mapping.dbColumn] = row[mapping.fileColumn];
           } else if (mapping.fileColumn in row) {
             unmappedRow[mapping.fileColumn] = row[mapping.fileColumn];
@@ -497,7 +497,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                               <SelectValue placeholder="Select database field" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Not mapped</SelectItem>
+                              <SelectItem value="unmapped">Not mapped</SelectItem>
                               {REQUIRED_COLUMNS.map(col => (
                                 <SelectItem key={col} value={col}>
                                   {col} <span className="text-red-500">*</span>
