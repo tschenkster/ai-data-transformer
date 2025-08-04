@@ -29,6 +29,12 @@ interface ReportStructureData {
   comment?: number;
 }
 
+interface ColumnMapping {
+  fileColumn: string;
+  dbColumn: string;
+  mapped: boolean;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -36,7 +42,16 @@ serve(async (req) => {
   }
 
   try {
-    const { structureData, filename, userId, userEmail } = await req.json();
+    const { 
+      structureData, 
+      filename, 
+      userId, 
+      userEmail,
+      overwriteMode = false,
+      targetStructureId,
+      unmappedColumns = [],
+      columnMappings = []
+    } = await req.json();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -45,34 +60,89 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log(`Processing report structure: ${filename} for user: ${userEmail}`);
+    console.log(`Overwrite mode: ${overwriteMode}, Target structure: ${targetStructureId}`);
+    console.log(`Unmapped columns: ${unmappedColumns.length} rows`);
+    console.log(`Column mappings: ${columnMappings.length} mappings`);
 
     // Validate input data
     if (!Array.isArray(structureData) || structureData.length === 0) {
       throw new Error('Invalid structure data provided');
     }
 
-    // Generate structure name from filename
-    const structureName = filename.replace(/\.(csv|xlsx|xls)$/i, '');
+    let structureId: string;
+    let structureName: string;
+    let version: number = 1;
 
-    // Start transaction by creating the report structure
-    const { data: structure, error: structureError } = await supabase
-      .from('report_structures')
-      .insert({
-        report_structure_name: structureName,
-        is_active: false, // Will be set by trigger if it's the first one
-        created_by_user_id: userId,
-        created_by_user_name: userEmail,
-        version: 1
-      })
-      .select()
-      .single();
+    if (overwriteMode && targetStructureId) {
+      // Get current structure info and increment version
+      const { data: currentStructure, error: fetchError } = await supabase
+        .from('report_structures')
+        .select('report_structure_name, version')
+        .eq('report_structure_id', targetStructureId)
+        .single();
 
-    if (structureError) {
-      console.error('Error creating structure:', structureError);
-      throw new Error(`Failed to create report structure: ${structureError.message}`);
+      if (fetchError) {
+        console.error('Error fetching existing structure:', fetchError);
+        throw new Error(`Failed to fetch target structure: ${fetchError.message}`);
+      }
+
+      version = currentStructure.version + 1;
+      structureName = currentStructure.report_structure_name;
+
+      // Update existing structure with new version
+      const { data: structure, error: updateError } = await supabase
+        .from('report_structures')
+        .update({
+          version: version,
+          updated_at: new Date().toISOString()
+        })
+        .eq('report_structure_id', targetStructureId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Error updating structure:', updateError);
+        throw new Error(`Failed to update structure: ${updateError.message}`);
+      }
+      
+      structureId = targetStructureId;
+
+      // Delete existing line items for this structure
+      const { error: deleteError } = await supabase
+        .from('report_line_items')
+        .delete()
+        .eq('report_structure_id', targetStructureId);
+
+      if (deleteError) {
+        console.error('Error deleting existing line items:', deleteError);
+        throw new Error(`Failed to delete existing line items: ${deleteError.message}`);
+      }
+
+      console.log(`Updated structure ${structureId} to version ${version}`);
+    } else {
+      // Create new report structure
+      structureName = filename.replace(/\.(csv|xlsx|xls)$/i, '');
+      
+      const { data: structure, error: structureError } = await supabase
+        .from('report_structures')
+        .insert({
+          report_structure_name: structureName,
+          is_active: false, // Will be set by trigger if it's the first one
+          created_by_user_id: userId,
+          created_by_user_name: userEmail,
+          version: 1
+        })
+        .select()
+        .single();
+
+      if (structureError) {
+        console.error('Error creating structure:', structureError);
+        throw new Error(`Failed to create report structure: ${structureError.message}`);
+      }
+      
+      structureId = structure.report_structure_id;
+      console.log(`Created new structure with ID: ${structureId}`);
     }
-
-    console.log(`Created structure with ID: ${structure.report_structure_id}`);
 
     // Process and validate line items
     const lineItems = structureData.map((item: ReportStructureData, index: number) => {
@@ -81,8 +151,15 @@ serve(async (req) => {
         throw new Error(`Missing report_line_item_key at row ${index + 1}`);
       }
 
+      // Store unmapped column data for this row if available
+      const unmappedRowData = unmappedColumns.find((row: any) => row.row_index === index);
+      const additionalData = unmappedRowData ? 
+        Object.fromEntries(
+          Object.entries(unmappedRowData).filter(([key]) => key !== 'row_index')
+        ) : null;
+
       return {
-        report_structure_id: structure.report_structure_id,
+        report_structure_id: structureId,
         report_structure_name: structureName,
         report_line_item_key: item.report_line_item_key,
         report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
@@ -103,7 +180,7 @@ serve(async (req) => {
         is_calculated: item.is_calculated || false,
         display: item.display !== false, // Default to true
         data_source: item.data_source || null,
-        comment: item.comment || null
+        comment: additionalData ? JSON.stringify(additionalData) : (item.comment || null)
       };
     });
 
@@ -120,11 +197,13 @@ serve(async (req) => {
 
       if (lineItemsError) {
         console.error('Error inserting line items batch:', lineItemsError);
-        // Cleanup: delete the structure if line items failed
-        await supabase
-          .from('report_structures')
-          .delete()
-          .eq('report_structure_id', structure.report_structure_id);
+        // Cleanup: delete the structure if line items failed and it's a new structure
+        if (!overwriteMode) {
+          await supabase
+            .from('report_structures')
+            .delete()
+            .eq('report_structure_id', structureId);
+        }
         
         throw new Error(`Failed to insert line items: ${lineItemsError.message}`);
       }
@@ -138,9 +217,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        structure_id: structure.report_structure_id,
+        structure_id: structureId,
         structure_name: structureName,
         line_items_count: lineItems.length,
+        version: version,
+        overwrite_mode: overwriteMode,
+        unmapped_columns_stored: unmappedColumns.length,
+        column_mappings: columnMappings.length,
         message: `Report structure "${structureName}" processed successfully`
       }),
       {

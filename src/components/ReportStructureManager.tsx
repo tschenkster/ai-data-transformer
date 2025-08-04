@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Eye, Settings, Plus, FileText, Check, X, Database, AlertTriangle, Edit } from 'lucide-react';
-import { FileUpload } from '@/components/FileUpload';
+import { EnhancedFileUpload } from '@/components/EnhancedFileUpload';
 import ReportStructureViewer from '@/components/ReportStructureViewer';
 import ReportStructureModifier from '@/components/ReportStructureModifier';
 
@@ -161,44 +161,33 @@ export default function ReportStructureManager() {
     }
   };
 
-  const handleFileProcessed = async (fileData: { accounts: any[]; filename: string; totalAccounts: number }) => {
+  const handleFileProcessed = async (fileData: { 
+    structureData: any[]; 
+    filename: string; 
+    totalRows: number;
+    mappings: any[];
+    unmappedColumns: Record<string, any>[];
+    overwriteMode: boolean;
+    targetStructureId?: string;
+  }) => {
     if (!user) return;
 
     setUploading(true);
     try {
-      console.log('Processing file data:', fileData);
+      console.log('Processing enhanced file data:', fileData);
       
-      // Use the raw structure data from the file
-      const structureData = fileData.accounts.map((item: any, index: number) => {
-        // Map file columns to expected database format
-        const mapped = {
-          report_line_item_key: item.report_line_item_key || item['Report Line Item Key'] || `ITEM_${index + 1}`,
-          parent_report_line_item_key: item.parent_report_line_item_key || item['Parent Report Line Item Key'] || null,
-          sort_order: item.sort_order || item['Sort Order'] || index,
-          level_1_line_item_description: item.level_1_line_item_description || item['Level 1 Line Item Description'] || null,
-          level_2_line_item_description: item.level_2_line_item_description || item['Level 2 Line Item Description'] || null,
-          level_3_line_item_description: item.level_3_line_item_description || item['Level 3 Line Item Description'] || null,
-          level_4_line_item_description: item.level_4_line_item_description || item['Level 4 Line Item Description'] || null,
-          level_5_line_item_description: item.level_5_line_item_description || item['Level 5 Line Item Description'] || null,
-          level_6_line_item_description: item.level_6_line_item_description || item['Level 6 Line Item Description'] || null,
-          level_7_line_item_description: item.level_7_line_item_description || item['Level 7 Line Item Description'] || null,
-          is_leaf: item.is_leaf === true || item['Is Leaf'] === true || item.is_leaf === 'true' || item['Is Leaf'] === 'true',
-          is_calculated: item.is_calculated === true || item['Is Calculated'] === true || item.is_calculated === 'true' || item['Is Calculated'] === 'true',
-          display: item.display !== false && item['Display'] !== false && item.display !== 'false' && item['Display'] !== 'false',
-          line_item_type: item.line_item_type || item['Line Item Type'] || null,
-          description_of_leaf: item.description_of_leaf || item['Description of Leaf'] || null,
-          data_source: item.data_source || item['Data Source'] || null,
-        };
-        
-        console.log(`Mapped item ${index}:`, mapped);
-        return mapped;
-      });
+      // Use the pre-mapped structure data
+      const structureData = fileData.structureData;
 
       console.log('Calling edge function with:', {
         structureData: structureData.slice(0, 3), // Log first 3 items for debugging
         filename: fileData.filename,
         userId: user.id,
         userEmail: user.email,
+        overwriteMode: fileData.overwriteMode,
+        targetStructureId: fileData.targetStructureId,
+        unmappedColumns: fileData.unmappedColumns.slice(0, 3),
+        mappings: fileData.mappings,
       });
 
       // Call edge function to process the uploaded structure
@@ -208,6 +197,10 @@ export default function ReportStructureManager() {
           filename: fileData.filename,
           userId: user.id,
           userEmail: user.email,
+          overwriteMode: fileData.overwriteMode,
+          targetStructureId: fileData.targetStructureId,
+          unmappedColumns: fileData.unmappedColumns,
+          columnMappings: fileData.mappings,
         },
       });
 
@@ -441,7 +434,7 @@ export default function ReportStructureManager() {
                 </div>
               </div>
               
-              <FileUpload onFileProcessed={handleFileProcessed} mode="report-structure" />
+              <EnhancedFileUpload onFileProcessed={handleFileProcessed} />
             </div>
           </CardContent>
         </Card>
