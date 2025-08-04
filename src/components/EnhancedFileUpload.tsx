@@ -477,7 +477,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="mapping" className="overflow-auto">
+              <TabsContent value="mapping" className="overflow-y-auto max-h-[60vh]">
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Column Mapping</h3>
