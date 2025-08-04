@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Upload, Brain, Settings, LogOut, User, Database } from "lucide-react";
+import { Home, Upload, Brain, Settings, LogOut, User, Database, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -17,6 +17,7 @@ import {
 const navigationItems = [
   { title: "Home", url: "/home", icon: Home },
   { title: "Upload File", url: "/upload", icon: Upload },
+  { title: "Manual Mapping", url: "/manual-mapping", icon: Target },
   { title: "Memory Upload", url: "/memory", icon: Brain },
 ];
 

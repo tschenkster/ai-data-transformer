@@ -23,6 +23,7 @@ export type Database = {
           mapped_account_name: string
           original_account_name: string
           reasoning: string | null
+          report_line_item_id: string | null
           user_id: string
           validated: boolean | null
           validated_at: string | null
@@ -36,6 +37,7 @@ export type Database = {
           mapped_account_name: string
           original_account_name: string
           reasoning?: string | null
+          report_line_item_id?: string | null
           user_id: string
           validated?: boolean | null
           validated_at?: string | null
@@ -49,12 +51,21 @@ export type Database = {
           mapped_account_name?: string
           original_account_name?: string
           reasoning?: string | null
+          report_line_item_id?: string | null
           user_id?: string
           validated?: boolean | null
           validated_at?: string | null
           validated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "account_mappings_report_line_item_id_fkey"
+            columns: ["report_line_item_id"]
+            isOneToOne: false
+            referencedRelation: "report_line_items"
+            referencedColumns: ["report_line_item_id"]
+          },
+        ]
       }
       mapping_decisions: {
         Row: {
