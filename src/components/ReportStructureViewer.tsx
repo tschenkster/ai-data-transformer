@@ -321,9 +321,6 @@ export default function ReportStructureViewer({
             <CardTitle className="text-lg">
               Structure Hierarchy ({filteredItems.length} items)
             </CardTitle>
-            <CardDescription>
-              Hierarchical view of report line items. Click folders to expand/collapse.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="max-h-96 overflow-y-auto border rounded-lg p-2">
