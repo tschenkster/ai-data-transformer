@@ -13,6 +13,7 @@ import ReportStructureViewer from '@/components/ReportStructureViewer';
 import ReportStructureModifier from '@/components/ReportStructureModifier';
 
 interface ReportStructure {
+  report_structure_id: number;
   id: number;
   report_structure_uuid: string;
   report_structure_name: string;
@@ -115,7 +116,7 @@ export default function ReportStructureManager() {
       const { error } = await supabase
         .from('report_structures')
         .update({ is_active: true })
-        .eq('id', structureId);
+        .eq('report_structure_id', structureId);
 
       if (error) throw error;
 
@@ -144,7 +145,7 @@ export default function ReportStructureManager() {
       const { error } = await supabase
         .from('report_structures')
         .delete()
-        .eq('id', structureId);
+        .eq('report_structure_id', structureId);
 
       if (error) throw error;
 
@@ -296,17 +297,17 @@ export default function ReportStructureManager() {
                     <TableHead>Version</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created By</TableHead>
-                    <TableHead>Created Date</TableHead>
+                    <TableHead>Created At</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {structures.map((structure) => (
-                    <TableRow key={structure.id}>
+                    <TableRow key={structure.report_structure_id}>
                       <TableCell className="font-medium">
                         {structure.report_structure_name}
                       </TableCell>
-                      <TableCell>v{structure.version}</TableCell>
+                      <TableCell>{structure.version}</TableCell>
                       <TableCell>
                         {structure.is_active ? (
                           <Badge variant="default">
@@ -314,7 +315,7 @@ export default function ReportStructureManager() {
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant="secondary">Inactive</Badge>
+                          <Badge variant="secondary">Disabled</Badge>
                         )}
                       </TableCell>
                       <TableCell>{structure.created_by_user_name}</TableCell>
@@ -324,7 +325,7 @@ export default function ReportStructureManager() {
                           {!structure.is_active && (
                             <Button
                               size="sm"
-                              onClick={() => setActiveStructureHandler(structure.id)}
+                              onClick={() => setActiveStructureHandler(structure.report_structure_id)}
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Set Active
@@ -334,7 +335,7 @@ export default function ReportStructureManager() {
                             size="sm"
                             variant="outline"
                             onClick={() => {
-                              fetchLineItems(structure.id);
+                              fetchLineItems(structure.report_structure_id);
                               // Switch to viewer tab
                               const viewerTab = document.querySelector('[data-state="inactive"][value="viewer"]') as HTMLElement;
                               if (viewerTab) viewerTab.click();
@@ -348,7 +349,7 @@ export default function ReportStructureManager() {
                               size="sm"
                               variant="secondary"
                               onClick={() => {
-                                setSelectedStructureForModify(structure.id);
+                                setSelectedStructureForModify(structure.report_structure_id);
                                 // Switch to modifier tab
                                 const modifierTab = document.querySelector('[data-state="inactive"][value="modifier"]') as HTMLElement;
                                 if (modifierTab) modifierTab.click();
@@ -361,7 +362,7 @@ export default function ReportStructureManager() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => deleteStructure(structure.id, structure.report_structure_name)}
+                            onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
                             disabled={structure.is_active}
                           >
                             <X className="w-4 h-4 mr-1" />
