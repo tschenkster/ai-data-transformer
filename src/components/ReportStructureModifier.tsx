@@ -176,12 +176,6 @@ function SortableItem({
               Calc
             </Badge>
           )}
-          {node.item.data_source && (
-            <Badge variant="outline" className="text-xs">
-              <Database className="w-3 h-3 mr-1" />
-              {node.item.data_source}
-            </Badge>
-          )}
           {!node.item.display && (
             <Badge variant="destructive" className="text-xs">
               Hidden
