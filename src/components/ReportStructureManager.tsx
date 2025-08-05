@@ -361,19 +361,21 @@ export default function ReportStructureManager() {
                       <TableCell>{structure.created_by_user_name}</TableCell>
                       <TableCell>{formatDate(structure.created_at)}</TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-1">
                           {!structure.is_active && (
                             <Button
                               size="sm"
+                              className="h-7 px-2 text-xs"
                               onClick={() => setActiveStructureHandler(structure.report_structure_id)}
                             >
-                              <Check className="w-4 h-4 mr-1" />
+                              <Check className="w-3 h-3 mr-1" />
                               Set Active
                             </Button>
                           )}
                           <Button
                             size="sm"
                             variant="outline"
+                            className="h-7 px-2 text-xs"
                             onClick={() => {
                               fetchLineItems(structure.report_structure_id);
                               // Switch to viewer tab
@@ -381,13 +383,14 @@ export default function ReportStructureManager() {
                               if (viewerTab) viewerTab.click();
                             }}
                           >
-                            <Eye className="w-4 h-4 mr-1" />
+                            <Eye className="w-3 h-3 mr-1" />
                             View
                           </Button>
                           {isSuperAdmin && (
                             <Button
                               size="sm"
                               variant="secondary"
+                              className="h-7 px-2 text-xs"
                               onClick={() => {
                                 setSelectedStructureForModify(structure.report_structure_id);
                                 // Switch to modifier tab
@@ -395,17 +398,18 @@ export default function ReportStructureManager() {
                                 if (modifierTab) modifierTab.click();
                               }}
                             >
-                              <Edit className="w-4 h-4 mr-1" />
+                              <Edit className="w-3 h-3 mr-1" />
                               Modify
                             </Button>
                           )}
                           <Button
                             size="sm"
                             variant="destructive"
+                            className="h-7 px-2 text-xs"
                             onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
                             disabled={structuresWithMappings.has(structure.report_structure_id)}
                           >
-                            <X className="w-4 h-4 mr-1" />
+                            <X className="w-3 h-3 mr-1" />
                             Delete
                           </Button>
                         </div>
