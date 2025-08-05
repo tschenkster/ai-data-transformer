@@ -60,6 +60,7 @@ export default function ReportStructureManager() {
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [structuresWithMappings, setStructuresWithMappings] = useState<Set<number>>(new Set());
   const [selectedStructureForModify, setSelectedStructureForModify] = useState<number | null>(null);
 
   const fetchStructures = async () => {
@@ -107,8 +108,40 @@ export default function ReportStructureManager() {
     }
   };
 
+  const checkStructuresWithMappings = async () => {
+    try {
+      // Get all report line items that have been used in mappings
+      const { data: mappingData, error: mappingError } = await supabase
+        .from('account_mappings')
+        .select('report_line_item_id')
+        .not('report_line_item_id', 'is', null);
+
+      if (mappingError) throw mappingError;
+
+      if (mappingData && mappingData.length > 0) {
+        const lineItemIds = mappingData.map(m => m.report_line_item_id);
+        
+        // Get the report structure IDs for these line items
+        const { data: lineItemData, error: lineItemError } = await supabase
+          .from('report_line_items')
+          .select('report_structure_id')
+          .in('report_line_item_uuid', lineItemIds);
+
+        if (lineItemError) throw lineItemError;
+
+        const structureIds = new Set(
+          lineItemData?.map(item => item.report_structure_id).filter(Boolean) || []
+        );
+        setStructuresWithMappings(structureIds);
+      }
+    } catch (error) {
+      console.error('Error checking structures with mappings:', error);
+    }
+  };
+
   useEffect(() => {
     fetchStructures();
+    checkStructuresWithMappings();
   }, []);
 
   const setActiveStructureHandler = async (structureId: number) => {
@@ -363,7 +396,7 @@ export default function ReportStructureManager() {
                             size="sm"
                             variant="destructive"
                             onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
-                            disabled={structure.is_active}
+                            disabled={structuresWithMappings.has(structure.report_structure_id)}
                           >
                             <X className="w-4 h-4 mr-1" />
                             Delete
