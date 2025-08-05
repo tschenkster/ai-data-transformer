@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 interface ReportLineItem {
-  id: number;
+  report_line_item_id: number;
   report_line_item_uuid: string;
   report_structure_id: number;
   report_structure_name: string;
@@ -57,7 +57,7 @@ interface ReportLineItem {
   is_calculated: boolean;
   display: boolean;
   data_source?: string;
-  comment?: number;
+  comment?: string;
 }
 
 interface TreeNodeData {
@@ -378,7 +378,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
     try {
       // Update sort_order for all affected items
       const updates = newOrder.map((item, index) => ({
-        id: item.item.id,
+        id: item.item.report_line_item_id,
         sort_order: index
       }));
 
@@ -386,7 +386,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
         const { error } = await supabase
           .from('report_line_items')
           .update({ sort_order: update.sort_order })
-          .eq('id', update.id);
+          .eq('report_line_item_id', update.id);
 
         if (error) throw error;
       }

@@ -153,12 +153,11 @@ export type Database = {
       }
       report_line_items: {
         Row: {
-          comment: number | null
+          comment: string | null
           data_source: string | null
           description_of_leaf: string | null
           display: boolean | null
           hierarchy_path: string | null
-          id: number
           is_calculated: boolean | null
           is_leaf: boolean | null
           is_parent_key_existing: boolean | null
@@ -180,12 +179,11 @@ export type Database = {
           sort_order: number
         }
         Insert: {
-          comment?: number | null
+          comment?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
           hierarchy_path?: string | null
-          id?: number
           is_calculated?: boolean | null
           is_leaf?: boolean | null
           is_parent_key_existing?: boolean | null
@@ -199,20 +197,19 @@ export type Database = {
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
           report_line_item_description?: string | null
-          report_line_item_id: number
+          report_line_item_id?: number
           report_line_item_key: string
-          report_line_item_uuid: string
+          report_line_item_uuid?: string
           report_structure_id: number
           report_structure_name: string
           sort_order?: number
         }
         Update: {
-          comment?: number | null
+          comment?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
           hierarchy_path?: string | null
-          id?: number
           is_calculated?: boolean | null
           is_leaf?: boolean | null
           is_parent_key_existing?: boolean | null
@@ -235,11 +232,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "report_line_items_report_structure_id_fkey"
+            foreignKeyName: "fk_report_line_items_structure"
             columns: ["report_structure_id"]
             isOneToOne: false
             referencedRelation: "report_structures"
-            referencedColumns: ["id"]
+            referencedColumns: ["report_structure_id"]
           },
         ]
       }
@@ -248,7 +245,6 @@ export type Database = {
           created_at: string
           created_by_user_id: string
           created_by_user_name: string
-          id: number
           is_active: boolean
           report_structure_id: number
           report_structure_name: string
@@ -260,11 +256,10 @@ export type Database = {
           created_at?: string
           created_by_user_id: string
           created_by_user_name: string
-          id?: number
           is_active?: boolean
-          report_structure_id: number
+          report_structure_id?: number
           report_structure_name: string
-          report_structure_uuid: string
+          report_structure_uuid?: string
           updated_at?: string
           version?: number
         }
@@ -272,7 +267,6 @@ export type Database = {
           created_at?: string
           created_by_user_id?: string
           created_by_user_name?: string
-          id?: number
           is_active?: boolean
           report_structure_id?: number
           report_structure_name?: string

@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database } from 'lucide-react';
 
 interface ReportStructure {
-  id: number;
+  report_structure_id: number;
   report_structure_uuid: string;
   report_structure_name: string;
   is_active: boolean;
@@ -22,7 +22,7 @@ interface ReportStructure {
 }
 
 interface ReportLineItem {
-  id: number;
+  report_line_item_id: number;
   report_line_item_uuid: string;
   report_structure_id: number;
   report_structure_name: string;
@@ -45,7 +45,7 @@ interface ReportLineItem {
   is_calculated: boolean;
   display: boolean;
   data_source?: string;
-  comment?: number;
+  comment?: string;
 }
 
 interface TreeNodeData {
@@ -78,8 +78,8 @@ export default function ReportStructureViewer({
 
   useEffect(() => {
     if (activeStructure) {
-      setSelectedStructure(activeStructure.id.toString());
-      fetchLineItems(activeStructure.id);
+      setSelectedStructure(activeStructure.report_structure_id.toString());
+      fetchLineItems(activeStructure.report_structure_id);
     }
   }, [activeStructure]);
 
@@ -283,7 +283,7 @@ export default function ReportStructureViewer({
             </SelectTrigger>
             <SelectContent>
               {structures.map((structure) => (
-                <SelectItem key={structure.id} value={structure.id.toString()}>
+                <SelectItem key={structure.report_structure_id} value={structure.report_structure_id.toString()}>
                   {structure.report_structure_name} 
                   {structure.is_active && ' (Active)'}
                 </SelectItem>

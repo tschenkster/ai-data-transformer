@@ -14,7 +14,6 @@ import ReportStructureModifier from '@/components/ReportStructureModifier';
 
 interface ReportStructure {
   report_structure_id: number;
-  id: number;
   report_structure_uuid: string;
   report_structure_name: string;
   is_active: boolean;
@@ -26,7 +25,7 @@ interface ReportStructure {
 }
 
 interface ReportLineItem {
-  id: number;
+  report_line_item_id: number;
   report_line_item_uuid: string;
   report_structure_id: number;
   report_structure_name: string;
@@ -49,7 +48,7 @@ interface ReportLineItem {
   is_calculated: boolean;
   display: boolean;
   data_source?: string;
-  comment?: number;
+  comment?: string;
 }
 
 export default function ReportStructureManager() {

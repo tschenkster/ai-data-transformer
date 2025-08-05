@@ -10,7 +10,7 @@ import { Search, Plus, Target, Check, Calculator, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface ReportStructure {
-  id: number;
+  report_structure_id: number;
   report_structure_uuid: string;
   report_structure_name: string;
   is_active: boolean;
@@ -22,7 +22,7 @@ interface ReportStructure {
 }
 
 interface ReportLineItem {
-  id: number;
+  report_line_item_id: number;
   report_line_item_uuid: string;
   report_structure_id: number;
   report_structure_name: string;
@@ -45,7 +45,7 @@ interface ReportLineItem {
   is_calculated: boolean;
   display: boolean;
   data_source?: string;
-  comment?: number;
+  comment?: string;
 }
 
 interface TreeNodeData {
@@ -172,7 +172,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
 
   useEffect(() => {
     if (activeStructure) {
-      fetchLineItems(activeStructure.id);
+      fetchLineItems(activeStructure.report_structure_id);
     }
     setLoading(false);
   }, [activeStructure]);
