@@ -69,7 +69,7 @@ serve(async (req) => {
       throw new Error('Invalid structure data provided');
     }
 
-    let structureId: string;
+    let structureId: number;
     let structureName: string;
     let version: number = 1;
 
@@ -97,7 +97,7 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         })
         .eq('report_structure_id', targetStructureId)
-        .select()
+        .select('report_structure_id')
         .single();
 
       if (updateError) {
@@ -133,26 +133,15 @@ serve(async (req) => {
           created_by_user_name: userEmail,
           version: 1
         })
-        .select('id')
+        .select('report_structure_id')
         .single();
 
       if (structureError) {
         console.error('Error creating structure:', structureError);
         throw new Error(`Failed to create report structure: ${structureError.message}`);
       }
-
-      // Update the record to set report_structure_id equal to the auto-generated id
-      const { error: updateError } = await supabase
-        .from('report_structures')
-        .update({ report_structure_id: structure.id })
-        .eq('id', structure.id);
-
-      if (updateError) {
-        console.error('Error updating report_structure_id:', updateError);
-        throw new Error(`Failed to set report_structure_id: ${updateError.message}`);
-      }
       
-      structureId = structure.id;
+      structureId = structure.report_structure_id;
       console.log(`Created new structure with ID: ${structureId}`);
     }
 
@@ -171,10 +160,11 @@ serve(async (req) => {
         ) : null;
 
       return {
+        report_line_item_uuid: crypto.randomUUID(),
+        report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
         report_structure_id: structureId,
         report_structure_name: structureName,
         report_line_item_key: item.report_line_item_key,
-        report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         is_parent_key_existing: !!item.parent_report_line_item_key,
         sort_order: item.sort_order || index,
@@ -192,7 +182,7 @@ serve(async (req) => {
         is_calculated: item.is_calculated || false,
         display: item.display !== false, // Default to true
         data_source: item.data_source || null,
-        comment: additionalData ? JSON.stringify(additionalData) : (item.comment || null)
+        comment: additionalData ? JSON.stringify(additionalData) : (item.comment?.toString() || null)
       };
     });
 
