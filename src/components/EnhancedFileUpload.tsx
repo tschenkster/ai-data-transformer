@@ -39,6 +39,7 @@ interface FileUploadProps {
     overwriteMode: boolean;
     targetStructureId?: string;
     importedStructureId?: string;
+    structureName?: string;
   }) => void;
 }
 
@@ -276,6 +277,14 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
         throw new Error('Required columns must be mapped');
       }
 
+      if (!overwriteMode && !newStructureName.trim()) {
+        throw new Error('Structure name is required for new structures');
+      }
+
+      if (overwriteMode && !targetStructureId) {
+        throw new Error('Please select a target structure for overwrite mode');
+      }
+
       setUploadProgress(25);
       const fullData = await processFullFile(selectedFile);
       setUploadProgress(50);
@@ -317,7 +326,8 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
         unmappedColumns: unmappedData,
         overwriteMode,
         targetStructureId: overwriteMode ? targetStructureId : undefined,
-        importedStructureId: importedStructureId || undefined
+        importedStructureId: importedStructureId || undefined,
+        structureName: overwriteMode ? undefined : newStructureName.trim()
       };
 
       setUploadProgress(100);
@@ -561,12 +571,13 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                       {!overwriteMode && (
                         <div className="ml-6 space-y-4">
                           <div>
-                            <Label htmlFor="structure-name">Structure Name</Label>
+                            <Label htmlFor="structure-name">Structure Name *</Label>
                             <Input
                               id="structure-name"
                               value={newStructureName}
                               onChange={(e) => setNewStructureName(e.target.value)}
-                              placeholder="Enter name for new structure"
+                              placeholder="Enter name for new structure (required)"
+                              required
                             />
                           </div>
                           <div>

@@ -42,17 +42,18 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      structureData, 
-      filename, 
-      userId, 
-      userEmail,
-      overwriteMode = false,
-      targetStructureId,
-      unmappedColumns = [],
-      columnMappings = [],
-      importedStructureId
-    } = await req.json();
+  const { 
+    structureData, 
+    filename, 
+    userId, 
+    userEmail, 
+    overwriteMode = false, 
+    targetStructureId,
+    unmappedColumns = [],
+    columnMappings = [],
+    importedStructureId,
+    structureName
+  } = await req.json();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -60,10 +61,11 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log(`Processing report structure: ${filename} for user: ${userEmail}`);
-    console.log(`Overwrite mode: ${overwriteMode}, Target structure: ${targetStructureId}`);
-    console.log(`Unmapped columns: ${unmappedColumns.length} rows`);
-    console.log(`Column mappings: ${columnMappings.length} mappings`);
+  console.log(`Processing report structure: ${filename} for user: ${userEmail}`);
+  console.log(`Structure name: ${structureName || 'Not provided'}`);
+  console.log(`Overwrite mode: ${overwriteMode}, Target structure: ${targetStructureId}`);
+  console.log(`Unmapped columns: ${unmappedColumns.length} rows`);
+  console.log(`Column mappings: ${columnMappings.length} mappings`);
 
     // Validate input data
     if (!Array.isArray(structureData) || structureData.length === 0) {
@@ -121,14 +123,26 @@ serve(async (req) => {
 
       console.log(`Updated structure ${structureId} to version ${version}`);
     } else {
+      // Validation for new structure
+      if (!structureName || !structureName.trim()) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Structure name is required for new structures' 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+            status: 400 
+          }
+        );
+      }
+
       // Create new report structure
-      structureName = filename.replace(/\.(csv|xlsx|xls)$/i, '');
-      
       const { data: structure, error: structureError } = await supabase
         .from('report_structures')
         .insert({
           report_structure_uuid: crypto.randomUUID(),
-          report_structure_name: structureName,
+          report_structure_name: structureName.trim(),
           is_active: false, // Will be set by trigger if it's the first one
           created_by_user_id: userId,
           created_by_user_name: userEmail,
