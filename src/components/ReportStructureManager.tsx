@@ -378,39 +378,6 @@ export default function ReportStructureManager() {
           </CardContent>
         </Card>
 
-        {activeStructure && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-green-600" />
-                Active Structure
-              </CardTitle>
-              <CardDescription>
-                Currently active report structure used for account mapping
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Name</label>
-                  <p className="font-medium">{activeStructure.report_structure_name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Version</label>
-                  <p className="font-medium">v{activeStructure.version}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Created By</label>
-                  <p className="font-medium">{activeStructure.created_by_user_name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Created</label>
-                  <p className="font-medium">{formatDate(activeStructure.created_at)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </TabsContent>
 
       <TabsContent value="upload" className="space-y-4">
