@@ -250,12 +250,6 @@ export default function ReportStructureViewer({
                 Calc
               </Badge>
             )}
-            {node.item.data_source && (
-              <Badge variant="outline" className="text-xs">
-                <Database className="w-3 h-3 mr-1" />
-                {node.item.data_source}
-              </Badge>
-            )}
             {!node.item.display && (
               <Badge variant="destructive" className="text-xs">
                 Hidden
@@ -348,10 +342,6 @@ export default function ReportStructureViewer({
               <div className="flex items-center gap-1">
                 <Calculator className="w-3 h-3" />
                 <span>Calculated</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Database className="w-3 h-3" />
-                <span>Has Data Source</span>
               </div>
             </div>
           </CardContent>
