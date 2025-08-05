@@ -358,9 +358,6 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
             <Upload className="h-5 w-5" />
             Enhanced File Upload
           </CardTitle>
-          <CardDescription>
-            Upload a CSV or Excel file with data preview, column mapping, and flexible storage
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div

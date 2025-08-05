@@ -417,29 +417,9 @@ export default function ReportStructureManager() {
         <Card>
           <CardHeader>
             <CardTitle>Upload Report Structure</CardTitle>
-            <CardDescription>
-              Upload a CSV or Excel file containing your report structure. The file should include columns for hierarchy levels and account mappings.
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 border border-yellow-200 rounded-lg bg-yellow-50">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-yellow-800">File Format Requirements</h4>
-                    <ul className="text-sm text-yellow-700 mt-1 space-y-1">
-                      <li>• Include columns for report_line_item_key, hierarchy levels (level_1 to level_7)</li>
-                      <li>• Use parent_report_line_item_key to define hierarchy relationships</li>
-                      <li>• Mark leaf items with is_leaf = true</li>
-                      <li>• Set sort_order for proper ordering</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              
-              <EnhancedFileUpload onFileProcessed={handleFileProcessed} />
-            </div>
+            <EnhancedFileUpload onFileProcessed={handleFileProcessed} />
           </CardContent>
         </Card>
       </TabsContent>
