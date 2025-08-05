@@ -272,13 +272,17 @@ export default function ReportStructureManager() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    const date = new Date(dateString);
+    const dayMonth = date.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const time = date.toLocaleTimeString('de-DE', {
       hour: '2-digit',
       minute: '2-digit'
     });
+    return `${dayMonth} ${time}`;
   };
 
   if (loading) {
@@ -331,11 +335,10 @@ export default function ReportStructureManager() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Version</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Import File</TableHead>
-                    <TableHead>Import ID</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead>Actions</TableHead>
@@ -344,6 +347,9 @@ export default function ReportStructureManager() {
                 <TableBody>
                   {structures.map((structure) => (
                     <TableRow key={structure.report_structure_id}>
+                      <TableCell className="font-mono text-sm">
+                        {structure.report_structure_id}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {structure.report_structure_name}
                       </TableCell>
@@ -357,12 +363,6 @@ export default function ReportStructureManager() {
                         ) : (
                           <Badge variant="secondary">Disabled</Badge>
                         )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {structure.name_of_import_file || 'N/A'}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {structure.imported_structure_id || 'N/A'}
                       </TableCell>
                       <TableCell>{structure.created_by_user_name}</TableCell>
                       <TableCell>{formatDate(structure.created_at)}</TableCell>
