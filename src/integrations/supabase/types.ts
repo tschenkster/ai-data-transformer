@@ -230,15 +230,7 @@ export type Database = {
           report_structure_name?: string
           sort_order?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_report_line_items_structure"
-            columns: ["report_structure_id"]
-            isOneToOne: false
-            referencedRelation: "report_structures"
-            referencedColumns: ["report_structure_id"]
-          },
-        ]
+        Relationships: []
       }
       report_structures: {
         Row: {
