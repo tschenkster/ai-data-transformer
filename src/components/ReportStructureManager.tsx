@@ -320,9 +320,6 @@ export default function ReportStructureManager() {
         <Card>
           <CardHeader>
             <CardTitle>Report Structures</CardTitle>
-            <CardDescription>
-              Manage report structures and their versions. Only one structure can be active at a time.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {structures.length === 0 ? (
