@@ -318,9 +318,6 @@ export default function ReportStructureManager() {
 
       <TabsContent value="overview" className="space-y-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Report Structures</CardTitle>
-          </CardHeader>
           <CardContent>
             {structures.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
