@@ -73,7 +73,7 @@ serve(async (req) => {
     }
 
     let structureId: number;
-    let structureName: string;
+    let currentStructureName: string;
     let version: number = 1;
 
     if (overwriteMode && targetStructureId) {
@@ -90,7 +90,7 @@ serve(async (req) => {
       }
 
       version = currentStructure.version + 1;
-      structureName = currentStructure.report_structure_name;
+      currentStructureName = currentStructure.report_structure_name;
 
       // Update existing structure with new version
       const { data: structure, error: updateError } = await supabase
@@ -180,7 +180,7 @@ serve(async (req) => {
         report_line_item_uuid: crypto.randomUUID(),
         report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
         report_structure_id: structureId,
-        report_structure_name: structureName,
+        report_structure_name: overwriteMode ? currentStructureName : structureName,
         report_line_item_key: item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         is_parent_key_existing: !!item.parent_report_line_item_key,
@@ -237,13 +237,13 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         structure_id: structureId,
-        structure_name: structureName,
+        structure_name: overwriteMode ? currentStructureName : structureName,
         line_items_count: lineItems.length,
         version: version,
         overwrite_mode: overwriteMode,
         unmapped_columns_stored: unmappedColumns.length,
         column_mappings: columnMappings.length,
-        message: `Report structure "${structureName}" processed successfully`
+        message: `Report structure "${overwriteMode ? currentStructureName : structureName}" processed successfully`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
