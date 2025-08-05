@@ -170,9 +170,6 @@ function SortableItem({
         )}
         
         <div className="flex items-center gap-1">
-          {node.item.is_calculated && (
-            <Calculator className="w-3 h-3 text-muted-foreground" />
-          )}
           {!node.item.display && (
             <Badge variant="destructive" className="text-xs">
               Hidden
