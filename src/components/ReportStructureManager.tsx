@@ -22,6 +22,8 @@ interface ReportStructure {
   created_by_user_id: string;
   created_by_user_name: string;
   version: number;
+  name_of_import_file?: string;
+  imported_structure_id?: string;
 }
 
 interface ReportLineItem {
@@ -205,6 +207,7 @@ export default function ReportStructureManager() {
     unmappedColumns: Record<string, any>[];
     overwriteMode: boolean;
     targetStructureId?: string;
+    importedStructureId?: string;
   }) => {
     if (!user) return;
 
@@ -237,6 +240,7 @@ export default function ReportStructureManager() {
           targetStructureId: fileData.targetStructureId,
           unmappedColumns: fileData.unmappedColumns,
           columnMappings: fileData.mappings,
+          importedStructureId: fileData.importedStructureId,
         },
       });
 
@@ -328,6 +332,8 @@ export default function ReportStructureManager() {
                     <TableHead>Name</TableHead>
                     <TableHead>Version</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Import File</TableHead>
+                    <TableHead>Import ID</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead>Actions</TableHead>
@@ -349,6 +355,12 @@ export default function ReportStructureManager() {
                         ) : (
                           <Badge variant="secondary">Disabled</Badge>
                         )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {structure.name_of_import_file || 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {structure.imported_structure_id || 'N/A'}
                       </TableCell>
                       <TableCell>{structure.created_by_user_name}</TableCell>
                       <TableCell>{formatDate(structure.created_at)}</TableCell>

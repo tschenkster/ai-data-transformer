@@ -50,7 +50,8 @@ serve(async (req) => {
       overwriteMode = false,
       targetStructureId,
       unmappedColumns = [],
-      columnMappings = []
+      columnMappings = [],
+      importedStructureId
     } = await req.json();
 
     // Initialize Supabase client
@@ -131,7 +132,9 @@ serve(async (req) => {
           is_active: false, // Will be set by trigger if it's the first one
           created_by_user_id: userId,
           created_by_user_name: userEmail,
-          version: 1
+          version: 1,
+          name_of_import_file: filename,
+          imported_structure_id: importedStructureId || 'Not specified'
         })
         .select('report_structure_id')
         .single();

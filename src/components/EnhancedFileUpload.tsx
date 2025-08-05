@@ -38,6 +38,7 @@ interface FileUploadProps {
     unmappedColumns: Record<string, any>[];
     overwriteMode: boolean;
     targetStructureId?: string;
+    importedStructureId?: string;
   }) => void;
 }
 
@@ -86,6 +87,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
   const [overwriteMode, setOverwriteMode] = useState(false);
   const [newStructureName, setNewStructureName] = useState('');
   const [targetStructureId, setTargetStructureId] = useState<string>('');
+  const [importedStructureId, setImportedStructureId] = useState<string>('');
   const [structures, setStructures] = useState<ReportStructure[]>([]);
 
   // Fetch available structures for overwrite mode
@@ -314,7 +316,8 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
         mappings: columnMappings,
         unmappedColumns: unmappedData,
         overwriteMode,
-        targetStructureId: overwriteMode ? targetStructureId : undefined
+        targetStructureId: overwriteMode ? targetStructureId : undefined,
+        importedStructureId: importedStructureId || undefined
       };
 
       setUploadProgress(100);
@@ -329,6 +332,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
       setOverwriteMode(false);
       setNewStructureName('');
       setTargetStructureId('');
+      setImportedStructureId('');
 
     } catch (error) {
       toast({
@@ -555,14 +559,25 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                       </div>
                       
                       {!overwriteMode && (
-                        <div className="ml-6">
-                          <Label htmlFor="structure-name">Structure Name</Label>
-                          <Input
-                            id="structure-name"
-                            value={newStructureName}
-                            onChange={(e) => setNewStructureName(e.target.value)}
-                            placeholder="Enter name for new structure"
-                          />
+                        <div className="ml-6 space-y-4">
+                          <div>
+                            <Label htmlFor="structure-name">Structure Name</Label>
+                            <Input
+                              id="structure-name"
+                              value={newStructureName}
+                              onChange={(e) => setNewStructureName(e.target.value)}
+                              placeholder="Enter name for new structure"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="imported-structure-id">Imported Structure ID (Optional)</Label>
+                            <Input
+                              id="imported-structure-id"
+                              value={importedStructureId}
+                              onChange={(e) => setImportedStructureId(e.target.value)}
+                              placeholder="Enter the structure ID from your file system"
+                            />
+                          </div>
                         </div>
                       )}
 

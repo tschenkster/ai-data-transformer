@@ -237,7 +237,9 @@ export type Database = {
           created_at: string
           created_by_user_id: string
           created_by_user_name: string
+          imported_structure_id: string | null
           is_active: boolean
+          name_of_import_file: string | null
           report_structure_id: number
           report_structure_name: string
           report_structure_uuid: string
@@ -248,7 +250,9 @@ export type Database = {
           created_at?: string
           created_by_user_id: string
           created_by_user_name: string
+          imported_structure_id?: string | null
           is_active?: boolean
+          name_of_import_file?: string | null
           report_structure_id?: number
           report_structure_name: string
           report_structure_uuid?: string
@@ -259,7 +263,9 @@ export type Database = {
           created_at?: string
           created_by_user_id?: string
           created_by_user_name?: string
+          imported_structure_id?: string | null
           is_active?: boolean
+          name_of_import_file?: string | null
           report_structure_id?: number
           report_structure_name?: string
           report_structure_uuid?: string
