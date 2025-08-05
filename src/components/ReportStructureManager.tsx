@@ -208,6 +208,7 @@ export default function ReportStructureManager() {
     overwriteMode: boolean;
     targetStructureId?: string;
     importedStructureId?: string;
+    structureName?: string;
   }) => {
     if (!user) return;
 
@@ -236,6 +237,7 @@ export default function ReportStructureManager() {
           filename: fileData.filename,
           userId: user.id,
           userEmail: user.email,
+          structureName: fileData.structureName,
           overwriteMode: fileData.overwriteMode,
           targetStructureId: fileData.targetStructureId,
           unmappedColumns: fileData.unmappedColumns,
