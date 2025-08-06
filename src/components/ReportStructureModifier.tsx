@@ -460,14 +460,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Structure Modifier</CardTitle>
-        <CardDescription>
-          Edit descriptions and reorder line items within their hierarchy level. 
-          Drag items to reorder them within the same parent.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
