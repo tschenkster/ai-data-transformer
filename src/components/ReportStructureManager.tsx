@@ -466,9 +466,6 @@ export default function ReportStructureManager() {
       <Card>
         <CardHeader>
           <CardTitle>Structure Modifier</CardTitle>
-          <CardDescription>
-            Select a structure to modify its hierarchy and descriptions
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-6">
