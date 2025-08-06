@@ -310,6 +310,129 @@ export type Database = {
         }
         Relationships: []
       }
+      zzz_copy_report_line_items: {
+        Row: {
+          comment: string | null
+          data_source: string | null
+          description_of_leaf: string | null
+          display: boolean | null
+          hierarchy_path: string | null
+          is_calculated: boolean | null
+          is_leaf: boolean | null
+          is_parent_key_existing: boolean | null
+          level_1_line_item_description: string | null
+          level_2_line_item_description: string | null
+          level_3_line_item_description: string | null
+          level_4_line_item_description: string | null
+          level_5_line_item_description: string | null
+          level_6_line_item_description: string | null
+          level_7_line_item_description: string | null
+          line_item_type: string | null
+          parent_report_line_item_key: string | null
+          report_line_item_description: string | null
+          report_line_item_id: number | null
+          report_line_item_key: string | null
+          report_line_item_uuid: string | null
+          report_structure_id: number | null
+          report_structure_name: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          comment?: string | null
+          data_source?: string | null
+          description_of_leaf?: string | null
+          display?: boolean | null
+          hierarchy_path?: string | null
+          is_calculated?: boolean | null
+          is_leaf?: boolean | null
+          is_parent_key_existing?: boolean | null
+          level_1_line_item_description?: string | null
+          level_2_line_item_description?: string | null
+          level_3_line_item_description?: string | null
+          level_4_line_item_description?: string | null
+          level_5_line_item_description?: string | null
+          level_6_line_item_description?: string | null
+          level_7_line_item_description?: string | null
+          line_item_type?: string | null
+          parent_report_line_item_key?: string | null
+          report_line_item_description?: string | null
+          report_line_item_id?: number | null
+          report_line_item_key?: string | null
+          report_line_item_uuid?: string | null
+          report_structure_id?: number | null
+          report_structure_name?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          comment?: string | null
+          data_source?: string | null
+          description_of_leaf?: string | null
+          display?: boolean | null
+          hierarchy_path?: string | null
+          is_calculated?: boolean | null
+          is_leaf?: boolean | null
+          is_parent_key_existing?: boolean | null
+          level_1_line_item_description?: string | null
+          level_2_line_item_description?: string | null
+          level_3_line_item_description?: string | null
+          level_4_line_item_description?: string | null
+          level_5_line_item_description?: string | null
+          level_6_line_item_description?: string | null
+          level_7_line_item_description?: string | null
+          line_item_type?: string | null
+          parent_report_line_item_key?: string | null
+          report_line_item_description?: string | null
+          report_line_item_id?: number | null
+          report_line_item_key?: string | null
+          report_line_item_uuid?: string | null
+          report_structure_id?: number | null
+          report_structure_name?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      zzz_copy_report_structures: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string | null
+          created_by_user_name: string | null
+          imported_structure_id: string | null
+          is_active: boolean | null
+          name_of_import_file: string | null
+          report_structure_id: number | null
+          report_structure_name: string | null
+          report_structure_uuid: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id?: string | null
+          created_by_user_name?: string | null
+          imported_structure_id?: string | null
+          is_active?: boolean | null
+          name_of_import_file?: string | null
+          report_structure_id?: number | null
+          report_structure_name?: string | null
+          report_structure_uuid?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string | null
+          created_by_user_name?: string | null
+          imported_structure_id?: string | null
+          is_active?: boolean | null
+          name_of_import_file?: string | null
+          report_structure_id?: number | null
+          report_structure_name?: string | null
+          report_structure_uuid?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
