@@ -73,7 +73,8 @@ const OPTIONAL_COLUMNS = [
   'is_calculated',
   'display',
   'data_source',
-  'sort_order'
+  'sort_order',
+  'comment'
 ];
 
 export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
