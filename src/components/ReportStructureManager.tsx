@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Eye, Settings, Plus, FileText, Check, X, Database, AlertTriangle, Edit } from 'lucide-react';
 import { EnhancedFileUpload } from '@/components/EnhancedFileUpload';
@@ -459,8 +461,46 @@ export default function ReportStructureManager() {
         </Card>
       </TabsContent>
 
-      {isSuperAdmin && (
-        <TabsContent value="modifier" className="space-y-4">
+  {isSuperAdmin && (
+    <TabsContent value="modifier" className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Structure Modifier</CardTitle>
+          <CardDescription>
+            Select a structure to modify its hierarchy and descriptions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <Label htmlFor="structure-select" className="text-sm font-medium mb-2 block">
+              Select Report Structure
+            </Label>
+            <Select
+              value={selectedStructureForModify?.toString() || ""}
+              onValueChange={(value) => {
+                const structureId = value ? parseInt(value) : null;
+                setSelectedStructureForModify(structureId);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a structure to modify" />
+              </SelectTrigger>
+              <SelectContent>
+                {structures.map((structure) => (
+                  <SelectItem
+                    key={structure.report_structure_id}
+                    value={structure.report_structure_id.toString()}
+                  >
+                    {structure.report_structure_name}
+                    {structure.is_active && (
+                      <span className="ml-2 text-xs text-primary font-medium">(Active)</span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {selectedStructureForModify ? (
             <ReportStructureModifier
               structureId={selectedStructureForModify}
@@ -473,24 +513,16 @@ export default function ReportStructureManager() {
               }}
             />
           ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Structure Modifier</CardTitle>
-                <CardDescription>
-                  Select a structure from the Overview tab to modify its hierarchy and descriptions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Edit className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No structure selected</p>
-                  <p className="text-sm">Click "Modify" on a structure in the Overview tab to start editing</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="text-center py-8 text-muted-foreground">
+              <Edit className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No structure selected</p>
+              <p className="text-sm">Select a structure from the dropdown above to start editing</p>
+            </div>
           )}
-        </TabsContent>
-      )}
+        </CardContent>
+      </Card>
+    </TabsContent>
+  )}
     </Tabs>
   );
 }
