@@ -197,7 +197,7 @@ export type Database = {
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
           report_line_item_description?: string | null
-          report_line_item_id?: number
+          report_line_item_id?: never
           report_line_item_key: string
           report_line_item_uuid?: string
           report_structure_id: number
@@ -223,7 +223,7 @@ export type Database = {
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
           report_line_item_description?: string | null
-          report_line_item_id?: number
+          report_line_item_id?: never
           report_line_item_key?: string
           report_line_item_uuid?: string
           report_structure_id?: number
@@ -253,7 +253,7 @@ export type Database = {
           imported_structure_id?: string | null
           is_active?: boolean
           name_of_import_file?: string | null
-          report_structure_id?: number
+          report_structure_id?: never
           report_structure_name: string
           report_structure_uuid?: string
           updated_at?: string
@@ -266,7 +266,7 @@ export type Database = {
           imported_structure_id?: string | null
           is_active?: boolean
           name_of_import_file?: string | null
-          report_structure_id?: number
+          report_structure_id?: never
           report_structure_name?: string
           report_structure_uuid?: string
           updated_at?: string
