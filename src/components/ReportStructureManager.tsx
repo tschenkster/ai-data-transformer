@@ -464,10 +464,7 @@ export default function ReportStructureManager() {
   {isSuperAdmin && (
     <TabsContent value="modifier" className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Structure Modifier</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="mb-6">
             <Label htmlFor="structure-select" className="text-sm font-medium mb-2 block">
               Select Report Structure
