@@ -285,6 +285,72 @@ export type Database = {
         }
         Relationships: []
       }
+      report_structures_change_log: {
+        Row: {
+          action_type: Database["public"]["Enums"]["change_action_type"]
+          change_id: number
+          change_uuid: string
+          is_undone: boolean
+          line_item_description: string | null
+          line_item_id: number | null
+          line_item_key: string
+          line_item_uuid: string | null
+          new_state: Json | null
+          previous_state: Json | null
+          structure_id: number
+          structure_uuid: string
+          timestamp: string
+          undone_at: string | null
+          undone_by_uuid: string | null
+          user_email: string | null
+          user_first_name: string | null
+          user_last_name: string | null
+          user_uuid: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["change_action_type"]
+          change_id?: number
+          change_uuid?: string
+          is_undone?: boolean
+          line_item_description?: string | null
+          line_item_id?: number | null
+          line_item_key: string
+          line_item_uuid?: string | null
+          new_state?: Json | null
+          previous_state?: Json | null
+          structure_id: number
+          structure_uuid: string
+          timestamp?: string
+          undone_at?: string | null
+          undone_by_uuid?: string | null
+          user_email?: string | null
+          user_first_name?: string | null
+          user_last_name?: string | null
+          user_uuid: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["change_action_type"]
+          change_id?: number
+          change_uuid?: string
+          is_undone?: boolean
+          line_item_description?: string | null
+          line_item_id?: number | null
+          line_item_key?: string
+          line_item_uuid?: string | null
+          new_state?: Json | null
+          previous_state?: Json | null
+          structure_id?: number
+          structure_uuid?: string
+          timestamp?: string
+          undone_at?: string | null
+          undone_by_uuid?: string | null
+          user_email?: string | null
+          user_first_name?: string | null
+          user_last_name?: string | null
+          user_uuid?: string
+        }
+        Relationships: []
+      }
       user_accounts: {
         Row: {
           approved_at: string | null
@@ -329,6 +395,15 @@ export type Database = {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      get_current_user_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_uuid: string
+          user_first_name: string
+          user_last_name: string
+          user_email: string
+        }[]
       }
       halfvec_avg: {
         Args: { "": number[] }
@@ -384,6 +459,20 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
+      log_structure_change: {
+        Args: {
+          p_structure_uuid: string
+          p_structure_id: number
+          p_line_item_uuid: string
+          p_line_item_id: number
+          p_action_type: Database["public"]["Enums"]["change_action_type"]
+          p_line_item_key: string
+          p_line_item_description: string
+          p_previous_state?: Json
+          p_new_state?: Json
+        }
         Returns: string
       }
       match_account_embeddings: {
@@ -443,7 +532,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      change_action_type: "create" | "delete" | "rename" | "move"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -570,6 +659,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      change_action_type: ["create", "delete", "rename", "move"],
+    },
   },
 } as const
