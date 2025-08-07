@@ -815,7 +815,6 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Structure Modifier</CardTitle>
-            <CardDescription>Modify the report structure by editing, reordering, adding, or deleting items</CardDescription>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
