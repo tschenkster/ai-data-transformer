@@ -813,9 +813,7 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Structure Modifier</CardTitle>
-          </div>
+          <div></div>
           <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Add Item
