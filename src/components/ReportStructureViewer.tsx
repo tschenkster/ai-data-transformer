@@ -148,22 +148,33 @@ export default function ReportStructureViewer({
       itemMap.set(item.report_line_item_uuid, node);
     });
 
-    // Build hierarchy using UUIDs
+    // Build hierarchy using UUIDs with fallback to keys
     filteredItems.forEach(item => {
       const node = itemMap.get(item.report_line_item_uuid);
       if (!node) return;
 
+      // Try UUID-based relationship first
       if (item.parent_report_line_item_uuid) {
         const parent = itemMap.get(item.parent_report_line_item_uuid);
         if (parent) {
           parent.children.push(node);
-        } else {
-          // Parent not in filtered results, add to root
-          rootItems.push(node);
+          return;
         }
-      } else {
-        rootItems.push(node);
       }
+      
+      // Fallback to key-based relationship if UUID not available
+      if (item.parent_report_line_item_key) {
+        const parent = Array.from(itemMap.values()).find(p => 
+          p.item.report_line_item_key === item.parent_report_line_item_key
+        );
+        if (parent) {
+          parent.children.push(node);
+          return;
+        }
+      }
+      
+      // No parent found or is root item
+      rootItems.push(node);
     });
 
     // Sort children by sort_order

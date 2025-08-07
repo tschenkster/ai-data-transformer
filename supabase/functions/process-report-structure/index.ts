@@ -162,12 +162,16 @@ serve(async (req) => {
       console.log(`Created new structure with ID: ${structureId}`);
     }
 
-    // Process and validate line items
+    // First pass: Create line items with UUIDs
+    const keyToUuidMap = new Map<string, string>();
     const lineItems = structureData.map((item: ReportStructureData, index: number) => {
       // Validate required fields
       if (!item.report_line_item_key) {
         throw new Error(`Missing report_line_item_key at row ${index + 1}`);
       }
+
+      const itemUuid = item.report_line_item_uuid || crypto.randomUUID();
+      keyToUuidMap.set(item.report_line_item_key, itemUuid);
 
       // Store unmapped column data for this row if available
       const unmappedRowData = unmappedColumns.find((row: any) => row.row_index === index);
@@ -177,12 +181,13 @@ serve(async (req) => {
         ) : null;
 
       return {
-        report_line_item_uuid: crypto.randomUUID(),
+        report_line_item_uuid: itemUuid,
         report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
         report_structure_id: structureId,
         report_structure_name: overwriteMode ? currentStructureName : structureName,
         report_line_item_key: item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
+        parent_report_line_item_uuid: null, // Will be set in second pass
         is_parent_key_existing: !!item.parent_report_line_item_key,
         sort_order: item.sort_order || index,
         hierarchy_path: item.hierarchy_path || null,
@@ -201,6 +206,16 @@ serve(async (req) => {
         data_source: item.data_source || null,
         comment: additionalData ? JSON.stringify(additionalData) : (item.comment?.toString() || null)
       };
+    });
+
+    // Second pass: Set parent UUIDs based on parent keys
+    lineItems.forEach(item => {
+      if (item.parent_report_line_item_key) {
+        const parentUuid = keyToUuidMap.get(item.parent_report_line_item_key);
+        if (parentUuid) {
+          item.parent_report_line_item_uuid = parentUuid;
+        }
+      }
     });
 
     // Insert line items in batches
