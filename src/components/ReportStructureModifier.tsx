@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import ChangeHistoryTable, { ChangeHistoryEntry } from './ChangeHistoryTable';
 import { 
   DndContext, 
   closestCenter, 
@@ -228,6 +229,8 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [changeHistory, setChangeHistory] = useState<ChangeHistoryEntry[]>([]);
+  const [recentlyUndoneItems, setRecentlyUndoneItems] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -334,8 +337,39 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     setExpandedNodes(newExpanded);
   };
 
+  const recordChange = (entry: ChangeHistoryEntry) => {
+    setChangeHistory(prev => [...prev, entry]);
+  };
+
+  const generateActionSummary = (action: 'edit' | 'reorder', affectedItemDescription: string, details?: any) => {
+    if (action === 'edit') {
+      return `Updated "${affectedItemDescription}"`;
+    } else if (action === 'reorder') {
+      return `Moved "${affectedItemDescription}"`;
+    }
+    return `Modified "${affectedItemDescription}"`;
+  };
+
+  const highlightRecentlyUndoneItem = (itemKey: string) => {
+    setRecentlyUndoneItems(prev => new Set(prev).add(itemKey));
+    // Remove highlight after 2 seconds
+    setTimeout(() => {
+      setRecentlyUndoneItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemKey);
+        return newSet;
+      });
+    }, 2000);
+  };
+
   const handleEdit = async (key: string, newDescription: string) => {
     try {
+      // Find the item being edited to record the change
+      const item = lineItems.find(item => item.report_line_item_key === key);
+      if (!item) return;
+
+      const previousDescription = item.report_line_item_description || getItemDisplayName(item);
+
       const { error } = await supabase
         .from('report_line_items')
         .update({ report_line_item_description: newDescription })
@@ -343,6 +377,19 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
         .eq('report_structure_id', structureId);
 
       if (error) throw error;
+
+      // Record the change for undo functionality
+      recordChange({
+        id: `edit-${Date.now()}-${Math.random()}`,
+        action: 'edit',
+        affectedItemKey: key,
+        affectedItemDescription: newDescription,
+        timestamp: new Date(),
+        previousState: { description: previousDescription },
+        currentState: { description: newDescription },
+        summary: generateActionSummary('edit', newDescription),
+        isUndone: false
+      });
 
       // Update local state
       setLineItems(prev => prev.map(item => 
@@ -402,6 +449,12 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
 
     if (oldIndex === -1 || newIndex === -1) return;
 
+    // Store previous order for undo
+    const previousOrder = siblings.map(item => ({
+      id: item.item.report_line_item_id,
+      sort_order: item.item.sort_order
+    }));
+
     const newOrder = arrayMove(siblings, oldIndex, newIndex);
 
     try {
@@ -419,6 +472,19 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
 
         if (error) throw error;
       }
+
+      // Record the change for undo functionality
+      recordChange({
+        id: `reorder-${Date.now()}-${Math.random()}`,
+        action: 'reorder',
+        affectedItemKey: activeItem.item.report_line_item_key,
+        affectedItemDescription: getItemDisplayName(activeItem.item),
+        timestamp: new Date(),
+        previousState: { previousOrder },
+        currentState: { newOrder: updates },
+        summary: generateActionSummary('reorder', getItemDisplayName(activeItem.item)),
+        isUndone: false
+      });
 
       // Refresh data
       fetchLineItems();
@@ -447,6 +513,67 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     };
     traverse(nodes);
     return flat;
+  };
+
+  const handleUndo = async (entryId: string) => {
+    try {
+      const entry = changeHistory.find(e => e.id === entryId);
+      if (!entry || entry.isUndone) return;
+
+      if (entry.action === 'edit') {
+        // Restore previous description
+        const { error } = await supabase
+          .from('report_line_items')
+          .update({ report_line_item_description: entry.previousState.description })
+          .eq('report_line_item_key', entry.affectedItemKey)
+          .eq('report_structure_id', structureId);
+
+        if (error) throw error;
+
+        // Update local state
+        setLineItems(prev => prev.map(item => 
+          item.report_line_item_key === entry.affectedItemKey 
+            ? { ...item, report_line_item_description: entry.previousState.description }
+            : item
+        ));
+
+      } else if (entry.action === 'reorder') {
+        // Restore previous sort order
+        const previousOrder = entry.previousState.previousOrder;
+        for (const update of previousOrder) {
+          const { error } = await supabase
+            .from('report_line_items')
+            .update({ sort_order: update.sort_order })
+            .eq('report_line_item_id', update.id);
+
+          if (error) throw error;
+        }
+
+        // Refresh data to show restored order
+        fetchLineItems();
+      }
+
+      // Mark entry as undone
+      setChangeHistory(prev => prev.map(e => 
+        e.id === entryId ? { ...e, isUndone: true } : e
+      ));
+
+      // Highlight the undone item
+      highlightRecentlyUndoneItem(entry.affectedItemKey);
+
+      toast({
+        title: "Success",
+        description: "Change undone successfully",
+      });
+
+    } catch (error) {
+      console.error('Error undoing change:', error);
+      toast({
+        title: "Error",
+        description: "Failed to undo change",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderTreeNodes = (nodes: TreeNodeData[]): JSX.Element[] => {
@@ -529,6 +656,11 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
           </SortableContext>
         </DndContext>
 
+        <ChangeHistoryTable
+          changeHistory={changeHistory}
+          onUndo={handleUndo}
+          recentlyUndoneItems={recentlyUndoneItems}
+        />
       </CardContent>
     </Card>
   );
