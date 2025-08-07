@@ -72,7 +72,7 @@ serve(async (req) => {
       throw new Error('Invalid structure data provided');
     }
 
-    let structureId: number;
+    let structureUuid: string;
     let currentStructureName: string;
     let version: number = 1;
 
@@ -80,7 +80,7 @@ serve(async (req) => {
       // Get current structure info and increment version
       const { data: currentStructure, error: fetchError } = await supabase
         .from('report_structures')
-        .select('report_structure_name, version')
+        .select('report_structure_name, version, report_structure_uuid')
         .eq('report_structure_id', targetStructureId)
         .single();
 
@@ -91,6 +91,7 @@ serve(async (req) => {
 
       version = currentStructure.version + 1;
       currentStructureName = currentStructure.report_structure_name;
+      structureUuid = currentStructure.report_structure_uuid;
 
       // Update existing structure with new version
       const { data: structure, error: updateError } = await supabase
@@ -100,28 +101,26 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         })
         .eq('report_structure_id', targetStructureId)
-        .select('report_structure_id')
+        .select('report_structure_uuid')
         .single();
 
       if (updateError) {
         console.error('Error updating structure:', updateError);
         throw new Error(`Failed to update structure: ${updateError.message}`);
       }
-      
-      structureId = targetStructureId;
 
       // Delete existing line items for this structure
       const { error: deleteError } = await supabase
         .from('report_line_items')
         .delete()
-        .eq('report_structure_id', targetStructureId);
+        .eq('report_structure_uuid', structureUuid);
 
       if (deleteError) {
         console.error('Error deleting existing line items:', deleteError);
         throw new Error(`Failed to delete existing line items: ${deleteError.message}`);
       }
 
-      console.log(`Updated structure ${structureId} to version ${version}`);
+      console.log(`Updated structure ${structureUuid} to version ${version}`);
     } else {
       // Validation for new structure
       if (!structureName || !structureName.trim()) {
@@ -138,10 +137,11 @@ serve(async (req) => {
       }
 
       // Create new report structure
+      structureUuid = crypto.randomUUID();
       const { data: structure, error: structureError } = await supabase
         .from('report_structures')
         .insert({
-          report_structure_uuid: crypto.randomUUID(),
+          report_structure_uuid: structureUuid,
           report_structure_name: structureName.trim(),
           is_active: false, // Will be set by trigger if it's the first one
           created_by_user_id: userId,
@@ -150,7 +150,7 @@ serve(async (req) => {
           name_of_import_file: filename,
           imported_structure_id: importedStructureId || 'Not specified'
         })
-        .select('report_structure_id')
+        .select('report_structure_uuid')
         .single();
 
       if (structureError) {
@@ -158,8 +158,7 @@ serve(async (req) => {
         throw new Error(`Failed to create report structure: ${structureError.message}`);
       }
       
-      structureId = structure.report_structure_id;
-      console.log(`Created new structure with ID: ${structureId}`);
+      console.log(`Created new structure with UUID: ${structureUuid}`);
     }
 
     // First pass: Create line items with UUIDs
@@ -183,7 +182,7 @@ serve(async (req) => {
       return {
         report_line_item_uuid: itemUuid,
         report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
-        report_structure_id: structureId,
+        report_structure_uuid: structureUuid,
         report_structure_name: overwriteMode ? currentStructureName : structureName,
         report_line_item_key: item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
@@ -236,7 +235,7 @@ serve(async (req) => {
           await supabase
             .from('report_structures')
             .delete()
-            .eq('report_structure_id', structureId);
+            .eq('report_structure_uuid', structureUuid);
         }
         
         throw new Error(`Failed to insert line items: ${lineItemsError.message}`);
@@ -251,7 +250,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        structure_id: structureId,
+        structure_uuid: structureUuid,
         structure_name: overwriteMode ? currentStructureName : structureName,
         line_items_count: lineItems.length,
         version: version,
