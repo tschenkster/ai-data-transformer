@@ -474,12 +474,17 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         { description: newDescription }
       );
 
-      // Update local state
-      setLineItems(prev => prev.map(item => 
+      // Update local state and rebuild tree to reflect the change immediately
+      const updatedItems = lineItems.map(item => 
         item.report_line_item_key === key 
           ? { ...item, report_line_item_description: newDescription }
           : item
-      ));
+      );
+      setLineItems(updatedItems);
+      
+      // Rebuild tree data with updated description
+      const newTreeData = buildTreeData(updatedItems);
+      setTreeData(newTreeData);
 
       setEditingItem(null);
       setEditingValue('');
