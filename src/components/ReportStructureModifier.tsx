@@ -192,13 +192,6 @@ function SortableItem({
         ) : (
           <div className="flex items-center gap-2 flex-1">
             <span className="text-sm flex-1">{node.description}</span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onEditStart(node.key)}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
           </div>
         )}
         
