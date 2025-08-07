@@ -6,28 +6,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { RotateCcw } from 'lucide-react';
 
 export interface ChangeHistoryEntry {
-  id: string;
-  action: 'edit' | 'reorder';
-  affectedItemKey: string;
-  affectedItemDescription: string;
-  timestamp: Date;
-  previousState: any;
-  currentState: any;
-  summary: string;
-  isUndone: boolean;
+  change_uuid: string;
+  change_id: number;
+  user_uuid: string;
+  user_first_name: string;
+  user_last_name: string;
+  user_email: string;
+  structure_uuid: string;
+  structure_id: number;
+  line_item_uuid: string | null;
+  line_item_id: number | null;
+  action_type: 'create' | 'delete' | 'rename' | 'move';
+  line_item_key: string;
+  line_item_description: string;
+  previous_state: any;
+  new_state: any;
+  timestamp: string;
+  is_undone: boolean;
+  undone_at: string | null;
+  undone_by_uuid: string | null;
 }
 
 interface ChangeHistoryTableProps {
   changeHistory: ChangeHistoryEntry[];
-  onUndo: (entryId: string) => Promise<void>;
+  onUndo: (changeUuid: string) => Promise<void>;
   recentlyUndoneItems: Set<string>;
 }
 
 export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndoneItems }: ChangeHistoryTableProps) {
   const [undoingItems, setUndoingItems] = useState<Set<string>>(new Set());
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', { 
       hour12: false, 
       hour: '2-digit', 
       minute: '2-digit', 
@@ -35,14 +45,14 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
     });
   };
 
-  const handleUndo = async (entryId: string) => {
-    setUndoingItems(prev => new Set(prev).add(entryId));
+  const handleUndo = async (changeUuid: string) => {
+    setUndoingItems(prev => new Set(prev).add(changeUuid));
     try {
-      await onUndo(entryId);
+      await onUndo(changeUuid);
     } finally {
       setUndoingItems(prev => {
         const newSet = new Set(prev);
-        newSet.delete(entryId);
+        newSet.delete(changeUuid);
         return newSet;
       });
     }
@@ -50,8 +60,8 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
 
   // Filter out undone entries and show most recent first
   const displayedHistory = changeHistory
-    .filter(entry => !entry.isUndone)
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .filter(entry => !entry.is_undone)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 20); // Show last 20 changes
 
   if (displayedHistory.length === 0) {
@@ -76,49 +86,55 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[200px]">Action</TableHead>
-              <TableHead>Affected Item</TableHead>
               <TableHead className="w-[100px]">Time</TableHead>
+              <TableHead className="w-[120px]">Action Type</TableHead>
+              <TableHead>Line Item</TableHead>
               <TableHead className="w-[80px]">Undo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {displayedHistory.map((entry) => (
               <TableRow 
-                key={entry.id}
+                key={entry.change_uuid}
                 className={`${
-                  recentlyUndoneItems.has(entry.affectedItemKey) 
+                  recentlyUndoneItems.has(entry.line_item_key) 
                     ? 'animate-pulse bg-yellow-50 dark:bg-yellow-950/20' 
                     : ''
                 }`}
               >
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={entry.action === 'edit' ? 'default' : 'secondary'}
-                      className="text-xs"
-                    >
-                      {entry.action === 'edit' ? 'Edit' : 'Reorder'}
-                    </Badge>
-                    <span className="text-sm">{entry.summary}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm font-mono">
-                  {entry.affectedItemDescription}
-                </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {formatTime(entry.timestamp)}
+                </TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={
+                      entry.action_type === 'rename' ? 'default' : 
+                      entry.action_type === 'move' ? 'secondary' :
+                      entry.action_type === 'create' ? 'outline' : 'destructive'
+                    }
+                    className="text-xs"
+                  >
+                    {entry.action_type === 'rename' ? 'Rename' : 
+                     entry.action_type === 'move' ? 'Move' :
+                     entry.action_type === 'create' ? 'Create' : 'Delete'}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm">
+                  <div className="font-mono text-xs text-muted-foreground mb-1">
+                    {entry.line_item_key}
+                  </div>
+                  <div>{entry.line_item_description}</div>
                 </TableCell>
                 <TableCell>
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleUndo(entry.id)}
-                    disabled={undoingItems.has(entry.id)}
+                    onClick={() => handleUndo(entry.change_uuid)}
+                    disabled={undoingItems.has(entry.change_uuid)}
                     className="h-6 w-6 p-0"
                     title="Undo this change"
                   >
-                    <RotateCcw className={`h-3 w-3 ${undoingItems.has(entry.id) ? 'animate-spin' : ''}`} />
+                    <RotateCcw className={`h-3 w-3 ${undoingItems.has(entry.change_uuid) ? 'animate-spin' : ''}`} />
                   </Button>
                 </TableCell>
               </TableRow>

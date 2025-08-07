@@ -231,6 +231,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [changeHistory, setChangeHistory] = useState<ChangeHistoryEntry[]>([]);
   const [recentlyUndoneItems, setRecentlyUndoneItems] = useState<Set<string>>(new Set());
+  const [loadingChanges, setLoadingChanges] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -240,30 +241,42 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
   );
 
   useEffect(() => {
-    fetchLineItems();
+    fetchLineItems(structureId);
   }, [structureId]);
 
-  useEffect(() => {
-    buildTreeData();
-  }, [lineItems, expandedNodes]);
-
-  const fetchLineItems = async () => {
+  const fetchLineItems = async (structureId: number) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
         .eq('report_structure_id', structureId)
-        .order('sort_order');
+        .order('sort_order', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching line items:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load report structure items",
+          variant: "destructive",
+        });
+        return;
+      }
 
       setLineItems(data || []);
+      
+      // Build tree data from the fetched items
+      const treeData = buildTreeData(data || []);
+      setTreeData(treeData);
+      
+      // Load change history
+      await fetchChangeHistory(structureId);
+      
     } catch (error) {
-      console.error('Error fetching line items:', error);
+      console.error('Error:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch line items",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -271,12 +284,43 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     }
   };
 
-  const buildTreeData = () => {
+  const fetchChangeHistory = async (structureId: number) => {
+    setLoadingChanges(true);
+    try {
+      const { data: structure } = await supabase
+        .from('report_structures')
+        .select('report_structure_uuid')
+        .eq('report_structure_id', structureId)
+        .single();
+
+      if (!structure) return;
+
+      const { data, error } = await supabase
+        .from('report_structures_change_log')
+        .select('*')
+        .eq('structure_id', structureId)
+        .order('timestamp', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error('Error fetching change history:', error);
+        return;
+      }
+
+      setChangeHistory(data || []);
+    } catch (error) {
+      console.error('Error fetching change history:', error);
+    } finally {
+      setLoadingChanges(false);
+    }
+  };
+
+  const buildTreeData = (items: ReportLineItem[]): TreeNodeData[] => {
     const itemMap = new Map<string, TreeNodeData>();
     const rootItems: TreeNodeData[] = [];
 
     // Create nodes for all items
-    lineItems.forEach(item => {
+    items.forEach(item => {
       const node: TreeNodeData = {
         id: item.report_line_item_uuid,
         key: item.report_line_item_key,
@@ -290,7 +334,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     });
 
     // Build hierarchy and calculate levels using UUIDs
-    lineItems.forEach(item => {
+    items.forEach(item => {
       const node = itemMap.get(item.report_line_item_uuid);
       if (!node) return;
 
@@ -314,7 +358,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     };
 
     sortChildren(rootItems);
-    setTreeData(rootItems);
+    return rootItems;
   };
 
   const getItemDisplayName = (item: ReportLineItem) => {
@@ -337,17 +381,45 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     setExpandedNodes(newExpanded);
   };
 
-  const recordChange = (entry: ChangeHistoryEntry) => {
-    setChangeHistory(prev => [...prev, entry]);
-  };
+  const logStructureChange = async (
+    lineItemUuid: string | null,
+    lineItemId: number | null,
+    actionType: 'create' | 'delete' | 'rename' | 'move',
+    lineItemKey: string,
+    lineItemDescription: string,
+    previousState?: any,
+    newState?: any
+  ) => {
+    try {
+      const { data: structure } = await supabase
+        .from('report_structures')
+        .select('report_structure_uuid')
+        .eq('report_structure_id', structureId)
+        .single();
 
-  const generateActionSummary = (action: 'edit' | 'reorder', affectedItemDescription: string, details?: any) => {
-    if (action === 'edit') {
-      return `Updated "${affectedItemDescription}"`;
-    } else if (action === 'reorder') {
-      return `Moved "${affectedItemDescription}"`;
+      if (!structure) return;
+
+      const { error } = await supabase.rpc('log_structure_change', {
+        p_structure_uuid: structure.report_structure_uuid,
+        p_structure_id: structureId,
+        p_line_item_uuid: lineItemUuid,
+        p_line_item_id: lineItemId,
+        p_action_type: actionType,
+        p_line_item_key: lineItemKey,
+        p_line_item_description: lineItemDescription,
+        p_previous_state: previousState ? JSON.stringify(previousState) : null,
+        p_new_state: newState ? JSON.stringify(newState) : null
+      });
+
+      if (error) {
+        console.error('Error logging change:', error);
+      } else {
+        // Refresh change history
+        await fetchChangeHistory(structureId);
+      }
+    } catch (error) {
+      console.error('Error logging change:', error);
     }
-    return `Modified "${affectedItemDescription}"`;
   };
 
   const highlightRecentlyUndoneItem = (itemKey: string) => {
@@ -378,18 +450,16 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
 
       if (error) throw error;
 
-      // Record the change for undo functionality
-      recordChange({
-        id: `edit-${Date.now()}-${Math.random()}`,
-        action: 'edit',
-        affectedItemKey: key,
-        affectedItemDescription: newDescription,
-        timestamp: new Date(),
-        previousState: { description: previousDescription },
-        currentState: { description: newDescription },
-        summary: generateActionSummary('edit', newDescription),
-        isUndone: false
-      });
+      // Log the change for undo functionality
+      await logStructureChange(
+        item.report_line_item_uuid,
+        item.report_line_item_id,
+        'rename',
+        key,
+        newDescription,
+        { description: previousDescription },
+        { description: newDescription }
+      );
 
       // Update local state
       setLineItems(prev => prev.map(item => 
@@ -449,12 +519,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    // Store previous order for undo
-    const previousOrder = siblings.map(item => ({
-      id: item.item.report_line_item_id,
-      sort_order: item.item.sort_order
-    }));
-
+    const originalSortOrder = activeItem.item.sort_order;
     const newOrder = arrayMove(siblings, oldIndex, newIndex);
 
     try {
@@ -473,21 +538,21 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
         if (error) throw error;
       }
 
-      // Record the change for undo functionality
-      recordChange({
-        id: `reorder-${Date.now()}-${Math.random()}`,
-        action: 'reorder',
-        affectedItemKey: activeItem.item.report_line_item_key,
-        affectedItemDescription: getItemDisplayName(activeItem.item),
-        timestamp: new Date(),
-        previousState: { previousOrder },
-        currentState: { newOrder: updates },
-        summary: generateActionSummary('reorder', getItemDisplayName(activeItem.item)),
-        isUndone: false
-      });
+      const newSortOrder = newIndex;
+
+      // Log the change for undo functionality
+      await logStructureChange(
+        activeItem.item.report_line_item_uuid,
+        activeItem.item.report_line_item_id,
+        'move',
+        activeItem.item.report_line_item_key,
+        getItemDisplayName(activeItem.item),
+        { sortOrder: originalSortOrder },
+        { sortOrder: newSortOrder }
+      );
 
       // Refresh data
-      fetchLineItems();
+      fetchLineItems(structureId);
 
       toast({
         title: "Success",
@@ -515,62 +580,82 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     return flat;
   };
 
-  const handleUndo = async (entryId: string) => {
-    try {
-      const entry = changeHistory.find(e => e.id === entryId);
-      if (!entry || entry.isUndone) return;
+  const handleUndo = async (changeUuid: string) => {
+    const entry = changeHistory.find(e => e.change_uuid === changeUuid);
+    if (!entry || entry.is_undone) return;
 
-      if (entry.action === 'edit') {
-        // Restore previous description
+    try {
+      if (entry.action_type === 'rename') {
+        // Undo rename by restoring previous description
+        const previousState = typeof entry.previous_state === 'string' 
+          ? JSON.parse(entry.previous_state) 
+          : entry.previous_state;
+
         const { error } = await supabase
           .from('report_line_items')
-          .update({ report_line_item_description: entry.previousState.description })
-          .eq('report_line_item_key', entry.affectedItemKey)
+          .update({ 
+            report_line_item_description: previousState?.description 
+          })
+          .eq('report_line_item_key', entry.line_item_key)
           .eq('report_structure_id', structureId);
 
         if (error) throw error;
 
         // Update local state
         setLineItems(prev => prev.map(item => 
-          item.report_line_item_key === entry.affectedItemKey 
-            ? { ...item, report_line_item_description: entry.previousState.description }
+          item.report_line_item_key === entry.line_item_key 
+            ? { ...item, report_line_item_description: previousState?.description }
             : item
         ));
+        
+        highlightRecentlyUndoneItem(entry.line_item_key);
 
-      } else if (entry.action === 'reorder') {
-        // Restore previous sort order
-        const previousOrder = entry.previousState.previousOrder;
-        for (const update of previousOrder) {
-          const { error } = await supabase
-            .from('report_line_items')
-            .update({ sort_order: update.sort_order })
-            .eq('report_line_item_id', update.id);
+      } else if (entry.action_type === 'move') {
+        // Undo move by restoring previous sort order
+        const previousState = typeof entry.previous_state === 'string' 
+          ? JSON.parse(entry.previous_state) 
+          : entry.previous_state;
 
-          if (error) throw error;
-        }
+        const { error } = await supabase
+          .from('report_line_items')
+          .update({ 
+            sort_order: previousState?.sortOrder 
+          })
+          .eq('report_line_item_key', entry.line_item_key)
+          .eq('report_structure_id', structureId);
 
-        // Refresh data to show restored order
-        fetchLineItems();
+        if (error) throw error;
+
+        highlightRecentlyUndoneItem(entry.line_item_key);
+
+        // Reload line items to get updated sort order
+        await fetchLineItems(structureId);
       }
 
-      // Mark entry as undone
-      setChangeHistory(prev => prev.map(e => 
-        e.id === entryId ? { ...e, isUndone: true } : e
-      ));
+      // Mark entry as undone in database
+      const { error } = await supabase
+        .from('report_structures_change_log')
+        .update({ 
+          is_undone: true, 
+          undone_at: new Date().toISOString() 
+        })
+        .eq('change_uuid', changeUuid);
 
-      // Highlight the undone item
-      highlightRecentlyUndoneItem(entry.affectedItemKey);
+      if (error) throw error;
+
+      // Refresh change history
+      await fetchChangeHistory(structureId);
 
       toast({
-        title: "Success",
-        description: "Change undone successfully",
+        title: "Change undone",
+        description: "The change has been successfully undone",
       });
 
     } catch (error) {
       console.error('Error undoing change:', error);
       toast({
         title: "Error",
-        description: "Failed to undo change",
+        description: "Failed to undo the change",
         variant: "destructive",
       });
     }
