@@ -31,11 +31,13 @@ interface ReportStructure {
 interface ReportLineItem {
   report_line_item_id: number;
   report_line_item_uuid: string;
-  report_structure_uuid: string;
+  report_structure_id: number;  // Integer foreign key
+  report_structure_uuid: string;  // UUID foreign key
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;
   parent_report_line_item_key?: string;
+  parent_report_line_item_uuid?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
   hierarchy_path?: string;
@@ -92,21 +94,12 @@ export default function ReportStructureManager() {
 
   const fetchLineItems = async (structureId: number) => {
     try {
-      // First get the structure UUID from the structure ID
-      const { data: structureData, error: structureError } = await supabase
-        .from('report_structures')
-        .select('report_structure_uuid')
-        .eq('report_structure_id', structureId)
-        .single();
-
-      if (structureError) throw structureError;
-      if (!structureData) throw new Error('Structure not found');
-
+      // Use integer ID for performance in joins
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
-        .eq('report_structure_uuid', structureData.report_structure_uuid)
-        .order('sort_order');
+        .eq('report_structure_id', structureId)
+        .order('sort_order', { ascending: true });
 
       if (error) throw error;
 

@@ -175,6 +175,7 @@ export type Database = {
           report_line_item_id: number
           report_line_item_key: string
           report_line_item_uuid: string
+          report_structure_id: number
           report_structure_name: string
           report_structure_uuid: string
           sort_order: number
@@ -202,6 +203,7 @@ export type Database = {
           report_line_item_id?: never
           report_line_item_key: string
           report_line_item_uuid?: string
+          report_structure_id: number
           report_structure_name: string
           report_structure_uuid: string
           sort_order?: number
@@ -229,17 +231,25 @@ export type Database = {
           report_line_item_id?: never
           report_line_item_key?: string
           report_line_item_uuid?: string
+          report_structure_id?: number
           report_structure_name?: string
           report_structure_uuid?: string
           sort_order?: number
         }
         Relationships: [
           {
-            foreignKeyName: "fk_parent_report_line_item_uuid"
-            columns: ["parent_report_line_item_uuid"]
+            foreignKeyName: "report_line_items_report_structure_id_fkey"
+            columns: ["report_structure_id"]
             isOneToOne: false
-            referencedRelation: "report_line_items"
-            referencedColumns: ["report_line_item_uuid"]
+            referencedRelation: "report_structures"
+            referencedColumns: ["report_structure_id"]
+          },
+          {
+            foreignKeyName: "report_line_items_report_structure_uuid_fkey"
+            columns: ["report_structure_uuid"]
+            isOneToOne: false
+            referencedRelation: "report_structures"
+            referencedColumns: ["report_structure_uuid"]
           },
         ]
       }

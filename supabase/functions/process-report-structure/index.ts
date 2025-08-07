@@ -66,13 +66,12 @@ serve(async (req) => {
   console.log(`Overwrite mode: ${overwriteMode}, Target structure: ${targetStructureId}`);
   console.log(`Unmapped columns: ${unmappedColumns.length} rows`);
   console.log(`Column mappings: ${columnMappings.length} mappings`);
-  console.log(`Debug: Using report_structure_uuid for all operations`);
-
     // Validate input data
     if (!Array.isArray(structureData) || structureData.length === 0) {
       throw new Error('Invalid structure data provided');
     }
 
+    let structureId: number;
     let structureUuid: string;
     let currentStructureName: string;
     let version: number = 1;
@@ -81,8 +80,8 @@ serve(async (req) => {
       // Get current structure info and increment version
       const { data: currentStructure, error: fetchError } = await supabase
         .from('report_structures')
-        .select('report_structure_name, version, report_structure_uuid')
-        .eq('report_structure_uuid', targetStructureId)
+        .select('report_structure_id, report_structure_name, version, report_structure_uuid')
+        .eq('report_structure_id', parseInt(targetStructureId))
         .single();
 
       if (fetchError) {
@@ -90,6 +89,7 @@ serve(async (req) => {
         throw new Error(`Failed to fetch target structure: ${fetchError.message}`);
       }
 
+      structureId = currentStructure.report_structure_id;
       version = currentStructure.version + 1;
       currentStructureName = currentStructure.report_structure_name;
       structureUuid = currentStructure.report_structure_uuid;
@@ -101,8 +101,8 @@ serve(async (req) => {
           version: version,
           updated_at: new Date().toISOString()
         })
-        .eq('report_structure_uuid', targetStructureId)
-        .select('report_structure_uuid')
+        .eq('report_structure_id', structureId)
+        .select('report_structure_id, report_structure_uuid')
         .single();
 
       if (updateError) {
@@ -110,18 +110,18 @@ serve(async (req) => {
         throw new Error(`Failed to update structure: ${updateError.message}`);
       }
 
-      // Delete existing line items for this structure
+      // Delete existing line items for this structure using integer ID for performance
       const { error: deleteError } = await supabase
         .from('report_line_items')
         .delete()
-        .eq('report_structure_uuid', structureUuid);
+        .eq('report_structure_id', structureId);
 
       if (deleteError) {
         console.error('Error deleting existing line items:', deleteError);
         throw new Error(`Failed to delete existing line items: ${deleteError.message}`);
       }
 
-      console.log(`Updated structure ${structureUuid} to version ${version}`);
+      console.log(`Updated structure ID: ${structureId}, UUID: ${structureUuid} to version ${version}`);
     } else {
       // Validation for new structure
       if (!structureName || !structureName.trim()) {
@@ -151,7 +151,7 @@ serve(async (req) => {
           name_of_import_file: filename,
           imported_structure_id: importedStructureId || 'Not specified'
         })
-        .select('report_structure_uuid')
+        .select('report_structure_id, report_structure_uuid')
         .single();
 
       if (structureError) {
@@ -159,7 +159,9 @@ serve(async (req) => {
         throw new Error(`Failed to create report structure: ${structureError.message}`);
       }
       
-      console.log(`Created new structure with UUID: ${structureUuid}`);
+      structureId = structure.report_structure_id;
+      structureUuid = structure.report_structure_uuid;
+      console.log(`Created new structure ID: ${structureId}, UUID: ${structureUuid}`);
     }
 
     // First pass: Create line items with UUIDs
@@ -183,7 +185,8 @@ serve(async (req) => {
       return {
         report_line_item_uuid: itemUuid,
         report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
-        report_structure_uuid: structureUuid,
+        report_structure_id: structureId,  // Integer foreign key for performance
+        report_structure_uuid: structureUuid,  // UUID foreign key for business logic
         report_structure_name: overwriteMode ? currentStructureName : structureName,
         report_line_item_key: item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,

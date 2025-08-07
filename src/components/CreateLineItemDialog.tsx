@@ -122,7 +122,8 @@ export default function CreateLineItemDialog({
 
       // Create new item
       const newItem = {
-        report_structure_uuid: structureUuid,
+        report_structure_id: structure.report_structure_id,  // Integer foreign key
+        report_structure_uuid: structureUuid,  // UUID foreign key
         report_structure_name: structure.report_structure_name,
         report_line_item_key: formData.key,
         report_line_item_description: formData.description,

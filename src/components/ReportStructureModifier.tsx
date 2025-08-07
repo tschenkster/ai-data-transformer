@@ -43,7 +43,8 @@ import {
 interface ReportLineItem {
   report_line_item_id: number;
   report_line_item_uuid: string;
-  report_structure_uuid: string;
+  report_structure_id: number;  // Integer foreign key
+  report_structure_uuid: string;  // UUID foreign key
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;
