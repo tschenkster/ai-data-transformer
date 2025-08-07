@@ -30,7 +30,9 @@ import {
   GripVertical,
   Edit,
   Check,
-  X
+  X,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 interface ReportLineItem {
@@ -68,6 +70,7 @@ interface TreeNodeData {
   level: number;
   children: TreeNodeData[];
   item: ReportLineItem;
+  isExpanded?: boolean;
 }
 
 interface SortableItemProps {
@@ -79,6 +82,8 @@ interface SortableItemProps {
   onEditCancel: () => void;
   editingValue: string;
   onEditingValueChange: (value: string) => void;
+  onToggleExpansion: (nodeId: string) => void;
+  expandedNodes: Set<string>;
 }
 
 function SortableItem({ 
@@ -89,7 +94,9 @@ function SortableItem({
   onEditSave, 
   onEditCancel,
   editingValue,
-  onEditingValueChange
+  onEditingValueChange,
+  onToggleExpansion,
+  expandedNodes
 }: SortableItemProps) {
   const {
     attributes,
@@ -105,22 +112,47 @@ function SortableItem({
   };
 
   const hasChildren = node.children.length > 0;
+  const isExpanded = expandedNodes.has(node.id);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 py-2 px-2 border rounded-md bg-background hover:bg-accent/50"
+      className="select-none"
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="cursor-grab hover:cursor-grabbing"
+      <div 
+        className={`flex items-center gap-2 py-2 px-2 hover:bg-accent/50 rounded-md ${
+          hasChildren ? 'cursor-pointer' : 'cursor-default'
+        }`}
+        style={{ marginLeft: level * 16 }}
       >
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
-      </div>
-      
-      <div style={{ marginLeft: level * 16 }} className="flex items-center gap-2 flex-1">
+        {hasChildren ? (
+          <div 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleExpansion(node.id);
+            }}
+            className="cursor-pointer"
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ) : (
+          <div className="w-4 h-4" />
+        )}
+
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab hover:cursor-grabbing"
+        >
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+        </div>
+
         {node.item.is_leaf ? (
           <FileText className="w-4 h-4 text-blue-500" />
         ) : (
@@ -171,6 +203,12 @@ function SortableItem({
         )}
         
         <div className="flex items-center gap-1">
+          {node.item.is_calculated && (
+            <Badge variant="secondary" className="text-xs">
+              <Calculator className="w-3 h-3 mr-1" />
+              Calculated
+            </Badge>
+          )}
           {!node.item.display && (
             <Badge variant="destructive" className="text-xs">
               Hidden
@@ -194,6 +232,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -208,7 +247,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
 
   useEffect(() => {
     buildTreeData();
-  }, [lineItems]);
+  }, [lineItems, expandedNodes]);
 
   const fetchLineItems = async () => {
     try {
@@ -246,7 +285,8 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
         description: getItemDisplayName(item),
         level: 0,
         children: [],
-        item
+        item,
+        isExpanded: expandedNodes.has(item.report_line_item_uuid)
       };
       itemMap.set(item.report_line_item_uuid, node);
     });
@@ -287,6 +327,16 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
       return item.hierarchy_path;
     }
     return item.report_line_item_key;
+  };
+
+  const toggleNodeExpansion = (nodeId: string) => {
+    const newExpanded = new Set(expandedNodes);
+    if (newExpanded.has(nodeId)) {
+      newExpanded.delete(nodeId);
+    } else {
+      newExpanded.add(nodeId);
+    }
+    setExpandedNodes(newExpanded);
   };
 
   const handleEdit = async (key: string, newDescription: string) => {
@@ -405,31 +455,38 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
   };
 
   const renderTreeNodes = (nodes: TreeNodeData[]): JSX.Element[] => {
-    return nodes.map(node => (
-      <div key={node.id} className="space-y-2">
-        <SortableItem
-          node={node}
-          level={node.level}
-          isEditing={editingItem === node.key}
-          onEditStart={(key) => {
-            setEditingItem(key);
-            setEditingValue(node.description);
-          }}
-          onEditSave={handleEdit}
-          onEditCancel={() => {
-            setEditingItem(null);
-            setEditingValue('');
-          }}
-          editingValue={editingValue}
-          onEditingValueChange={setEditingValue}
-        />
-        {node.children.length > 0 && (
-          <div className="ml-4 space-y-2">
-            {renderTreeNodes(node.children)}
-          </div>
-        )}
-      </div>
-    ));
+    return nodes.map(node => {
+      const hasChildren = node.children.length > 0;
+      const isExpanded = expandedNodes.has(node.id);
+
+      return (
+        <div key={node.id} className="space-y-2">
+          <SortableItem
+            node={node}
+            level={node.level}
+            isEditing={editingItem === node.key}
+            onEditStart={(key) => {
+              setEditingItem(key);
+              setEditingValue(node.description);
+            }}
+            onEditSave={handleEdit}
+            onEditCancel={() => {
+              setEditingItem(null);
+              setEditingValue('');
+            }}
+            editingValue={editingValue}
+            onEditingValueChange={setEditingValue}
+            onToggleExpansion={toggleNodeExpansion}
+            expandedNodes={expandedNodes}
+          />
+          {hasChildren && isExpanded && (
+            <div className="space-y-2">
+              {renderTreeNodes(node.children)}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   if (loading) {
@@ -471,7 +528,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
             items={allItems.map(item => item.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-1 max-h-96 overflow-y-auto">
               {renderTreeNodes(treeData)}
             </div>
           </SortableContext>
