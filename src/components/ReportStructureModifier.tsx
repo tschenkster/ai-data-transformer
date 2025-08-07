@@ -121,7 +121,7 @@ function SortableItem({
       className="select-none"
     >
       <div 
-        className={`flex items-center gap-2 py-2 px-2 hover:bg-accent/50 rounded-md ${
+        className={`flex items-center gap-2 py-1 px-2 hover:bg-accent/50 rounded-md ${
           hasChildren ? 'cursor-pointer' : 'cursor-default'
         }`}
         style={{ marginLeft: level * 16 }}
@@ -460,7 +460,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
       const isExpanded = expandedNodes.has(node.id);
 
       return (
-        <div key={node.id} className="space-y-2">
+        <div key={node.id} className="space-y-1">
           <SortableItem
             node={node}
             level={node.level}
@@ -480,7 +480,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
             expandedNodes={expandedNodes}
           />
           {hasChildren && isExpanded && (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {renderTreeNodes(node.children)}
             </div>
           )}
@@ -528,7 +528,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
             items={allItems.map(item => item.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-1 max-h-96 overflow-y-auto">
+            <div className="space-y-0.5 max-h-96 overflow-y-auto">
               {renderTreeNodes(treeData)}
             </div>
           </SortableContext>
