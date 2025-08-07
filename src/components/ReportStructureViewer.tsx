@@ -105,7 +105,7 @@ export default function ReportStructureViewer({
 
   useEffect(() => {
     buildTreeData();
-  }, [filteredItems]);
+  }, [filteredItems, expandedNodes]);
 
   const fetchLineItems = async (structureId: number) => {
     setLoading(true);
@@ -214,6 +214,7 @@ export default function ReportStructureViewer({
   };
 
   const toggleNodeExpansion = (nodeId: string) => {
+    console.log('Toggling node:', nodeId, 'Currently expanded:', expandedNodes.has(nodeId));
     const newExpanded = new Set(expandedNodes);
     if (newExpanded.has(nodeId)) {
       newExpanded.delete(nodeId);
@@ -221,7 +222,8 @@ export default function ReportStructureViewer({
       newExpanded.add(nodeId);
     }
     setExpandedNodes(newExpanded);
-    buildTreeData();
+    console.log('New expanded nodes:', Array.from(newExpanded));
+    // Tree data will be rebuilt by useEffect when expandedNodes changes
   };
 
   const renderTreeNode = (node: TreeNodeData, level: number = 0): JSX.Element => {
@@ -231,11 +233,18 @@ export default function ReportStructureViewer({
     return (
       <div key={node.id} className="select-none">
         <div 
-          className={`flex items-center gap-2 py-2 px-2 hover:bg-accent/50 rounded-md cursor-pointer ${
-            level > 0 ? `ml-${Math.min(level * 4, 16)}` : ''
-          }`}
+          className={`flex items-center gap-2 py-2 px-2 hover:bg-accent/50 rounded-md ${
+            hasChildren ? 'cursor-pointer' : 'cursor-default'
+          } ${level > 0 ? `ml-${Math.min(level * 4, 16)}` : ''}`}
           style={{ marginLeft: level * 16 }}
-          onClick={() => hasChildren && toggleNodeExpansion(node.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (hasChildren) {
+              console.log('Clicking node:', node.id, 'Has children:', hasChildren);
+              toggleNodeExpansion(node.id);
+            }
+          }}
         >
           {hasChildren ? (
             isExpanded ? (
