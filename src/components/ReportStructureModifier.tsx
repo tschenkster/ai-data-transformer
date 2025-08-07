@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import ChangeHistoryTable, { ChangeHistoryEntry } from './ChangeHistoryTable';
+import CreateLineItemDialog from './CreateLineItemDialog';
+import DeleteLineItemDialog from './DeleteLineItemDialog';
 import { 
   DndContext, 
   closestCenter, 
@@ -33,7 +35,9 @@ import {
   Check,
   X,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 interface ReportLineItem {
@@ -85,6 +89,7 @@ interface SortableItemProps {
   onEditingValueChange: (value: string) => void;
   onToggleExpansion: (nodeId: string) => void;
   expandedNodes: Set<string>;
+  onDelete: (item: ReportLineItem) => void;
 }
 
 function SortableItem({ 
@@ -97,7 +102,8 @@ function SortableItem({
   editingValue,
   onEditingValueChange,
   onToggleExpansion,
-  expandedNodes
+  expandedNodes,
+  onDelete
 }: SortableItemProps) {
   const {
     attributes,
@@ -211,6 +217,17 @@ function SortableItem({
               Hidden
             </Badge>
           )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(node.item);
+            }}
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
         </div>
       </div>
     </div>
@@ -232,6 +249,9 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
   const [changeHistory, setChangeHistory] = useState<ChangeHistoryEntry[]>([]);
   const [recentlyUndoneItems, setRecentlyUndoneItems] = useState<Set<string>>(new Set());
   const [loadingChanges, setLoadingChanges] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<ReportLineItem | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -623,6 +643,41 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
 
         // Reload line items to get updated sort order
         await fetchLineItems(structureUuid);
+
+      } else if (entry.action_type === 'create') {
+        // Undo create by deleting the item
+        const { error } = await supabase
+          .from('report_line_items')
+          .delete()
+          .eq('report_line_item_uuid', entry.line_item_uuid)
+          .eq('report_structure_uuid', structureUuid);
+
+        if (error) throw error;
+
+        // Reload line items
+        await fetchLineItems(structureUuid);
+
+      } else if (entry.action_type === 'delete') {
+        // Undo delete by recreating the item
+        const previousState = typeof entry.previous_state === 'string' 
+          ? JSON.parse(entry.previous_state) 
+          : entry.previous_state;
+
+        if (previousState) {
+          // Remove fields that shouldn't be restored
+          const { children, ...itemData } = previousState;
+          
+          const { error } = await supabase
+            .from('report_line_items')
+            .insert(itemData);
+
+          if (error) throw error;
+
+          // TODO: Restore children if they were cascade deleted
+          
+          // Reload line items
+          await fetchLineItems(structureUuid);
+        }
       }
 
       // Mark entry as undone in database
@@ -678,6 +733,7 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
             onEditingValueChange={setEditingValue}
             onToggleExpansion={toggleNodeExpansion}
             expandedNodes={expandedNodes}
+            onDelete={handleDeleteItem}
           />
           {hasChildren && isExpanded && (
             <div className="space-y-1">
@@ -687,6 +743,20 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         </div>
       );
     });
+  };
+
+  const handleDeleteItem = (item: ReportLineItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const getChildrenForItem = (itemUuid: string): ReportLineItem[] => {
+    return lineItems.filter(item => item.parent_report_line_item_uuid === itemUuid);
+  };
+
+  const getAllParentOptions = (): TreeNodeData[] => {
+    // Return all non-leaf items as potential parents
+    return getAllFlatItems(treeData).filter(node => !node.item.is_leaf);
   };
 
   if (loading) {
@@ -718,7 +788,19 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Structure Modifier</CardTitle>
+            <CardDescription>Modify the report structure by editing, reordering, adding, or deleting items</CardDescription>
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Item
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -738,6 +820,23 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
           changeHistory={changeHistory}
           onUndo={handleUndo}
           recentlyUndoneItems={recentlyUndoneItems}
+        />
+
+        <CreateLineItemDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          structureUuid={structureUuid}
+          parentOptions={getAllParentOptions()}
+          onItemCreated={() => fetchLineItems(structureUuid)}
+        />
+
+        <DeleteLineItemDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          item={itemToDelete}
+          children={itemToDelete ? getChildrenForItem(itemToDelete.report_line_item_uuid) : []}
+          structureUuid={structureUuid}
+          onItemDeleted={() => fetchLineItems(structureUuid)}
         />
       </CardContent>
     </Card>
