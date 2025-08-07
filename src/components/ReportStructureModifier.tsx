@@ -320,7 +320,29 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         return;
       }
 
-      setChangeHistory(data || []);
+      // Fetch hierarchy_path for each change entry by joining with line items
+      const enrichedData = await Promise.all(
+        (data || []).map(async (entry) => {
+          if (entry.line_item_uuid) {
+            const { data: lineItem } = await supabase
+              .from('report_line_items')
+              .select('hierarchy_path')
+              .eq('report_line_item_uuid', entry.line_item_uuid)
+              .single();
+            
+            return {
+              ...entry,
+              hierarchy_path: lineItem?.hierarchy_path || null
+            };
+          }
+          return {
+            ...entry,
+            hierarchy_path: null
+          };
+        })
+      );
+
+      setChangeHistory(enrichedData);
     } catch (error) {
       console.error('Error fetching change history:', error);
     } finally {

@@ -19,6 +19,7 @@ export interface ChangeHistoryEntry {
   action_type: 'create' | 'delete' | 'rename' | 'move';
   line_item_key: string;
   line_item_description: string;
+  hierarchy_path?: string;
   previous_state: any;
   new_state: any;
   timestamp: string;
@@ -68,7 +69,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
     return (
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-sm">Change History</CardTitle>
+          <CardTitle className="text-sm">Change Log</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">No changes made yet. Your modifications will appear here.</p>
@@ -80,7 +81,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
   return (
     <Card className="mt-6">
       <CardHeader>
-        <CardTitle className="text-sm">Change History</CardTitle>
+        <CardTitle className="text-sm">Change Log</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -107,12 +108,8 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
                 </TableCell>
                 <TableCell>
                   <Badge 
-                    variant={
-                      entry.action_type === 'rename' ? 'default' : 
-                      entry.action_type === 'move' ? 'secondary' :
-                      entry.action_type === 'create' ? 'outline' : 'destructive'
-                    }
-                    className="text-xs"
+                    variant="secondary"
+                    className="text-xs bg-muted text-muted-foreground"
                   >
                     {entry.action_type === 'rename' ? 'Rename' : 
                      entry.action_type === 'move' ? 'Move' :
@@ -121,7 +118,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
                 </TableCell>
                 <TableCell className="text-sm">
                   <div className="font-mono text-xs text-muted-foreground mb-1">
-                    {entry.line_item_key}
+                    {entry.hierarchy_path || entry.line_item_key}
                   </div>
                   <div>{entry.line_item_description}</div>
                 </TableCell>
