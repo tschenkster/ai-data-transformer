@@ -641,12 +641,8 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
 
         if (error) throw error;
 
-        // Update local state
-        setLineItems(prev => prev.map(item => 
-          item.report_line_item_key === entry.line_item_key 
-            ? { ...item, report_line_item_description: previousState?.description }
-            : item
-        ));
+        // Reload line items to get updated description and rebuild tree
+        await fetchLineItems(structureUuid);
         
         highlightRecentlyUndoneItem(entry.line_item_key);
 
