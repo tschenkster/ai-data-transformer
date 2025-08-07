@@ -29,6 +29,7 @@ interface ReportLineItem {
   report_line_item_key: string;
   report_line_item_description?: string;
   parent_report_line_item_key?: string;
+  parent_report_line_item_uuid?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
   hierarchy_path?: string;
@@ -140,12 +141,12 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
   const buildTreeData = () => {
     const itemMap = new Map<string, ReportLineItem>();
     lineItems.forEach(item => {
-      itemMap.set(item.report_line_item_key, item);
+      itemMap.set(item.report_line_item_uuid, item);
     });
 
     const buildNode = (item: ReportLineItem, level: number = 0): TreeNodeData => {
       const children = lineItems
-        .filter(child => child.parent_report_line_item_key === item.report_line_item_key)
+        .filter(child => child.parent_report_line_item_uuid === item.report_line_item_uuid)
         .sort((a, b) => a.sort_order - b.sort_order)
         .map(child => buildNode(child, level + 1));
 
@@ -160,7 +161,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
     };
 
     const rootItems = lineItems
-      .filter(item => !item.parent_report_line_item_key || !itemMap.has(item.parent_report_line_item_key))
+      .filter(item => !item.parent_report_line_item_uuid || !itemMap.has(item.parent_report_line_item_uuid))
       .sort((a, b) => a.sort_order - b.sort_order);
 
     return rootItems.map(item => buildNode(item));

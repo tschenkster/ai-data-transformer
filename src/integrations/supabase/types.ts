@@ -170,6 +170,7 @@ export type Database = {
           level_7_line_item_description: string | null
           line_item_type: string | null
           parent_report_line_item_key: string | null
+          parent_report_line_item_uuid: string | null
           report_line_item_description: string | null
           report_line_item_id: number
           report_line_item_key: string
@@ -196,6 +197,7 @@ export type Database = {
           level_7_line_item_description?: string | null
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
+          parent_report_line_item_uuid?: string | null
           report_line_item_description?: string | null
           report_line_item_id?: never
           report_line_item_key: string
@@ -222,6 +224,7 @@ export type Database = {
           level_7_line_item_description?: string | null
           line_item_type?: string | null
           parent_report_line_item_key?: string | null
+          parent_report_line_item_uuid?: string | null
           report_line_item_description?: string | null
           report_line_item_id?: never
           report_line_item_key?: string
@@ -230,7 +233,15 @@ export type Database = {
           report_structure_name?: string
           sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_parent_report_line_item_uuid"
+            columns: ["parent_report_line_item_uuid"]
+            isOneToOne: false
+            referencedRelation: "report_line_items"
+            referencedColumns: ["report_line_item_uuid"]
+          },
+        ]
       }
       report_structures: {
         Row: {

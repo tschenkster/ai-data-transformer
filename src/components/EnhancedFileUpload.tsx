@@ -74,7 +74,8 @@ const OPTIONAL_COLUMNS = [
   'display',
   'data_source',
   'sort_order',
-  'comment'
+  'comment',
+  'imported_structure_id'
 ];
 
 export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {

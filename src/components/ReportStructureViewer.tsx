@@ -29,6 +29,7 @@ interface ReportLineItem {
   report_line_item_key: string;
   report_line_item_description?: string;
   parent_report_line_item_key?: string;
+  parent_report_line_item_uuid?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
   hierarchy_path?: string;
@@ -138,22 +139,22 @@ export default function ReportStructureViewer({
     // Create nodes for all items
     filteredItems.forEach(item => {
       const node: TreeNodeData = {
-        id: item.report_line_item_key,
+        id: item.report_line_item_uuid,
         label: getItemDisplayName(item),
         children: [],
         item,
-        isExpanded: expandedNodes.has(item.report_line_item_key)
+        isExpanded: expandedNodes.has(item.report_line_item_uuid)
       };
-      itemMap.set(item.report_line_item_key, node);
+      itemMap.set(item.report_line_item_uuid, node);
     });
 
-    // Build hierarchy
+    // Build hierarchy using UUIDs
     filteredItems.forEach(item => {
-      const node = itemMap.get(item.report_line_item_key);
+      const node = itemMap.get(item.report_line_item_uuid);
       if (!node) return;
 
-      if (item.parent_report_line_item_key) {
-        const parent = itemMap.get(item.parent_report_line_item_key);
+      if (item.parent_report_line_item_uuid) {
+        const parent = itemMap.get(item.parent_report_line_item_uuid);
         if (parent) {
           parent.children.push(node);
         } else {

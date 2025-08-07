@@ -41,6 +41,7 @@ interface ReportLineItem {
   report_line_item_key: string;
   report_line_item_description?: string;
   parent_report_line_item_key?: string;
+  parent_report_line_item_uuid?: string;
   is_parent_key_existing: boolean;
   sort_order: number;
   hierarchy_path?: string;
@@ -240,23 +241,23 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
     // Create nodes for all items
     lineItems.forEach(item => {
       const node: TreeNodeData = {
-        id: item.report_line_item_key,
+        id: item.report_line_item_uuid,
         key: item.report_line_item_key,
         description: getItemDisplayName(item),
         level: 0,
         children: [],
         item
       };
-      itemMap.set(item.report_line_item_key, node);
+      itemMap.set(item.report_line_item_uuid, node);
     });
 
-    // Build hierarchy and calculate levels
+    // Build hierarchy and calculate levels using UUIDs
     lineItems.forEach(item => {
-      const node = itemMap.get(item.report_line_item_key);
+      const node = itemMap.get(item.report_line_item_uuid);
       if (!node) return;
 
-      if (item.parent_report_line_item_key) {
-        const parent = itemMap.get(item.parent_report_line_item_key);
+      if (item.parent_report_line_item_uuid) {
+        const parent = itemMap.get(item.parent_report_line_item_uuid);
         if (parent) {
           parent.children.push(node);
           node.level = parent.level + 1;
@@ -337,7 +338,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
     if (!activeItem || !overItem) return;
 
     // Only allow reordering within the same parent
-    if (activeItem.item.parent_report_line_item_key !== overItem.item.parent_report_line_item_key) {
+    if (activeItem.item.parent_report_line_item_uuid !== overItem.item.parent_report_line_item_uuid) {
       toast({
         title: "Invalid Move",
         description: "Items can only be reordered within the same parent",
@@ -348,7 +349,7 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
 
     // Get siblings (items with same parent)
     const siblings = flatItems.filter(item => 
-      item.item.parent_report_line_item_key === activeItem.item.parent_report_line_item_key
+      item.item.parent_report_line_item_uuid === activeItem.item.parent_report_line_item_uuid
     );
 
     const oldIndex = siblings.findIndex(item => item.id === active.id);
