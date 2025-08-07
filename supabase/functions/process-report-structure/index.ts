@@ -66,6 +66,7 @@ serve(async (req) => {
   console.log(`Overwrite mode: ${overwriteMode}, Target structure: ${targetStructureId}`);
   console.log(`Unmapped columns: ${unmappedColumns.length} rows`);
   console.log(`Column mappings: ${columnMappings.length} mappings`);
+  console.log(`Debug: Using report_structure_uuid for all operations`);
 
     // Validate input data
     if (!Array.isArray(structureData) || structureData.length === 0) {
