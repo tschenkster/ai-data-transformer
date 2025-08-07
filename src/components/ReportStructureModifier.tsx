@@ -218,10 +218,9 @@ function SortableItem({
 
 interface ReportStructureModifierProps {
   structureId: number;
-  onSave: () => void;
 }
 
-export default function ReportStructureModifier({ structureId, onSave }: ReportStructureModifierProps) {
+export default function ReportStructureModifier({ structureId }: ReportStructureModifierProps) {
   const { toast } = useToast();
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
@@ -530,30 +529,6 @@ export default function ReportStructureModifier({ structureId, onSave }: ReportS
           </SortableContext>
         </DndContext>
 
-        <div className="mt-6 flex justify-end">
-          <Button onClick={onSave}>
-            Save Changes
-          </Button>
-        </div>
-        
-        <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <GripVertical className="w-4 h-4" />
-            <span>Drag to reorder</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Edit className="w-4 h-4" />
-            <span>Click to edit</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Folder className="w-4 h-4 text-yellow-500" />
-            <span>Folder</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <FileText className="w-4 h-4 text-blue-500" />
-            <span>Leaf</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

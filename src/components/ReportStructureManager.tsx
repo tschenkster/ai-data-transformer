@@ -498,13 +498,6 @@ export default function ReportStructureManager() {
           {selectedStructureForModify ? (
             <ReportStructureModifier
               structureId={selectedStructureForModify}
-              onSave={() => {
-                fetchStructures();
-                toast({
-                  title: "Success",
-                  description: "Structure modifications saved successfully",
-                });
-              }}
             />
           ) : (
             <div className="text-center py-8 text-muted-foreground">
