@@ -36,7 +36,7 @@ export default function CreateLineItemDialog({
   const [formData, setFormData] = useState({
     key: '',
     description: '',
-    parentUuid: '',
+    parentUuid: 'root',
     isLeaf: true,
     display: true,
     lineItemType: 'standard'
@@ -47,7 +47,7 @@ export default function CreateLineItemDialog({
     setFormData({
       key: '',
       description: '',
-      parentUuid: '',
+      parentUuid: 'root',
       isLeaf: true,
       display: true,
       lineItemType: 'standard'
@@ -117,7 +117,7 @@ export default function CreateLineItemDialog({
         throw new Error('Structure not found');
       }
 
-      const parentUuid = formData.parentUuid || null;
+      const parentUuid = formData.parentUuid === 'root' ? null : formData.parentUuid;
       const sortOrder = await getNextSortOrder(parentUuid);
 
       // Create new item
@@ -231,7 +231,7 @@ export default function CreateLineItemDialog({
                 <SelectValue placeholder="Select parent (optional for root item)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None (Root Level)</SelectItem>
+                <SelectItem value="root">None (Root Level)</SelectItem>
                 {parentOptions.map(option => (
                   <SelectItem key={option.id} value={option.id}>
                     {'  '.repeat(option.level)}{option.description}
