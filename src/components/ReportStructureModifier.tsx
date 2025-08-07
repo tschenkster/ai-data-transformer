@@ -196,12 +196,6 @@ function SortableItem({
         )}
         
         <div className="flex items-center gap-1">
-          {node.item.is_calculated && (
-            <Badge variant="secondary" className="text-xs">
-              <Calculator className="w-3 h-3 mr-1" />
-              Calculated
-            </Badge>
-          )}
           {!node.item.display && (
             <Badge variant="destructive" className="text-xs">
               Hidden
