@@ -39,7 +39,7 @@ import {
 interface ReportLineItem {
   report_line_item_id: number;
   report_line_item_uuid: string;
-  report_structure_id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;
@@ -218,10 +218,10 @@ function SortableItem({
 }
 
 interface ReportStructureModifierProps {
-  structureId: number;
+  structureUuid: string;
 }
 
-export default function ReportStructureModifier({ structureId }: ReportStructureModifierProps) {
+export default function ReportStructureModifier({ structureUuid }: ReportStructureModifierProps) {
   const { toast } = useToast();
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
@@ -241,16 +241,16 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
   );
 
   useEffect(() => {
-    fetchLineItems(structureId);
-  }, [structureId]);
+    fetchLineItems(structureUuid);
+  }, [structureUuid]);
 
-  const fetchLineItems = async (structureId: number) => {
+  const fetchLineItems = async (structureUuid: string) => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
-        .eq('report_structure_id', structureId)
+        .eq('report_structure_uuid', structureUuid)
         .order('sort_order', { ascending: true });
 
       if (error) {
@@ -270,7 +270,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
       setTreeData(treeData);
       
       // Load change history
-      await fetchChangeHistory(structureId);
+      await fetchChangeHistory(structureUuid);
       
     } catch (error) {
       console.error('Error:', error);
@@ -284,21 +284,14 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     }
   };
 
-  const fetchChangeHistory = async (structureId: number) => {
+  const fetchChangeHistory = async (structureUuid: string) => {
     setLoadingChanges(true);
     try {
-      const { data: structure } = await supabase
-        .from('report_structures')
-        .select('report_structure_uuid')
-        .eq('report_structure_id', structureId)
-        .single();
-
-      if (!structure) return;
-
       const { data, error } = await supabase
         .from('report_structures_change_log')
         .select('*')
-        .eq('structure_id', structureId)
+        .eq('structure_uuid', structureUuid)
+        .eq('is_undone', false)
         .order('timestamp', { ascending: false })
         .limit(50);
 
@@ -393,15 +386,15 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
     try {
       const { data: structure } = await supabase
         .from('report_structures')
-        .select('report_structure_uuid')
-        .eq('report_structure_id', structureId)
+        .select('report_structure_id')
+        .eq('report_structure_uuid', structureUuid)
         .single();
 
       if (!structure) return;
 
       const { error } = await supabase.rpc('log_structure_change', {
-        p_structure_uuid: structure.report_structure_uuid,
-        p_structure_id: structureId,
+        p_structure_uuid: structureUuid,
+        p_structure_id: structure.report_structure_id,
         p_line_item_uuid: lineItemUuid,
         p_line_item_id: lineItemId,
         p_action_type: actionType,
@@ -415,7 +408,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
         console.error('Error logging change:', error);
       } else {
         // Refresh change history
-        await fetchChangeHistory(structureId);
+        await fetchChangeHistory(structureUuid);
       }
     } catch (error) {
       console.error('Error logging change:', error);
@@ -446,7 +439,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
         .from('report_line_items')
         .update({ report_line_item_description: newDescription })
         .eq('report_line_item_key', key)
-        .eq('report_structure_id', structureId);
+        .eq('report_structure_uuid', structureUuid);
 
       if (error) throw error;
 
@@ -552,7 +545,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
       );
 
       // Refresh data
-      fetchLineItems(structureId);
+      fetchLineItems(structureUuid);
 
       toast({
         title: "Success",
@@ -597,7 +590,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
             report_line_item_description: previousState?.description 
           })
           .eq('report_line_item_key', entry.line_item_key)
-          .eq('report_structure_id', structureId);
+          .eq('report_structure_uuid', structureUuid);
 
         if (error) throw error;
 
@@ -622,14 +615,14 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
             sort_order: previousState?.sortOrder 
           })
           .eq('report_line_item_key', entry.line_item_key)
-          .eq('report_structure_id', structureId);
+          .eq('report_structure_uuid', structureUuid);
 
         if (error) throw error;
 
         highlightRecentlyUndoneItem(entry.line_item_key);
 
         // Reload line items to get updated sort order
-        await fetchLineItems(structureId);
+        await fetchLineItems(structureUuid);
       }
 
       // Mark entry as undone in database
@@ -644,7 +637,7 @@ export default function ReportStructureModifier({ structureId }: ReportStructure
       if (error) throw error;
 
       // Refresh change history
-      await fetchChangeHistory(structureId);
+      await fetchChangeHistory(structureUuid);
 
       toast({
         title: "Change undone",

@@ -23,7 +23,7 @@ export type Database = {
           mapped_account_name: string
           original_account_name: string
           reasoning: string | null
-          report_line_item_id: string | null
+          report_line_item_uuid: string | null
           user_id: string
           validated: boolean | null
           validated_at: string | null
@@ -37,7 +37,7 @@ export type Database = {
           mapped_account_name: string
           original_account_name: string
           reasoning?: string | null
-          report_line_item_id?: string | null
+          report_line_item_uuid?: string | null
           user_id: string
           validated?: boolean | null
           validated_at?: string | null
@@ -51,7 +51,7 @@ export type Database = {
           mapped_account_name?: string
           original_account_name?: string
           reasoning?: string | null
-          report_line_item_id?: string | null
+          report_line_item_uuid?: string | null
           user_id?: string
           validated?: boolean | null
           validated_at?: string | null
@@ -175,8 +175,8 @@ export type Database = {
           report_line_item_id: number
           report_line_item_key: string
           report_line_item_uuid: string
-          report_structure_id: number
           report_structure_name: string
+          report_structure_uuid: string
           sort_order: number
         }
         Insert: {
@@ -202,8 +202,8 @@ export type Database = {
           report_line_item_id?: never
           report_line_item_key: string
           report_line_item_uuid?: string
-          report_structure_id: number
           report_structure_name: string
+          report_structure_uuid: string
           sort_order?: number
         }
         Update: {
@@ -229,8 +229,8 @@ export type Database = {
           report_line_item_id?: never
           report_line_item_key?: string
           report_line_item_uuid?: string
-          report_structure_id?: number
           report_structure_name?: string
+          report_structure_uuid?: string
           sort_order?: number
         }
         Relationships: [

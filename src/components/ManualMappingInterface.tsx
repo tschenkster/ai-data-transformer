@@ -24,7 +24,7 @@ interface ReportStructure {
 interface ReportLineItem {
   report_line_item_id: number;
   report_line_item_uuid: string;
-  report_structure_id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;
@@ -106,10 +106,20 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
 
   const fetchLineItems = async (structureId: number) => {
     try {
+      // First get the structure UUID from the structure ID
+      const { data: structureData, error: structureError } = await supabase
+        .from('report_structures')
+        .select('report_structure_uuid')
+        .eq('report_structure_id', structureId)
+        .single();
+
+      if (structureError) throw structureError;
+      if (!structureData) throw new Error('Structure not found');
+
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
-        .eq('report_structure_id', structureId)
+        .eq('report_structure_uuid', structureData.report_structure_uuid)
         .order('sort_order');
 
       if (error) throw error;
@@ -209,7 +219,7 @@ export default function ManualMappingInterface({ onMappingCreated }: ManualMappi
           user_id: user.id,
           original_account_name: originalAccount.trim(),
           mapped_account_name: getItemDisplayName(selectedLineItem),
-          report_line_item_id: selectedLineItem.report_line_item_uuid,
+          report_line_item_uuid: selectedLineItem.report_line_item_uuid,
           confidence_score: 1.0, // Manual mapping has 100% confidence
           reasoning: 'Manual mapping created by user',
           validated: true,

@@ -31,7 +31,7 @@ interface ReportStructure {
 interface ReportLineItem {
   report_line_item_id: number;
   report_line_item_uuid: string;
-  report_structure_id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;
@@ -92,10 +92,20 @@ export default function ReportStructureManager() {
 
   const fetchLineItems = async (structureId: number) => {
     try {
+      // First get the structure UUID from the structure ID
+      const { data: structureData, error: structureError } = await supabase
+        .from('report_structures')
+        .select('report_structure_uuid')
+        .eq('report_structure_id', structureId)
+        .single();
+
+      if (structureError) throw structureError;
+      if (!structureData) throw new Error('Structure not found');
+
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
-        .eq('report_structure_id', structureId)
+        .eq('report_structure_uuid', structureData.report_structure_uuid)
         .order('sort_order');
 
       if (error) throw error;
@@ -116,26 +126,38 @@ export default function ReportStructureManager() {
       // Get all report line items that have been used in mappings
       const { data: mappingData, error: mappingError } = await supabase
         .from('account_mappings')
-        .select('report_line_item_id')
-        .not('report_line_item_id', 'is', null);
+        .select('report_line_item_uuid')
+        .not('report_line_item_uuid', 'is', null);
 
       if (mappingError) throw mappingError;
 
       if (mappingData && mappingData.length > 0) {
-        const lineItemIds = mappingData.map(m => m.report_line_item_id);
+        const lineItemUuids = mappingData.map(m => m.report_line_item_uuid);
         
-        // Get the report structure IDs for these line items
+        // Get the report structure UUIDs for these line items
         const { data: lineItemData, error: lineItemError } = await supabase
           .from('report_line_items')
-          .select('report_structure_id')
-          .in('report_line_item_uuid', lineItemIds);
+          .select('report_structure_uuid')
+          .in('report_line_item_uuid', lineItemUuids);
 
         if (lineItemError) throw lineItemError;
 
-        const structureIds = new Set(
-          lineItemData?.map(item => item.report_structure_id).filter(Boolean) || []
-        );
-        setStructuresWithMappings(structureIds);
+        // Get structure IDs from UUIDs
+        const structureUuids = lineItemData?.map(item => item.report_structure_uuid).filter(Boolean) || [];
+        
+        if (structureUuids.length > 0) {
+          const { data: structureData, error: structureError } = await supabase
+            .from('report_structures')
+            .select('report_structure_id')
+            .in('report_structure_uuid', structureUuids);
+
+          if (structureError) throw structureError;
+
+          const structureIds = new Set(
+            structureData?.map(item => item.report_structure_id).filter(Boolean) || []
+          );
+          setStructuresWithMappings(structureIds);
+        }
       }
     } catch (error) {
       console.error('Error checking structures with mappings:', error);
@@ -497,7 +519,7 @@ export default function ReportStructureManager() {
 
           {selectedStructureForModify ? (
             <ReportStructureModifier
-              structureId={selectedStructureForModify}
+              structureUuid={structures.find(s => s.report_structure_id === selectedStructureForModify)?.report_structure_uuid || ''}
             />
           ) : (
             <div className="text-center py-8 text-muted-foreground">

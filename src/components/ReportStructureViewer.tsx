@@ -24,7 +24,7 @@ interface ReportStructure {
 interface ReportLineItem {
   report_line_item_id: number;
   report_line_item_uuid: string;
-  report_structure_id: number;
+  report_structure_uuid: string;
   report_structure_name: string;
   report_line_item_key: string;
   report_line_item_description?: string;
@@ -110,10 +110,20 @@ export default function ReportStructureViewer({
   const fetchLineItems = async (structureId: number) => {
     setLoading(true);
     try {
+      // First get the structure UUID from the structure ID
+      const { data: structureData, error: structureError } = await supabase
+        .from('report_structures')
+        .select('report_structure_uuid')
+        .eq('report_structure_id', structureId)
+        .single();
+
+      if (structureError) throw structureError;
+      if (!structureData) throw new Error('Structure not found');
+
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
-        .eq('report_structure_id', structureId)
+        .eq('report_structure_uuid', structureData.report_structure_uuid)
         .order('sort_order');
 
       if (error) throw error;
