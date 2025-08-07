@@ -81,7 +81,7 @@ serve(async (req) => {
       const { data: currentStructure, error: fetchError } = await supabase
         .from('report_structures')
         .select('report_structure_name, version, report_structure_uuid')
-        .eq('report_structure_id', targetStructureId)
+        .eq('report_structure_uuid', targetStructureId)
         .single();
 
       if (fetchError) {
@@ -100,7 +100,7 @@ serve(async (req) => {
           version: version,
           updated_at: new Date().toISOString()
         })
-        .eq('report_structure_id', targetStructureId)
+        .eq('report_structure_uuid', targetStructureId)
         .select('report_structure_uuid')
         .single();
 
