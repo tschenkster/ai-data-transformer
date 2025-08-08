@@ -569,9 +569,14 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       return;
     }
 
+    // Show loading state during reorder
+    setLoading(true);
+    
     const originalSortOrder = lineItems.find(item => item.report_line_item_uuid === active.id)?.sort_order;
 
     try {
+      console.log(`Drag end: moving ${active.id} to position of ${over.id}`);
+      
       // Use the new utility function for global sort order management
       const result = await reorderItemWithinParent(
         treeData, 
@@ -581,6 +586,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       );
 
       if (!result.success) {
+        console.error('Reorder failed:', result.error);
         toast({
           title: "Invalid Move",
           description: result.error || "Failed to reorder items",
@@ -588,6 +594,8 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         });
         return;
       }
+
+      console.log('Reorder successful, refreshing data');
 
       // Find items for logging
       const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id);
@@ -618,6 +626,8 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         description: "Failed to reorder items",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -69,22 +69,47 @@ export function flattenTreeToSequentialOrder(treeData: TreeNodeData[]): ReportLi
 export async function updateGlobalSortOrder(
   structureUuid: string, 
   orderedItems: ReportLineItem[]
-): Promise<void> {
-  // Create batch updates for all items with new sequential sort_order
-  const updates = orderedItems.map((item, index) => ({
-    report_line_item_id: item.report_line_item_id,
-    sort_order: index
-  }));
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Create batch updates for all items with new sequential sort_order
+    const updates = orderedItems.map((item, index) => ({
+      report_line_item_id: item.report_line_item_id,
+      sort_order: index
+    }));
 
-  // Execute all updates in parallel for better performance
-  await Promise.all(
-    updates.map(update => 
-      supabase
-        .from('report_line_items')
-        .update({ sort_order: update.sort_order })
-        .eq('report_line_item_id', update.report_line_item_id)
-    )
-  );
+    console.log(`Updating sort order for ${updates.length} items in structure ${structureUuid}`);
+
+    // Execute all updates and check for errors
+    const results = await Promise.all(
+      updates.map(async (update) => {
+        const { error } = await supabase
+          .from('report_line_items')
+          .update({ sort_order: update.sort_order })
+          .eq('report_line_item_id', update.report_line_item_id);
+        
+        if (error) {
+          console.error(`Error updating item ${update.report_line_item_id}:`, error);
+          return { success: false, error: error.message };
+        }
+        return { success: true };
+      })
+    );
+
+    // Check if any updates failed
+    const failedUpdates = results.filter(result => !result.success);
+    if (failedUpdates.length > 0) {
+      const errorMessage = `Failed to update ${failedUpdates.length} items: ${failedUpdates[0].error}`;
+      console.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+
+    console.log('All sort order updates completed successfully');
+    return { success: true };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Error in updateGlobalSortOrder:', error);
+    return { success: false, error: errorMessage };
+  }
 }
 
 /**
@@ -178,8 +203,15 @@ export async function reorderItemWithinParent(
   const newOrderedItems = flattenTreeToSequentialOrder(newTreeData);
   
   // Update database with new global sort_order
-  await updateGlobalSortOrder(structureUuid, newOrderedItems);
+  console.log(`Attempting to reorder item ${activeItemId} over ${overItemId}`);
+  const updateResult = await updateGlobalSortOrder(structureUuid, newOrderedItems);
+  
+  if (!updateResult.success) {
+    console.error('Database update failed:', updateResult.error);
+    return { success: false, error: updateResult.error || 'Failed to update database' };
+  }
 
+  console.log('Reorder operation completed successfully');
   return { success: true };
 }
 
