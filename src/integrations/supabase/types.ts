@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       account_mappings: {
         Row: {
+          account_mapping_id: number
           confidence_score: number | null
           created_at: string
           embedding: string | null
@@ -30,6 +31,7 @@ export type Database = {
           validated_by: string | null
         }
         Insert: {
+          account_mapping_id?: number
           confidence_score?: number | null
           created_at?: string
           embedding?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           validated_by?: string | null
         }
         Update: {
+          account_mapping_id?: number
           confidence_score?: number | null
           created_at?: string
           embedding?: string | null
@@ -65,6 +68,7 @@ export type Database = {
           created_at: string
           final_mapping: string | null
           id: string
+          mapping_decision_id: number
           original_account_name: string
           reasoning: string | null
           reviewed_at: string | null
@@ -80,6 +84,7 @@ export type Database = {
           created_at?: string
           final_mapping?: string | null
           id?: string
+          mapping_decision_id?: number
           original_account_name: string
           reasoning?: string | null
           reviewed_at?: string | null
@@ -95,6 +100,7 @@ export type Database = {
           created_at?: string
           final_mapping?: string | null
           id?: string
+          mapping_decision_id?: number
           original_account_name?: string
           reasoning?: string | null
           reviewed_at?: string | null
@@ -122,6 +128,7 @@ export type Database = {
           created_at: string
           filename: string
           id: string
+          mapping_session_id: number
           processed_accounts: number | null
           status: string
           total_accounts: number
@@ -133,6 +140,7 @@ export type Database = {
           created_at?: string
           filename: string
           id?: string
+          mapping_session_id?: number
           processed_accounts?: number | null
           status?: string
           total_accounts: number
@@ -144,6 +152,7 @@ export type Database = {
           created_at?: string
           filename?: string
           id?: string
+          mapping_session_id?: number
           processed_accounts?: number | null
           status?: string
           total_accounts?: number
@@ -371,6 +380,7 @@ export type Database = {
           id: string
           last_name: string | null
           status: string
+          user_account_id: number
           user_id: string
         }
         Insert: {
@@ -382,6 +392,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           status?: string
+          user_account_id?: number
           user_id: string
         }
         Update: {
@@ -393,6 +404,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           status?: string
+          user_account_id?: number
           user_id?: string
         }
         Relationships: []
