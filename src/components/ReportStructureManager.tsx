@@ -480,47 +480,8 @@ export default function ReportStructureManager() {
     <TabsContent value="modifier" className="space-y-4">
       <Card>
         <CardContent className="pt-6">
-          <div className="mb-6">
-            <Label htmlFor="structure-select" className="text-sm font-medium mb-2 block">
-              Select Report Structure
-            </Label>
-            <Select
-              value={selectedStructureForModify?.toString() || ""}
-              onValueChange={(value) => {
-                const structureId = value ? parseInt(value) : null;
-                setSelectedStructureForModify(structureId);
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a structure to modify" />
-              </SelectTrigger>
-              <SelectContent>
-                {structures.map((structure) => (
-                  <SelectItem
-                    key={structure.report_structure_id}
-                    value={structure.report_structure_id.toString()}
-                  >
-                    {structure.report_structure_name}
-                    {structure.is_active && (
-                      <span className="ml-2 text-xs text-primary font-medium">(Active)</span>
-                    )}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {selectedStructureForModify ? (
-            <ReportStructureModifier
-              structureUuid={structures.find(s => s.report_structure_id === selectedStructureForModify)?.report_structure_uuid || ''}
-            />
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Edit className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No structure selected</p>
-              <p className="text-sm">Select a structure from the dropdown above to start editing</p>
-            </div>
-          )}
+          {/* Structure selection is now handled within ReportStructureModifier */}
+          <ReportStructureModifier />
         </CardContent>
       </Card>
     </TabsContent>

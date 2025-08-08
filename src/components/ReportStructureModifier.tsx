@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import ChangeHistoryTable, { ChangeHistoryEntry } from './ChangeHistoryTable';
 import CreateLineItemDialog from './CreateLineItemDialog';
@@ -37,8 +39,10 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
+import { buildTreeFromGlobalOrder, reorderItemWithinParent, flattenTreeToSequentialOrder } from '@/lib/sortOrderUtils';
 
 interface ReportLineItem {
   report_line_item_id: number;
@@ -235,15 +239,34 @@ function SortableItem({
   );
 }
 
-interface ReportStructureModifierProps {
-  structureUuid: string;
+interface ReportStructure {
+  report_structure_id: number;
+  report_structure_uuid: string;
+  report_structure_name: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by_user_id: string;
+  created_by_user_name: string;
+  version: number;
 }
 
-export default function ReportStructureModifier({ structureUuid }: ReportStructureModifierProps) {
+interface ReportStructureModifierProps {
+  // Now manages its own structure selection
+}
+
+export default function ReportStructureModifier({}: ReportStructureModifierProps) {
   const { toast } = useToast();
+  
+  // Structure selection state
+  const [structures, setStructures] = useState<ReportStructure[]>([]);
+  const [selectedStructureUuid, setSelectedStructureUuid] = useState<string>('');
+  const [structuresLoading, setStructuresLoading] = useState(true);
+  
+  // Line items state
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -262,8 +285,46 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
   );
 
   useEffect(() => {
-    fetchLineItems(structureUuid);
-  }, [structureUuid]);
+    fetchStructures();
+  }, []);
+
+  useEffect(() => {
+    if (selectedStructureUuid) {
+      fetchLineItems(selectedStructureUuid);
+    } else {
+      setLineItems([]);
+      setTreeData([]);
+    }
+  }, [selectedStructureUuid]);
+
+  const fetchStructures = async () => {
+    setStructuresLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('report_structures')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setStructures(data || []);
+      
+      // Auto-select active structure if available
+      const activeStructure = data?.find(s => s.is_active);
+      if (activeStructure) {
+        setSelectedStructureUuid(activeStructure.report_structure_uuid);
+      }
+    } catch (error) {
+      console.error('Error fetching structures:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch report structures",
+        variant: "destructive",
+      });
+    } finally {
+      setStructuresLoading(false);
+    }
+  };
 
   const fetchLineItems = async (structureUuid: string) => {
     setLoading(true);
@@ -352,49 +413,22 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
   };
 
   const buildTreeData = (items: ReportLineItem[]): TreeNodeData[] => {
-    const itemMap = new Map<string, TreeNodeData>();
-    const rootItems: TreeNodeData[] = [];
-
-    // Create nodes for all items
-    items.forEach(item => {
-      const node: TreeNodeData = {
-        id: item.report_line_item_uuid,
-        key: item.report_line_item_key,
-        description: getItemDisplayName(item),
-        level: 0,
-        children: [],
-        item,
-        isExpanded: expandedNodes.has(item.report_line_item_uuid)
-      };
-      itemMap.set(item.report_line_item_uuid, node);
-    });
-
-    // Build hierarchy and calculate levels using UUIDs
-    items.forEach(item => {
-      const node = itemMap.get(item.report_line_item_uuid);
-      if (!node) return;
-
-      if (item.parent_report_line_item_uuid) {
-        const parent = itemMap.get(item.parent_report_line_item_uuid);
-        if (parent) {
-          parent.children.push(node);
-          node.level = parent.level + 1;
-        } else {
-          rootItems.push(node);
-        }
-      } else {
-        rootItems.push(node);
-      }
-    });
-
-    // Sort children by sort_order
-    const sortChildren = (nodes: TreeNodeData[]) => {
-      nodes.sort((a, b) => a.item.sort_order - b.item.sort_order);
-      nodes.forEach(node => sortChildren(node.children));
+    // Use the new global sort order utility
+    const treeNodes = buildTreeFromGlobalOrder(items);
+    
+    // Add UI-specific properties and calculate levels
+    const enhanceTreeNodes = (nodes: TreeNodeData[], level: number = 0): TreeNodeData[] => {
+      return nodes.map(node => ({
+        ...node,
+        key: node.item.report_line_item_key,
+        description: getItemDisplayName(node.item),
+        level,
+        isExpanded: expandedNodes.has(node.item.report_line_item_uuid),
+        children: enhanceTreeNodes(node.children, level + 1)
+      }));
     };
 
-    sortChildren(rootItems);
-    return rootItems;
+    return enhanceTreeNodes(treeNodes);
   };
 
   const getItemDisplayName = (item: ReportLineItem) => {
@@ -426,17 +460,19 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
     previousState?: any,
     newState?: any
   ) => {
+    if (!selectedStructureUuid) return;
+    
     try {
       const { data: structure } = await supabase
         .from('report_structures')
         .select('report_structure_id')
-        .eq('report_structure_uuid', structureUuid)
+        .eq('report_structure_uuid', selectedStructureUuid)
         .single();
 
       if (!structure) return;
 
       const { error } = await supabase.rpc('log_structure_change', {
-        p_structure_uuid: structureUuid,
+        p_structure_uuid: selectedStructureUuid,
         p_structure_id: structure.report_structure_id,
         p_line_item_uuid: lineItemUuid,
         p_line_item_id: lineItemId,
@@ -451,7 +487,7 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         console.error('Error logging change:', error);
       } else {
         // Refresh change history
-        await fetchChangeHistory(structureUuid);
+        await fetchChangeHistory(selectedStructureUuid);
       }
     } catch (error) {
       console.error('Error logging change:', error);
@@ -482,7 +518,7 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         .from('report_line_items')
         .update({ report_line_item_description: newDescription })
         .eq('report_line_item_key', key)
-        .eq('report_structure_uuid', structureUuid);
+        .eq('report_structure_uuid', selectedStructureUuid);
 
       if (error) throw error;
 
@@ -529,71 +565,47 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) {
+    if (!over || active.id === over.id || !selectedStructureUuid) {
       return;
     }
 
-    // Find all items at the same level
-    const flatItems = getAllFlatItems(treeData);
-    const activeItem = flatItems.find(item => item.id === active.id);
-    const overItem = flatItems.find(item => item.id === over.id);
-
-    if (!activeItem || !overItem) return;
-
-    // Only allow reordering within the same parent
-    if (activeItem.item.parent_report_line_item_uuid !== overItem.item.parent_report_line_item_uuid) {
-      toast({
-        title: "Invalid Move",
-        description: "Items can only be reordered within the same parent",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Get siblings (items with same parent)
-    const siblings = flatItems.filter(item => 
-      item.item.parent_report_line_item_uuid === activeItem.item.parent_report_line_item_uuid
-    );
-
-    const oldIndex = siblings.findIndex(item => item.id === active.id);
-    const newIndex = siblings.findIndex(item => item.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const originalSortOrder = activeItem.item.sort_order;
-    const newOrder = arrayMove(siblings, oldIndex, newIndex);
+    const originalSortOrder = lineItems.find(item => item.report_line_item_uuid === active.id)?.sort_order;
 
     try {
-      // Update sort_order for all affected items
-      const updates = newOrder.map((item, index) => ({
-        id: item.item.report_line_item_id,
-        sort_order: index
-      }));
-
-      for (const update of updates) {
-        const { error } = await supabase
-          .from('report_line_items')
-          .update({ sort_order: update.sort_order })
-          .eq('report_line_item_id', update.id);
-
-        if (error) throw error;
-      }
-
-      const newSortOrder = newIndex;
-
-      // Log the change for undo functionality
-      await logStructureChange(
-        activeItem.item.report_line_item_uuid,
-        activeItem.item.report_line_item_id,
-        'move',
-        activeItem.item.report_line_item_key,
-        getItemDisplayName(activeItem.item),
-        { sortOrder: originalSortOrder },
-        { sortOrder: newSortOrder }
+      // Use the new utility function for global sort order management
+      const result = await reorderItemWithinParent(
+        treeData, 
+        active.id as string, 
+        over.id as string, 
+        selectedStructureUuid
       );
 
-      // Refresh data
-      fetchLineItems(structureUuid);
+      if (!result.success) {
+        toast({
+          title: "Invalid Move",
+          description: result.error || "Failed to reorder items",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Find items for logging
+      const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id);
+      if (activeItem && originalSortOrder !== undefined) {
+        // Log the change for undo functionality
+        await logStructureChange(
+          activeItem.report_line_item_uuid,
+          activeItem.report_line_item_id,
+          'move',
+          activeItem.report_line_item_key,
+          getItemDisplayName(activeItem),
+          { sortOrder: originalSortOrder },
+          { sortOrder: -1 } // Will be updated after refresh
+        );
+      }
+
+      // Refresh data to reflect new global sort order
+      await fetchLineItems(selectedStructureUuid);
 
       toast({
         title: "Success",
@@ -638,12 +650,12 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
             report_line_item_description: previousState?.description 
           })
           .eq('report_line_item_key', entry.line_item_key)
-          .eq('report_structure_uuid', structureUuid);
+          .eq('report_structure_uuid', selectedStructureUuid);
 
         if (error) throw error;
 
         // Reload line items to get updated description and rebuild tree
-        await fetchLineItems(structureUuid);
+        await fetchLineItems(selectedStructureUuid);
         
         highlightRecentlyUndoneItem(entry.line_item_key);
 
@@ -659,14 +671,14 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
             sort_order: previousState?.sortOrder 
           })
           .eq('report_line_item_key', entry.line_item_key)
-          .eq('report_structure_uuid', structureUuid);
+          .eq('report_structure_uuid', selectedStructureUuid);
 
         if (error) throw error;
 
         highlightRecentlyUndoneItem(entry.line_item_key);
 
         // Reload line items to get updated sort order
-        await fetchLineItems(structureUuid);
+        await fetchLineItems(selectedStructureUuid);
 
       } else if (entry.action_type === 'create') {
         // Undo create by deleting the item
@@ -674,12 +686,12 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
           .from('report_line_items')
           .delete()
           .eq('report_line_item_uuid', entry.line_item_uuid)
-          .eq('report_structure_uuid', structureUuid);
+          .eq('report_structure_uuid', selectedStructureUuid);
 
         if (error) throw error;
 
         // Reload line items
-        await fetchLineItems(structureUuid);
+        await fetchLineItems(selectedStructureUuid);
 
       } else if (entry.action_type === 'delete') {
         // Undo delete by recreating the item
@@ -700,7 +712,7 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
           // TODO: Restore children if they were cascade deleted
           
           // Reload line items
-          await fetchLineItems(structureUuid);
+          await fetchLineItems(selectedStructureUuid);
         }
       }
 
@@ -716,7 +728,7 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
       if (error) throw error;
 
       // Refresh change history
-      await fetchChangeHistory(structureUuid);
+      await fetchChangeHistory(selectedStructureUuid);
 
       toast({
         title: "Change undone",
@@ -783,11 +795,74 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
     return getAllFlatItems(treeData).filter(node => !node.item.is_leaf);
   };
 
+  if (structuresLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Structure Modifier</CardTitle>
+          <CardDescription>Loading available report structures...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Loading structures...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show structure selection if no structure is selected
+  if (!selectedStructureUuid) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Structure Modifier</CardTitle>
+          <CardDescription>Select a report structure to modify its line items</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="structure-select">Select Report Structure</Label>
+            <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a structure to modify..." />
+              </SelectTrigger>
+              <SelectContent>
+                {structures.map((structure) => (
+                  <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
+                    {structure.report_structure_name}
+                    {structure.is_active && " (Active)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {structures.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No report structures found</p>
+              <p className="text-sm">Upload a structure first to begin modification</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-lg">Loading structure for modification...</div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Structure Modifier</CardTitle>
+          <CardDescription>Loading structure data...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span>Loading line items...</span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -796,12 +871,31 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
       <Card>
         <CardHeader>
           <CardTitle>Structure Modifier</CardTitle>
-          <CardDescription>No line items found for this structure</CardDescription>
+          <CardDescription>
+            {structures.find(s => s.report_structure_uuid === selectedStructureUuid)?.report_structure_name || 'Selected Structure'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            <Label htmlFor="structure-select">Report Structure</Label>
+            <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {structures.map((structure) => (
+                  <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
+                    {structure.report_structure_name}
+                    {structure.is_active && " (Active)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>This structure appears to be empty</p>
+            <p className="text-sm">Add some line items to get started</p>
           </div>
         </CardContent>
       </Card>
@@ -810,15 +904,43 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
 
   const allItems = getAllFlatItems(treeData);
 
+  const selectedStructure = structures.find(s => s.report_structure_uuid === selectedStructureUuid);
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div></div>
+          <div className="space-y-1">
+            <CardTitle>Structure Modifier</CardTitle>
+            <CardDescription>
+              {selectedStructure?.report_structure_name}
+              {selectedStructure?.is_active && " (Active)"}
+            </CardDescription>
+          </div>
           <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Add Item
           </Button>
+        </div>
+        
+        {/* Structure Selection */}
+        <div className="pt-4 border-t">
+          <div className="space-y-2">
+            <Label htmlFor="structure-select">Report Structure</Label>
+            <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {structures.map((structure) => (
+                  <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
+                    {structure.report_structure_name}
+                    {structure.is_active && " (Active)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -846,9 +968,9 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
         <CreateLineItemDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          structureUuid={structureUuid}
+          structureUuid={selectedStructureUuid}
           parentOptions={getAllParentOptions()}
-          onItemCreated={() => fetchLineItems(structureUuid)}
+          onItemCreated={() => fetchLineItems(selectedStructureUuid)}
         />
 
         <DeleteLineItemDialog
@@ -856,8 +978,8 @@ export default function ReportStructureModifier({ structureUuid }: ReportStructu
           onOpenChange={setDeleteDialogOpen}
           item={itemToDelete}
           children={itemToDelete ? getChildrenForItem(itemToDelete.report_line_item_uuid) : []}
-          structureUuid={structureUuid}
-          onItemDeleted={() => fetchLineItems(structureUuid)}
+          structureUuid={selectedStructureUuid}
+          onItemDeleted={() => fetchLineItems(selectedStructureUuid)}
         />
       </CardContent>
     </Card>
