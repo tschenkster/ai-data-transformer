@@ -140,6 +140,33 @@ export async function updateGlobalSortOrder(
   }
 }
 
+export async function updateGlobalSortOrderWithTimeout(
+  structureUuid: string,
+  orderedItems: ReportLineItem[],
+  timeoutMs = 10000
+): Promise<{ success: boolean; error?: string; updatedCount?: number }> {
+  let didTimeout = false;
+  try {
+    const timeout = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        didTimeout = true;
+        reject(new Error('update_sort_orders_transaction timed out'));
+      }, timeoutMs);
+    });
+
+    const result = await Promise.race([
+      updateGlobalSortOrder(structureUuid, orderedItems),
+      timeout,
+    ]);
+
+    return result as { success: boolean; error?: string; updatedCount?: number };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Sort order update timeout/error:', msg);
+    return { success: false, error: didTimeout ? 'timeout' : msg };
+  }
+}
+
 /**
  * Reorders an item within the same parent level and updates global sort_order
  */
@@ -234,7 +261,7 @@ export async function reorderItemWithinParent(
   console.log(`Attempting to reorder item ${activeItemId} over ${overItemId}`);
   console.log(`New order will update ${newOrderedItems.length} items`);
   
-  const updateResult = await updateGlobalSortOrder(structureUuid, newOrderedItems);
+  const updateResult = await updateGlobalSortOrderWithTimeout(structureUuid, newOrderedItems, 10000);
   
   if (!updateResult.success) {
     console.error('Database update failed:', updateResult.error);

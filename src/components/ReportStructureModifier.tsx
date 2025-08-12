@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,7 @@ import {
   Trash2,
   Loader2
 } from 'lucide-react';
-import { buildTreeFromGlobalOrder, reorderItemWithinParent, flattenTreeToSequentialOrder } from '@/lib/sortOrderUtils';
+import { buildTreeFromGlobalOrder, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/lib/sortOrderUtils';
 
 interface ReportLineItem {
   report_line_item_id: number;
@@ -257,6 +257,8 @@ interface ReportStructureModifierProps {
 
 export default function ReportStructureModifier({}: ReportStructureModifierProps) {
   const { toast } = useToast();
+  
+  const reorderToastRef = useRef<{ id: string; dismiss: () => void; update: (t: any) => void } | null>(null);
   
   // Structure selection state
   const [structures, setStructures] = useState<ReportStructure[]>([]);
@@ -578,19 +580,16 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       return;
     }
 
-    // Prevent concurrent reorders and show feedback
     setIsReordering(true);
-    toast({ title: "Saving order...", description: "Applying changes to structure" });
+    const t = toast({ title: "Reorder in progress", description: "Applying changes...", duration: 1000000 });
+    reorderToastRef.current = t as any;
 
-    // Show loading state during reorder
     setLoading(true);
-    
     const originalSortOrder = lineItems.find(item => item.report_line_item_uuid === active.id)?.sort_order;
 
     try {
       console.log(`Drag end: moving ${active.id} to position of ${over.id}`);
       
-      // Use the new utility function for global sort order management
       const result = await reorderItemWithinParent(
         treeData, 
         active.id as string, 
@@ -600,20 +599,19 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
       if (!result.success) {
         console.error('Reorder failed:', result.error);
-        toast({
-          title: "Invalid Move",
+        t.update({
+          id: (t as any).id,
+          title: "Reorder failed",
           description: result.error || "Failed to reorder items",
           variant: "destructive",
-        });
+        } as any);
         return;
       }
 
       console.log('Reorder successful, refreshing data');
 
-      // Find items for logging
       const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id);
       if (activeItem && originalSortOrder !== undefined) {
-        // Log the change for undo functionality
         await logStructureChange(
           activeItem.report_line_item_uuid,
           activeItem.report_line_item_id,
@@ -621,28 +619,22 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
           activeItem.report_line_item_key,
           getItemDisplayName(activeItem),
           { sortOrder: originalSortOrder },
-          { sortOrder: -1 } // Will be updated after refresh
+          { sortOrder: -1 }
         );
       }
 
-      // Refresh data to reflect new global sort order
       await fetchLineItems(selectedStructureUuid);
 
-      // Show detailed success message
-      const updateDetails = result.updatedCount ? ` (${result.updatedCount} items updated)` : '';
-      toast({
-        title: "Success",
-        description: `Items reordered successfully${updateDetails}`,
-      });
+      const updateDetails = result.updatedCount ? ` (${result.updatedCount} items)` : '';
+      t.update({ id: (t as any).id, title: "Reordered", description: `Items reordered successfully${updateDetails}` } as any);
     } catch (error) {
       console.error('Error reordering items:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reorder items",
-        variant: "destructive",
-      });
+      t.update({ id: (t as any).id, title: "Error", description: "Failed to reorder items", variant: "destructive" } as any);
     } finally {
       setLoading(false);
+      setIsReordering(false);
+      try { reorderToastRef.current?.dismiss(); } catch {}
+      reorderToastRef.current = null;
     }
   };
 
@@ -662,9 +654,16 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     const entry = changeHistory.find(e => e.change_uuid === changeUuid);
     if (!entry || entry.is_undone) return;
 
+    if (isReordering) {
+      toast({ title: "Operation in progress", description: "Please wait for the current operation to finish." });
+      return;
+    }
+
+    setIsReordering(true);
+    const t = toast({ title: "Undo in progress", description: "Reverting change...", duration: 1000000 });
+
     try {
       if (entry.action_type === 'rename') {
-        // Undo rename by restoring previous description
         const previousState = typeof entry.previous_state === 'string' 
           ? JSON.parse(entry.previous_state) 
           : entry.previous_state;
@@ -679,34 +678,31 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
         if (error) throw error;
 
-        // Reload line items to get updated description and rebuild tree
         await fetchLineItems(selectedStructureUuid);
-        
         highlightRecentlyUndoneItem(entry.line_item_key);
-
       } else if (entry.action_type === 'move') {
-        // Undo move by restoring previous sort order
         const previousState = typeof entry.previous_state === 'string' 
           ? JSON.parse(entry.previous_state) 
           : entry.previous_state;
 
-        const { error } = await supabase
-          .from('report_line_items')
-          .update({ 
-            sort_order: previousState?.sortOrder 
-          })
-          .eq('report_line_item_key', entry.line_item_key)
-          .eq('report_structure_uuid', selectedStructureUuid);
+        const current = [...lineItems].sort((a, b) => a.sort_order - b.sort_order);
+        const idx = current.findIndex(i => i.report_line_item_key === entry.line_item_key);
+        if (idx === -1 || previousState?.sortOrder === undefined) {
+          throw new Error('Original item or sort order not found for undo.');
+        }
+        const [item] = current.splice(idx, 1);
+        const targetIndex = Math.max(0, Math.min(previousState.sortOrder, current.length));
+        current.splice(targetIndex, 0, item);
 
-        if (error) throw error;
+        const reordered = current.map((it, i) => ({ ...it, sort_order: i }));
+        const result = await updateGlobalSortOrderWithTimeout(selectedStructureUuid, reordered, 10000);
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to update sort order during undo.');
+        }
 
         highlightRecentlyUndoneItem(entry.line_item_key);
-
-        // Reload line items to get updated sort order
         await fetchLineItems(selectedStructureUuid);
-
       } else if (entry.action_type === 'create') {
-        // Undo create by deleting the item
         const { error } = await supabase
           .from('report_line_items')
           .delete()
@@ -714,59 +710,40 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
           .eq('report_structure_uuid', selectedStructureUuid);
 
         if (error) throw error;
-
-        // Reload line items
         await fetchLineItems(selectedStructureUuid);
-
       } else if (entry.action_type === 'delete') {
-        // Undo delete by recreating the item
         const previousState = typeof entry.previous_state === 'string' 
           ? JSON.parse(entry.previous_state) 
           : entry.previous_state;
 
         if (previousState) {
-          // Remove fields that shouldn't be restored
           const { children, ...itemData } = previousState;
-          
           const { error } = await supabase
             .from('report_line_items')
             .insert(itemData);
-
           if (error) throw error;
-
-          // TODO: Restore children if they were cascade deleted
-          
-          // Reload line items
           await fetchLineItems(selectedStructureUuid);
         }
       }
 
-      // Mark entry as undone in database
-      const { error } = await supabase
+      const { error: logError } = await supabase
         .from('report_structures_change_log')
         .update({ 
           is_undone: true, 
           undone_at: new Date().toISOString() 
         })
         .eq('change_uuid', changeUuid);
+      if (logError) throw logError;
 
-      if (error) throw error;
-
-      // Refresh change history
       await fetchChangeHistory(selectedStructureUuid);
 
-      toast({
-        title: "Change undone",
-        description: "The change has been successfully undone",
-      });
-
+      t.update({ title: "Undone", description: "The change has been successfully undone" } as any);
     } catch (error) {
       console.error('Error undoing change:', error);
-      toast({
-        title: "Error",
-        description: "Failed to undo the change",
-        variant: "destructive",
-      });
+      t.update({ title: "Error", description: "Failed to undo the change", variant: "destructive" } as any);
+    } finally {
+      setIsReordering(false);
+      try { (t as any).dismiss(); } catch {}
     }
   };
 
