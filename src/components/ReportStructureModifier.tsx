@@ -267,6 +267,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -565,9 +566,21 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
+    if (isReordering) {
+      toast({
+        title: "Reorder in progress",
+        description: "Please wait for the current operation to finish.",
+      });
+      return;
+    }
+
     if (!over || active.id === over.id || !selectedStructureUuid) {
       return;
     }
+
+    // Prevent concurrent reorders and show feedback
+    setIsReordering(true);
+    toast({ title: "Saving order...", description: "Applying changes to structure" });
 
     // Show loading state during reorder
     setLoading(true);

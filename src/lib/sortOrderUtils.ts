@@ -90,95 +90,49 @@ export async function updateGlobalSortOrder(
       sort_order: index
     }));
 
-    console.log(`Updating sort order for ${updates.length} items in structure ${structureUuid}`);
+    // Validate payload to avoid bad requests
+    const sortOrders = updates.map(u => u.sort_order);
+    const uniqueCount = new Set(sortOrders).size;
+    const min = Math.min(...sortOrders);
+    const max = Math.max(...sortOrders);
+    if (uniqueCount !== sortOrders.length || min !== 0 || max !== updates.length - 1) {
+      console.error('Invalid sort order payload', { uniqueCount, expected: updates.length, min, max });
+      return { success: false, error: 'Invalid sort order payload generated on client' };
+    }
 
-    // Try to use the atomic database function first
-    try {
-      console.log('Attempting atomic sort order update using database function');
-      
-      // Use raw query approach since the function isn't in the generated types yet
-      const { data: dbResult, error: dbError } = await (supabase as any).rpc('update_sort_orders_transaction', {
+    console.log(`Updating sort order for ${updates.length} items in structure ${structureUuid}`);
+    console.log('Attempting atomic sort order update using database function');
+
+    const attemptRpc = async () => {
+      return (supabase as any).rpc('update_sort_orders_transaction', {
         p_structure_uuid: structureUuid,
         p_updates: updates
-      }) as { data: UpdateSortOrderResult | null, error: any };
+      }) as Promise<{ data: UpdateSortOrderResult | null; error: any }>;
+    };
 
-      if (!dbError && dbResult?.success) {
-        console.log('Atomic database transaction completed successfully');
-        return { 
-          success: true, 
-          updatedCount: dbResult.updated_count || updates.length 
-        };
-      } else {
-        console.warn('Database function failed, falling back to sequential updates:', dbError?.message || 'Unknown error');
-      }
-    } catch (rpcError) {
-      console.warn('RPC call failed, using fallback approach:', rpcError);
+    // First attempt
+    let { data: dbResult, error: dbError } = await attemptRpc();
+
+    // Retry once if it failed (transient issues)
+    if ((dbError || !dbResult?.success)) {
+      console.warn('Atomic update failed, retrying once...', dbError || dbResult?.error);
+      await new Promise(res => setTimeout(res, 150));
+      const retry = await attemptRpc();
+      dbResult = retry.data;
+      dbError = retry.error;
     }
 
-    // Fallback: Sequential updates with improved error handling
-    let successCount = 0;
-    const errors: string[] = [];
-
-    // Update items sequentially to avoid race conditions
-    for (let i = 0; i < updates.length; i++) {
-      const update = updates[i];
-      try {
-        const { error } = await supabase
-          .from('report_line_items')
-          .update({ sort_order: update.sort_order })
-          .eq('report_line_item_id', update.report_line_item_id)
-          .eq('report_structure_uuid', structureUuid); // Additional safety check
-
-        if (error) {
-          console.error(`Error updating item ${update.report_line_item_id}:`, error);
-          errors.push(`Item ${update.report_line_item_id}: ${error.message}`);
-        } else {
-          successCount++;
-        }
-      } catch (updateError) {
-        console.error(`Exception updating item ${update.report_line_item_id}:`, updateError);
-        errors.push(`Item ${update.report_line_item_id}: ${updateError}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      console.error(`${errors.length} errors occurred during update:`, errors);
-      return {
-        success: false,
-        error: `Failed to update ${errors.length} items. First error: ${errors[0]}`,
-        updatedCount: successCount
+    if (!dbError && dbResult?.success) {
+      console.log('Atomic database transaction completed successfully');
+      return { 
+        success: true, 
+        updatedCount: dbResult.updated_count || updates.length 
       };
     }
 
-    console.log(`Successfully updated ${successCount} items sequentially`);
-    
-    // Verify a sample of updates
-    const verificationSample = updates.slice(0, Math.min(3, updates.length));
-    const verificationResults = await Promise.all(
-      verificationSample.map(async (update) => {
-        const { data: item, error } = await supabase
-          .from('report_line_items')
-          .select('sort_order')
-          .eq('report_line_item_id', update.report_line_item_id)
-          .single();
-        
-        if (error || item?.sort_order !== update.sort_order) {
-          console.warn(`Verification failed for item ${update.report_line_item_id}: expected ${update.sort_order}, got ${item?.sort_order}`);
-          return false;
-        }
-        return true;
-      })
-    );
-
-    const allVerified = verificationResults.every(result => result);
-    if (!allVerified) {
-      console.warn('Some updates may not have persisted correctly');
-    }
-
-    return { 
-      success: true, 
-      updatedCount: successCount 
-    };
+    const errorMsg = dbError?.message || dbResult?.error || 'Unknown error from update_sort_orders_transaction';
+    console.error('Atomic update failed definitively:', errorMsg);
+    return { success: false, error: errorMsg };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('Error in updateGlobalSortOrder:', error);
