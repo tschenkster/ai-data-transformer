@@ -615,9 +615,11 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       // Refresh data to reflect new global sort order
       await fetchLineItems(selectedStructureUuid);
 
+      // Show detailed success message
+      const updateDetails = result.updatedCount ? ` (${result.updatedCount} items updated)` : '';
       toast({
         title: "Success",
-        description: "Items reordered successfully",
+        description: `Items reordered successfully${updateDetails}`,
       });
     } catch (error) {
       console.error('Error reordering items:', error);

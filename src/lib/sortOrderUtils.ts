@@ -40,18 +40,31 @@ interface TreeNodeData {
   isExpanded?: boolean;
 }
 
+interface UpdateSortOrderResult {
+  success: boolean;
+  updated_count?: number;
+  total_count?: number;
+  error?: string;
+  message?: string;
+}
+
 /**
  * Flattens a tree structure into a sequential array using pre-order traversal
  * This ensures proper hierarchical ordering for global sort_order assignment
+ * @param treeData - The tree structure to flatten
+ * @param preserveOrder - If true, preserves the current array order (for reordering operations)
  */
-export function flattenTreeToSequentialOrder(treeData: TreeNodeData[]): ReportLineItem[] {
+export function flattenTreeToSequentialOrder(treeData: TreeNodeData[], preserveOrder = false): ReportLineItem[] {
   const flattened: ReportLineItem[] = [];
   
   const traverse = (nodes: TreeNodeData[]) => {
-    // Sort nodes by their current sort_order to maintain intended order
-    const sortedNodes = [...nodes].sort((a, b) => a.item.sort_order - b.item.sort_order);
+    // When preserveOrder is true (during reordering), maintain the current array order
+    // Otherwise, sort by existing sort_order for initial tree building
+    const nodesToProcess = preserveOrder 
+      ? nodes 
+      : [...nodes].sort((a, b) => a.item.sort_order - b.item.sort_order);
     
-    for (const node of sortedNodes) {
+    for (const node of nodesToProcess) {
       flattened.push(node.item);
       if (node.children.length > 0) {
         traverse(node.children);
@@ -64,12 +77,12 @@ export function flattenTreeToSequentialOrder(treeData: TreeNodeData[]): ReportLi
 }
 
 /**
- * Updates sort_order for all items in a structure to be globally sequential
+ * Updates sort_order for all items in a structure using improved sequential updates
  */
 export async function updateGlobalSortOrder(
   structureUuid: string, 
   orderedItems: ReportLineItem[]
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; updatedCount?: number }> {
   try {
     // Create batch updates for all items with new sequential sort_order
     const updates = orderedItems.map((item, index) => ({
@@ -79,32 +92,99 @@ export async function updateGlobalSortOrder(
 
     console.log(`Updating sort order for ${updates.length} items in structure ${structureUuid}`);
 
-    // Execute all updates and check for errors
-    const results = await Promise.all(
-      updates.map(async (update) => {
+    // Try to use the database function if possible, otherwise fall back to sequential updates
+    try {
+      // Attempt to call the database function with raw SQL
+      const { data: dbResult, error: dbError } = await supabase
+        .from('report_line_items')
+        .select('report_line_item_id')
+        .limit(1)
+        .then(async () => {
+          // Use a raw query since RPC isn't typed properly
+          const { data, error } = await (supabase as any).rpc('update_sort_orders_transaction', {
+            p_structure_uuid: structureUuid,
+            p_updates: JSON.stringify(updates)
+          });
+          return { data, error };
+        });
+
+      if (!dbError && dbResult?.success) {
+        console.log('Database transaction completed successfully');
+        return { 
+          success: true, 
+          updatedCount: dbResult.updated_count || updates.length 
+        };
+      } else {
+        console.warn('Database function failed, falling back to sequential updates:', dbError);
+      }
+    } catch (rpcError) {
+      console.warn('RPC call failed, using fallback approach:', rpcError);
+    }
+
+    // Fallback: Sequential updates with improved error handling
+    let successCount = 0;
+    const errors: string[] = [];
+
+    // Update items sequentially to avoid race conditions
+    for (let i = 0; i < updates.length; i++) {
+      const update = updates[i];
+      try {
         const { error } = await supabase
           .from('report_line_items')
           .update({ sort_order: update.sort_order })
-          .eq('report_line_item_id', update.report_line_item_id);
-        
+          .eq('report_line_item_id', update.report_line_item_id)
+          .eq('report_structure_uuid', structureUuid); // Additional safety check
+
         if (error) {
           console.error(`Error updating item ${update.report_line_item_id}:`, error);
-          return { success: false, error: error.message };
+          errors.push(`Item ${update.report_line_item_id}: ${error.message}`);
+        } else {
+          successCount++;
         }
-        return { success: true };
+      } catch (updateError) {
+        console.error(`Exception updating item ${update.report_line_item_id}:`, updateError);
+        errors.push(`Item ${update.report_line_item_id}: ${updateError}`);
+      }
+    }
+
+    if (errors.length > 0) {
+      console.error(`${errors.length} errors occurred during update:`, errors);
+      return {
+        success: false,
+        error: `Failed to update ${errors.length} items. First error: ${errors[0]}`,
+        updatedCount: successCount
+      };
+    }
+
+    console.log(`Successfully updated ${successCount} items sequentially`);
+    
+    // Verify a sample of updates
+    const verificationSample = updates.slice(0, Math.min(3, updates.length));
+    const verificationResults = await Promise.all(
+      verificationSample.map(async (update) => {
+        const { data: item, error } = await supabase
+          .from('report_line_items')
+          .select('sort_order')
+          .eq('report_line_item_id', update.report_line_item_id)
+          .single();
+        
+        if (error || item?.sort_order !== update.sort_order) {
+          console.warn(`Verification failed for item ${update.report_line_item_id}: expected ${update.sort_order}, got ${item?.sort_order}`);
+          return false;
+        }
+        return true;
       })
     );
 
-    // Check if any updates failed
-    const failedUpdates = results.filter(result => !result.success);
-    if (failedUpdates.length > 0) {
-      const errorMessage = `Failed to update ${failedUpdates.length} items: ${failedUpdates[0].error}`;
-      console.error(errorMessage);
-      return { success: false, error: errorMessage };
+    const allVerified = verificationResults.every(result => result);
+    if (!allVerified) {
+      console.warn('Some updates may not have persisted correctly');
     }
 
-    console.log('All sort order updates completed successfully');
-    return { success: true };
+    return { 
+      success: true, 
+      updatedCount: successCount 
+    };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('Error in updateGlobalSortOrder:', error);
@@ -120,7 +200,7 @@ export async function reorderItemWithinParent(
   activeItemId: string,
   overItemId: string,
   structureUuid: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; details?: string; updatedCount?: number }> {
   // Find all flat items
   const allItems = flattenTreeToSequentialOrder(treeData);
   const activeItem = allItems.find(item => item.report_line_item_uuid === activeItemId);
@@ -199,20 +279,26 @@ export async function reorderItemWithinParent(
   // Rebuild the entire tree structure for global ordering
   const newTreeData = parentUuid ? treeData : reorderedSiblings;
   
-  // Flatten to get new global sequential order
-  const newOrderedItems = flattenTreeToSequentialOrder(newTreeData);
+  // Flatten to get new global sequential order - preserve the reordered structure
+  const newOrderedItems = flattenTreeToSequentialOrder(newTreeData, true);
   
   // Update database with new global sort_order
   console.log(`Attempting to reorder item ${activeItemId} over ${overItemId}`);
+  console.log(`New order will update ${newOrderedItems.length} items`);
+  
   const updateResult = await updateGlobalSortOrder(structureUuid, newOrderedItems);
   
   if (!updateResult.success) {
     console.error('Database update failed:', updateResult.error);
-    return { success: false, error: updateResult.error || 'Failed to update database' };
+    return { 
+      success: false, 
+      error: updateResult.error || 'Failed to update database',
+      details: `Updated ${updateResult.updatedCount || 0} of ${newOrderedItems.length} items`
+    };
   }
 
-  console.log('Reorder operation completed successfully');
-  return { success: true };
+  console.log(`Reorder operation completed successfully - updated ${updateResult.updatedCount} items`);
+  return { success: true, updatedCount: updateResult.updatedCount };
 }
 
 /**
