@@ -516,6 +516,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      reorder_line_item_with_hierarchy: {
+        Args: {
+          p_structure_uuid: string
+          p_moved_item_uuid: string
+          p_new_parent_uuid?: string
+          p_target_position?: number
+        }
+        Returns: Json
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown
@@ -527,6 +536,10 @@ export type Database = {
       sparsevec_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      update_sort_orders_transaction: {
+        Args: { p_structure_uuid: string; p_updates: Json }
+        Returns: Json
       }
       vector_avg: {
         Args: { "": number[] }
