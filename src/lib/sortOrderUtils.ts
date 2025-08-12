@@ -167,113 +167,129 @@ export async function updateGlobalSortOrderWithTimeout(
   }
 }
 
-/**
- * Reorders an item within the same parent level and updates global sort_order
- */
-export async function reorderItemWithinParent(
-  treeData: TreeNodeData[],
-  activeItemId: string,
-  overItemId: string,
-  structureUuid: string
-): Promise<{ success: boolean; error?: string; details?: string; updatedCount?: number }> {
-  // Find all flat items
-  const allItems = flattenTreeToSequentialOrder(treeData);
-  const activeItem = allItems.find(item => item.report_line_item_uuid === activeItemId);
-  const overItem = allItems.find(item => item.report_line_item_uuid === overItemId);
-
-  if (!activeItem || !overItem) {
-    return { success: false, error: "Items not found" };
-  }
-
-  // Check if items have the same parent (constraint)
-  if (activeItem.parent_report_line_item_uuid !== overItem.parent_report_line_item_uuid) {
-    return { success: false, error: "Items can only be reordered within the same parent" };
-  }
-
-  // Find the parent node in tree
-  const parentUuid = activeItem.parent_report_line_item_uuid;
-  let parentNode: TreeNodeData | null = null;
-
-  const findParentNode = (nodes: TreeNodeData[]): TreeNodeData | null => {
-    for (const node of nodes) {
-      if (!parentUuid) {
-        // Root level items - use the entire tree as parent
-        return { 
-          id: 'root', 
-          key: 'root',
-          description: 'Root', 
-          level: -1,
-          item: {} as ReportLineItem, 
-          children: nodes 
-        };
-      }
-      if (node.id === parentUuid) {
-        return node;
-      }
-      const found = findParentNode(node.children);
-      if (found) return found;
+// Helper function to find an item in the tree structure
+function findItemInTree(treeData: TreeNodeData[], itemId: string): TreeNodeData | null {
+  for (const node of treeData) {
+    if (node.id === itemId) {
+      return node;
     }
-    return null;
-  };
+    const found = findItemInTree(node.children, itemId);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
 
-  if (!parentUuid) {
-    // Root level reordering
-    parentNode = { 
-      id: 'root', 
-      key: 'root',
-      description: 'Root',
-      level: -1,
-      item: {} as ReportLineItem, 
-      children: treeData 
+// Enhanced hierarchical item reordering with cross-parent support
+export async function reorderItem(
+  treeData: TreeNodeData[], 
+  activeItemId: string, 
+  overItemId: string, 
+  structureUuid: string,
+  dropPosition: 'before' | 'after' | 'inside' = 'after'
+): Promise<{ success: boolean; error?: string; details?: string; updatedCount?: number }> {
+  try {
+    console.log('🔄 Starting hierarchical reorder operation', { activeItemId, overItemId, structureUuid, dropPosition });
+
+    // Find the active and over items in the tree
+    const activeItem = findItemInTree(treeData, activeItemId);
+    const overItem = findItemInTree(treeData, overItemId);
+
+    if (!activeItem || !overItem) {
+      return { 
+        success: false, 
+        error: 'Item not found in tree structure',
+        details: `Active: ${!!activeItem}, Over: ${!!overItem}`
+      };
+    }
+
+    console.log('📦 Found items:', {
+      active: { id: activeItem.item.report_line_item_id, key: activeItem.item.report_line_item_key },
+      over: { id: overItem.item.report_line_item_id, key: overItem.item.report_line_item_key },
+      dropPosition
+    });
+
+    // Determine new parent and position based on drop position
+    let newParentUuid: string | null = null;
+    let targetPosition = 0;
+
+    if (dropPosition === 'inside') {
+      // Moving inside the over item (making it a child)
+      newParentUuid = overItem.item.report_line_item_uuid;
+      targetPosition = (overItem.children?.length || 0) + 1;
+    } else {
+      // Moving before/after the over item (same parent as over item)
+      newParentUuid = overItem.item.parent_report_line_item_uuid || null;
+      
+      // Find siblings of the over item to determine position
+      let siblings: TreeNodeData[];
+      if (newParentUuid) {
+        const parent = findItemInTree(treeData, newParentUuid);
+        siblings = parent?.children || [];
+      } else {
+        siblings = treeData.filter(item => !item.item.parent_report_line_item_uuid);
+      }
+      
+      const overIndex = siblings.findIndex(item => item.item.report_line_item_uuid === overItemId);
+      targetPosition = dropPosition === 'before' ? overIndex + 1 : overIndex + 2;
+    }
+
+    console.log('🎯 Target placement:', { newParentUuid, targetPosition });
+
+    // Use the new hierarchical reordering RPC function
+    const { data, error } = await (supabase as any).rpc('reorder_line_item_with_hierarchy', {
+      p_structure_uuid: structureUuid,
+      p_moved_item_uuid: activeItemId,
+      p_new_parent_uuid: newParentUuid,
+      p_target_position: targetPosition
+    });
+
+    if (error) {
+      console.error('❌ Database RPC failed:', error);
+      return { 
+        success: false, 
+        error: `Database operation failed: ${error.message}`,
+        details: error.details || 'Unknown database error'
+      };
+    }
+
+    // Type the response data properly
+    const result = data as any;
+    if (!result?.success) {
+      console.error('❌ Reorder operation failed:', result);
+      return { 
+        success: false, 
+        error: result?.error || 'Reorder operation failed',
+        details: result?.message || 'Unknown operation error'
+      };
+    }
+
+    console.log('✅ Hierarchical reorder completed successfully:', result);
+    return {
+      success: true,
+      updatedCount: result.affected_count,
+      details: result.message
     };
-  } else {
-    parentNode = findParentNode(treeData);
-  }
 
-  if (!parentNode) {
-    return { success: false, error: "Parent node not found" };
-  }
-
-  // Get siblings and their current positions
-  const siblings = parentNode.children;
-  const activeIndex = siblings.findIndex(child => child.id === activeItemId);
-  const overIndex = siblings.findIndex(child => child.id === overItemId);
-
-  if (activeIndex === -1 || overIndex === -1) {
-    return { success: false, error: "Sibling positions not found" };
-  }
-
-  // Reorder siblings array
-  const reorderedSiblings = [...siblings];
-  const [movedItem] = reorderedSiblings.splice(activeIndex, 1);
-  reorderedSiblings.splice(overIndex, 0, movedItem);
-
-  // Update the parent's children with new order
-  parentNode.children = reorderedSiblings;
-
-  // Rebuild the entire tree structure for global ordering
-  const newTreeData = parentUuid ? treeData : reorderedSiblings;
-  
-  // Flatten to get new global sequential order - preserve the reordered structure
-  const newOrderedItems = flattenTreeToSequentialOrder(newTreeData, true);
-  
-  // Update database with new global sort_order
-  console.log(`Attempting to reorder item ${activeItemId} over ${overItemId}`);
-  console.log(`New order will update ${newOrderedItems.length} items`);
-  
-  const updateResult = await updateGlobalSortOrderWithTimeout(structureUuid, newOrderedItems, 10000);
-  
-  if (!updateResult.success) {
-    console.error('Database update failed:', updateResult.error);
+  } catch (error) {
+    console.error('💥 Hierarchical reorder operation failed:', error);
     return { 
       success: false, 
-      error: updateResult.error || 'Failed to update database',
-      details: `Updated ${updateResult.updatedCount || 0} of ${newOrderedItems.length} items`
+      error: 'Failed to reorder items',
+      details: error instanceof Error ? error.message : 'Unknown error'
     };
   }
+}
 
-  console.log(`Reorder operation completed successfully - updated ${updateResult.updatedCount} items`);
-  return { success: true, updatedCount: updateResult.updatedCount };
+// Legacy function for backward compatibility - now redirects to new hierarchical function
+export async function reorderItemWithinParent(
+  treeData: TreeNodeData[], 
+  activeItemId: string, 
+  overItemId: string, 
+  structureUuid: string
+): Promise<{ success: boolean; error?: string; details?: string; updatedCount?: number }> {
+  return reorderItem(treeData, activeItemId, overItemId, structureUuid, 'after');
 }
 
 /**

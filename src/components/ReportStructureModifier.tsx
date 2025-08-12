@@ -42,7 +42,7 @@ import {
   Trash2,
   Loader2
 } from 'lucide-react';
-import { buildTreeFromGlobalOrder, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/lib/sortOrderUtils';
+import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/lib/sortOrderUtils';
 
 interface ReportLineItem {
   report_line_item_id: number;
@@ -567,74 +567,75 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-
-    if (isReordering) {
-      toast({
-        title: "Reorder in progress",
-        description: "Please wait for the current operation to finish.",
-      });
-      return;
-    }
-
+    
     if (!over || active.id === over.id || !selectedStructureUuid) {
       return;
     }
 
-    setIsReordering(true);
-    const t = toast({ title: "Reorder in progress", description: "Applying changes...", duration: 1000000 });
-    reorderToastRef.current = t as any;
-
-    setLoading(true);
-    const originalSortOrder = lineItems.find(item => item.report_line_item_uuid === active.id)?.sort_order;
+    // Show persistent loading toast immediately
+    const toastId = toast({
+      title: "Moving item...",
+      description: "Please wait while we update the structure",
+      duration: 0, // Persistent until dismissed
+    });
 
     try {
-      console.log(`Drag end: moving ${active.id} to position of ${over.id}`);
+      console.log('🎯 Drag ended:', { activeId: active.id, overId: over.id });
       
-      const result = await reorderItemWithinParent(
+      // Determine drop position based on drag context
+      // For now, default to 'after' - could be enhanced with drop zone detection
+      const dropPosition: 'before' | 'after' | 'inside' = 'after';
+      
+      const result = await reorderItem(
         treeData, 
         active.id as string, 
         over.id as string, 
-        selectedStructureUuid
+        selectedStructureUuid,
+        dropPosition
       );
 
       if (!result.success) {
-        console.error('Reorder failed:', result.error);
-        t.update({
-          id: (t as any).id,
-          title: "Reorder failed",
-          description: result.error || "Failed to reorder items",
-          variant: "destructive",
-        } as any);
-        return;
+        console.error('❌ Reorder failed:', result);
+        throw new Error(result.error || 'Reorder operation failed');
       }
 
-      console.log('Reorder successful, refreshing data');
-
+      console.log('✅ Hierarchical reorder successful, refreshing data...');
+      
+      // Log the move change with better context
       const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id);
-      if (activeItem && originalSortOrder !== undefined) {
+      if (activeItem) {
         await logStructureChange(
           activeItem.report_line_item_uuid,
           activeItem.report_line_item_id,
           'move',
           activeItem.report_line_item_key,
           getItemDisplayName(activeItem),
-          { sortOrder: originalSortOrder },
-          { sortOrder: -1 }
+          { operation: 'move_start' },
+          { operation: 'move_complete', updatedCount: result.updatedCount }
         );
       }
 
+      // Refresh the data
       await fetchLineItems(selectedStructureUuid);
+      
+      // Update success toast
+      toast({
+        title: "Item moved successfully",
+        description: `Structure updated (${result.updatedCount} items affected)`,
+        duration: 3000,
+      });
 
-      const updateDetails = result.updatedCount ? ` (${result.updatedCount} items)` : '';
-      t.update({ id: (t as any).id, title: "Reordered", description: `Items reordered successfully${updateDetails}` } as any);
     } catch (error) {
-      console.error('Error reordering items:', error);
-      t.update({ id: (t as any).id, title: "Error", description: "Failed to reorder items", variant: "destructive" } as any);
+      console.error('💥 Drag operation failed:', error);
+      toast({
+        title: "Move failed",
+        description: error instanceof Error ? error.message : "Failed to move item",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
-      setLoading(false);
-      setIsReordering(false);
-      try { reorderToastRef.current?.dismiss(); } catch {}
-      reorderToastRef.current = null;
+      // Always dismiss the loading toast
+      toastId.dismiss();
     }
   };
 
