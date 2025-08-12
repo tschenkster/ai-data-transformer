@@ -241,9 +241,13 @@ export async function reorderItem(
         siblings = treeData.filter(item => !item.item.parent_report_line_item_uuid);
       }
       
-      // Calculate target position based on current sort_order in the flat structure
-      const overSortOrder = overItem.item.sort_order;
-      targetPosition = dropPosition === 'before' ? overSortOrder : overSortOrder + 1;
+      // Calculate target position based on sibling index, not sort_order
+      const overSiblingIndex = siblings.findIndex(item => item.item.report_line_item_uuid === overItemId);
+      if (overSiblingIndex === -1) {
+        throw new Error(`Could not find over item ${overItemId} among siblings`);
+      }
+      
+      targetPosition = dropPosition === 'before' ? overSiblingIndex : overSiblingIndex + 1;
     }
 
     console.log('🎯 Target placement:', { newParentUuid, targetPosition });
