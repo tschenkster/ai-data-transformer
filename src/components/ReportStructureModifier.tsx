@@ -592,6 +592,18 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         throw new Error('Cannot move item to itself');
       }
       
+      // Capture previous state before the move
+      const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id as string);
+      if (!activeItem) {
+        throw new Error('Active item not found');
+      }
+      
+      const previousState = {
+        sort_order: activeItem.sort_order,
+        parent_report_line_item_uuid: activeItem.parent_report_line_item_uuid,
+        hierarchy_path: activeItem.hierarchy_path
+      };
+      
       const result = await reorderItem(
         treeData, 
         active.id as string, 
@@ -607,22 +619,32 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
       console.log('✅ Hierarchical reorder successful:', result);
       
-      // Log the move change with better context
-      const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id);
-      if (activeItem) {
+      // Refresh the data to get the new state
+      await fetchLineItems(selectedStructureUuid);
+      
+      // Get the updated item state after the move
+      const { data: updatedItem } = await supabase
+        .from('report_line_items')
+        .select('*')
+        .eq('report_line_item_uuid', active.id as string)
+        .single();
+
+      if (updatedItem) {
+        // Log the move change with actual state data
         await logStructureChange(
           activeItem.report_line_item_uuid,
           activeItem.report_line_item_id,
           'move',
           activeItem.report_line_item_key,
           getItemDisplayName(activeItem),
-          { operation: 'move_start' },
-          { operation: 'move_complete', updatedCount: result.updatedCount }
+          previousState,
+          {
+            sort_order: updatedItem.sort_order,
+            parent_report_line_item_uuid: updatedItem.parent_report_line_item_uuid,
+            hierarchy_path: updatedItem.hierarchy_path
+          }
         );
       }
-
-      // Refresh the data
-      await fetchLineItems(selectedStructureUuid);
       
       // Update success toast
       toast({
