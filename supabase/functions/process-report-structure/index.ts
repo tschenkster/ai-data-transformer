@@ -164,20 +164,13 @@ serve(async (req) => {
       console.log(`Created new structure ID: ${structureId}, UUID: ${structureUuid}`);
     }
 
-    // First pass: Create line items with UUIDs and ensure unique sort_order
+    // First pass: Create line items with UUIDs and preserve original file order
     const keyToUuidMap = new Map<string, string>();
     
-    // Sort structure data to maintain hierarchical order before assigning sort_order
-    const sortedStructureData = [...structureData].sort((a, b) => {
-      // Primary sort by hierarchy path if available, otherwise by key
-      const aSort = a.hierarchy_path || a.report_line_item_key;
-      const bSort = b.hierarchy_path || b.report_line_item_key;
-      return aSort.localeCompare(bSort);
-    });
+    // Preserve original file order - no sorting to maintain the exact row sequence from upload
+    console.log(`Processing ${structureData.length} items preserving original file order (row 2 → sort_order 0, row 3 → sort_order 1, etc.)`);
     
-    console.log(`Processing ${sortedStructureData.length} items with sequential sort_order assignment`);
-    
-    const lineItems = sortedStructureData.map((item: ReportStructureData, index: number) => {
+    const lineItems = structureData.map((item: ReportStructureData, index: number) => {
       // Validate required fields
       if (!item.report_line_item_key) {
         throw new Error(`Missing report_line_item_key at row ${index + 1}`);
@@ -203,7 +196,7 @@ serve(async (req) => {
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         parent_report_line_item_uuid: null, // Will be set in second pass
         is_parent_key_existing: !!item.parent_report_line_item_key,
-        sort_order: index, // Use sequential index instead of potentially duplicate source values
+        sort_order: index, // Preserve original file order: Excel row (index + 2) → sort_order index
         hierarchy_path: item.hierarchy_path || null,
         level_1_line_item_description: item.level_1_line_item_description || null,
         level_2_line_item_description: item.level_2_line_item_description || null,
@@ -255,6 +248,7 @@ serve(async (req) => {
       const batch = lineItems.slice(i, i + batchSize);
       
       console.log(`Inserting batch ${Math.floor(i / batchSize) + 1}: items ${i} to ${Math.min(i + batchSize - 1, lineItems.length - 1)}`);
+      console.log(`File order mapping for batch: Excel rows ${i + 2}-${Math.min(i + batchSize - 1, lineItems.length - 1) + 2} → sort_order ${i}-${Math.min(i + batchSize - 1, lineItems.length - 1)}`);
       
       const { error: lineItemsError } = await supabase
         .from('report_line_items')
@@ -262,7 +256,11 @@ serve(async (req) => {
 
       if (lineItemsError) {
         console.error('Error inserting line items batch:', lineItemsError);
-        console.error('Batch details:', batch.map(item => ({ key: item.report_line_item_key, sort_order: item.sort_order })));
+        console.error('Batch details:', batch.map(item => ({ 
+          key: item.report_line_item_key, 
+          sort_order: item.sort_order, 
+          file_row: item.sort_order + 2 
+        })));
         
         // Cleanup: delete the structure if line items failed and it's a new structure
         if (!overwriteMode) {
@@ -279,7 +277,8 @@ serve(async (req) => {
       console.log(`Successfully inserted ${insertedCount}/${lineItems.length} line items`);
     }
 
-    console.log(`Successfully processed structure with ${lineItems.length} line items`);
+    console.log(`Successfully processed structure with ${lineItems.length} line items preserving original file order`);
+    console.log(`Order mapping confirmed: File rows 2-${lineItems.length + 1} → Database sort_order 0-${lineItems.length - 1}`);
 
     return new Response(
       JSON.stringify({
@@ -291,7 +290,9 @@ serve(async (req) => {
         overwrite_mode: overwriteMode,
         unmapped_columns_stored: unmappedColumns.length,
         column_mappings: columnMappings.length,
-        message: `Report structure "${overwriteMode ? currentStructureName : structureName}" processed successfully`
+        file_order_preserved: true,
+        order_mapping: `File rows 2-${lineItems.length + 1} → Sort order 0-${lineItems.length - 1}`,
+        message: `Report structure "${overwriteMode ? currentStructureName : structureName}" processed successfully with original file order preserved`
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
