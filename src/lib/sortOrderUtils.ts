@@ -217,22 +217,33 @@ export async function reorderItem(
     if (dropPosition === 'inside') {
       // Moving inside the over item (making it a child)
       newParentUuid = overItem.item.report_line_item_uuid;
-      targetPosition = (overItem.children?.length || 0) + 1;
+      targetPosition = overItem.children?.length || 0;
     } else {
       // Moving before/after the over item (same parent as over item)
       newParentUuid = overItem.item.parent_report_line_item_uuid || null;
       
-      // Find siblings of the over item to determine position
-      let siblings: TreeNodeData[];
+      // Find siblings of the over item to determine correct position
+      let siblings: TreeNodeData[] = [];
       if (newParentUuid) {
-        const parent = findItemInTree(treeData, newParentUuid);
+        // Find the parent item and get its children
+        const findParent = (nodes: TreeNodeData[]): TreeNodeData | null => {
+          for (const node of nodes) {
+            if (node.item.report_line_item_uuid === newParentUuid) return node;
+            const found = findParent(node.children);
+            if (found) return found;
+          }
+          return null;
+        };
+        const parent = findParent(treeData);
         siblings = parent?.children || [];
       } else {
+        // Root level siblings
         siblings = treeData.filter(item => !item.item.parent_report_line_item_uuid);
       }
       
-      const overIndex = siblings.findIndex(item => item.item.report_line_item_uuid === overItemId);
-      targetPosition = dropPosition === 'before' ? overIndex + 1 : overIndex + 2;
+      // Calculate target position based on current sort_order in the flat structure
+      const overSortOrder = overItem.item.sort_order;
+      targetPosition = dropPosition === 'before' ? overSortOrder : overSortOrder + 1;
     }
 
     console.log('🎯 Target placement:', { newParentUuid, targetPosition });

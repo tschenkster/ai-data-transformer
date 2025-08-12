@@ -582,9 +582,15 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     try {
       console.log('🎯 Drag ended:', { activeId: active.id, overId: over.id });
       
-      // Determine drop position based on drag context
-      // For now, default to 'after' - could be enhanced with drop zone detection
+      // Enhanced drop position detection - default to 'after' for sibling placement
+      // This ensures items are placed as siblings rather than children by default
       const dropPosition: 'before' | 'after' | 'inside' = 'after';
+      
+      // Validate the move operation before attempting
+      if (active.id === over.id) {
+        console.warn('Cannot move item to itself');
+        throw new Error('Cannot move item to itself');
+      }
       
       const result = await reorderItem(
         treeData, 
@@ -599,7 +605,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         throw new Error(result.error || 'Reorder operation failed');
       }
 
-      console.log('✅ Hierarchical reorder successful, refreshing data...');
+      console.log('✅ Hierarchical reorder successful:', result);
       
       // Log the move change with better context
       const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id);
