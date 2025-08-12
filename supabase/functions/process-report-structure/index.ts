@@ -164,9 +164,20 @@ serve(async (req) => {
       console.log(`Created new structure ID: ${structureId}, UUID: ${structureUuid}`);
     }
 
-    // First pass: Create line items with UUIDs
+    // First pass: Create line items with UUIDs and ensure unique sort_order
     const keyToUuidMap = new Map<string, string>();
-    const lineItems = structureData.map((item: ReportStructureData, index: number) => {
+    
+    // Sort structure data to maintain hierarchical order before assigning sort_order
+    const sortedStructureData = [...structureData].sort((a, b) => {
+      // Primary sort by hierarchy path if available, otherwise by key
+      const aSort = a.hierarchy_path || a.report_line_item_key;
+      const bSort = b.hierarchy_path || b.report_line_item_key;
+      return aSort.localeCompare(bSort);
+    });
+    
+    console.log(`Processing ${sortedStructureData.length} items with sequential sort_order assignment`);
+    
+    const lineItems = sortedStructureData.map((item: ReportStructureData, index: number) => {
       // Validate required fields
       if (!item.report_line_item_key) {
         throw new Error(`Missing report_line_item_key at row ${index + 1}`);
@@ -192,7 +203,7 @@ serve(async (req) => {
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         parent_report_line_item_uuid: null, // Will be set in second pass
         is_parent_key_existing: !!item.parent_report_line_item_key,
-        sort_order: item.sort_order || index,
+        sort_order: index, // Use sequential index instead of potentially duplicate source values
         hierarchy_path: item.hierarchy_path || null,
         level_1_line_item_description: item.level_1_line_item_description || null,
         level_2_line_item_description: item.level_2_line_item_description || null,
@@ -221,6 +232,21 @@ serve(async (req) => {
       }
     });
 
+    // Validate sort_order uniqueness before insertion
+    const sortOrderCounts = new Map<number, number>();
+    lineItems.forEach(item => {
+      const count = sortOrderCounts.get(item.sort_order) || 0;
+      sortOrderCounts.set(item.sort_order, count + 1);
+    });
+    
+    const duplicates = Array.from(sortOrderCounts.entries()).filter(([_, count]) => count > 1);
+    if (duplicates.length > 0) {
+      console.error('Duplicate sort_order values detected:', duplicates);
+      throw new Error(`Duplicate sort_order values found: ${duplicates.map(([order]) => order).join(', ')}`);
+    }
+    
+    console.log(`Validated ${lineItems.length} items with unique sort_order values (0-${lineItems.length - 1})`);
+
     // Insert line items in batches
     const batchSize = 100;
     let insertedCount = 0;
@@ -228,12 +254,16 @@ serve(async (req) => {
     for (let i = 0; i < lineItems.length; i += batchSize) {
       const batch = lineItems.slice(i, i + batchSize);
       
+      console.log(`Inserting batch ${Math.floor(i / batchSize) + 1}: items ${i} to ${Math.min(i + batchSize - 1, lineItems.length - 1)}`);
+      
       const { error: lineItemsError } = await supabase
         .from('report_line_items')
         .insert(batch);
 
       if (lineItemsError) {
         console.error('Error inserting line items batch:', lineItemsError);
+        console.error('Batch details:', batch.map(item => ({ key: item.report_line_item_key, sort_order: item.sort_order })));
+        
         // Cleanup: delete the structure if line items failed and it's a new structure
         if (!overwriteMode) {
           await supabase
@@ -242,11 +272,11 @@ serve(async (req) => {
             .eq('report_structure_uuid', structureUuid);
         }
         
-        throw new Error(`Failed to insert line items: ${lineItemsError.message}`);
+        throw new Error(`Failed to insert line items batch ${Math.floor(i / batchSize) + 1}: ${lineItemsError.message}`);
       }
 
       insertedCount += batch.length;
-      console.log(`Inserted ${insertedCount}/${lineItems.length} line items`);
+      console.log(`Successfully inserted ${insertedCount}/${lineItems.length} line items`);
     }
 
     console.log(`Successfully processed structure with ${lineItems.length} line items`);

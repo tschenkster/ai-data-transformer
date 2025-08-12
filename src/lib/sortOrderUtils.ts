@@ -92,30 +92,24 @@ export async function updateGlobalSortOrder(
 
     console.log(`Updating sort order for ${updates.length} items in structure ${structureUuid}`);
 
-    // Try to use the database function if possible, otherwise fall back to sequential updates
+    // Try to use the atomic database function first
     try {
-      // Attempt to call the database function with raw SQL
-      const { data: dbResult, error: dbError } = await supabase
-        .from('report_line_items')
-        .select('report_line_item_id')
-        .limit(1)
-        .then(async () => {
-          // Use a raw query since RPC isn't typed properly
-          const { data, error } = await (supabase as any).rpc('update_sort_orders_transaction', {
-            p_structure_uuid: structureUuid,
-            p_updates: JSON.stringify(updates)
-          });
-          return { data, error };
-        });
+      console.log('Attempting atomic sort order update using database function');
+      
+      // Use raw query approach since the function isn't in the generated types yet
+      const { data: dbResult, error: dbError } = await (supabase as any).rpc('update_sort_orders_transaction', {
+        p_structure_uuid: structureUuid,
+        p_updates: updates
+      }) as { data: UpdateSortOrderResult | null, error: any };
 
       if (!dbError && dbResult?.success) {
-        console.log('Database transaction completed successfully');
+        console.log('Atomic database transaction completed successfully');
         return { 
           success: true, 
           updatedCount: dbResult.updated_count || updates.length 
         };
       } else {
-        console.warn('Database function failed, falling back to sequential updates:', dbError);
+        console.warn('Database function failed, falling back to sequential updates:', dbError?.message || 'Unknown error');
       }
     } catch (rpcError) {
       console.warn('RPC call failed, using fallback approach:', rpcError);
