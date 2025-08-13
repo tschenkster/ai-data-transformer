@@ -1004,7 +1004,6 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
           structureUuid={selectedStructureUuid}
-          parentOptions={getAllParentOptions()}
           onItemCreated={() => fetchLineItems(selectedStructureUuid)}
         />
 
