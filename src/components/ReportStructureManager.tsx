@@ -444,10 +444,7 @@ export default function ReportStructureManager() {
 
       <TabsContent value="upload" className="space-y-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Upload Report Structure</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <EnhancedFileUpload onFileProcessed={handleFileProcessed} />
           </CardContent>
         </Card>
