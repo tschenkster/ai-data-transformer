@@ -141,7 +141,7 @@ function SortableItem({
     >
       <div 
         className={`
-          flex items-center gap-2 py-1 px-2 rounded transition-all duration-200
+          flex items-center gap-2 py-0.5 px-2 rounded transition-all duration-200
           ${level % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
           hover:bg-[var(--tree-hover)]
           border border-transparent hover:border-[var(--tree-border)]
@@ -218,9 +218,9 @@ function SortableItem({
             <span 
               className={`
                 text-sm flex-1 cursor-pointer min-w-0 truncate
-                ${node.item.line_item_type === 'header' || node.item.line_item_type === 'subtotal' ? 'font-semibold' : 'font-normal'} text-foreground/90
+                ${node.item.line_item_type === 'header' ? 'font-semibold' : 'font-normal'} text-foreground/90
                 hover:text-foreground hover:bg-accent/20 
-                rounded-md px-2 py-1.5 transition-all duration-200
+                rounded-md px-2 py-1 transition-all duration-200
                 focus:outline-none focus:ring-2 focus:ring-primary/20
               `}
               onClick={(e) => {
