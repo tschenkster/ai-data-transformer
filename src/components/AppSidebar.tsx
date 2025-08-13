@@ -153,7 +153,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={signOut} className="text-destructive hover:bg-destructive/10">
+                <SidebarMenuButton onClick={signOut} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </SidebarMenuButton>
