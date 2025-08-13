@@ -257,7 +257,8 @@ export async function reorderItem(
       p_structure_uuid: structureUuid,
       p_moved_item_uuid: activeItemId,
       p_new_parent_uuid: newParentUuid,
-      p_target_position: targetPosition
+      p_target_position: targetPosition,
+      p_drop_position: dropPosition
     });
 
     if (error) {

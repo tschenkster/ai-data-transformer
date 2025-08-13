@@ -520,6 +520,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         p_moved_item_uuid: item.report_line_item_uuid,
         p_new_parent_uuid: item.parent_report_line_item_uuid ?? null,
         p_target_position: null, // keep current sibling position
+        p_drop_position: 'after',
         p_new_description: newDescription,
         p_regenerate_keys: false, // set to true if you want keys to follow path/name changes
       });
