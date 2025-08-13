@@ -67,6 +67,12 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.1);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
+    /* Tree View Enhancements */
+    --tree-hover: hsl(var(--accent) / 0.1);
+    --tree-selected: hsl(var(--primary) / 0.1);
+    --tree-border: hsl(var(--border) / 0.5);
+    --drag-handle-hover: hsl(var(--primary) / 0.8);
+    
     /* Typography */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
@@ -125,6 +131,12 @@ All colors MUST be HSL.
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
     --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.2);
+    
+    /* Tree View Enhancements - Dark Mode */
+    --tree-hover: hsl(var(--accent) / 0.2);
+    --tree-selected: hsl(var(--primary) / 0.2);
+    --tree-border: hsl(var(--border) / 0.3);
+    --drag-handle-hover: hsl(var(--primary) / 0.9);
   }
 }
 

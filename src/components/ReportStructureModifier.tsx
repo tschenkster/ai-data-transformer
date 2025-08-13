@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import ChangeHistoryTable, { ChangeHistoryEntry } from './ChangeHistoryTable';
 import CreateLineItemDialog from './CreateLineItemDialog';
 import DeleteLineItemDialog from './DeleteLineItemDialog';
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   DndContext, 
   closestCenter, 
@@ -40,7 +42,9 @@ import {
   ChevronDown,
   Plus,
   Trash2,
-  Loader2
+  Loader2,
+  Home,
+  Settings
 } from 'lucide-react';
 import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/lib/sortOrderUtils';
 
@@ -116,11 +120,12 @@ function SortableItem({
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id: node.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition,
   };
 
   const hasChildren = node.children.length > 0;
@@ -130,13 +135,20 @@ function SortableItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="select-none"
+      className={`select-none group transition-all duration-200 ${
+        isDragging ? 'opacity-50 scale-105 shadow-lg z-50' : ''
+      }`}
     >
       <div 
-        className={`flex items-center gap-2 py-1 px-2 hover:bg-accent/50 rounded-md ${
-          hasChildren ? 'cursor-pointer' : 'cursor-default'
-        }`}
-        style={{ marginLeft: level * 16 }}
+        className={`
+          flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200
+          ${level % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
+          hover:bg-[var(--tree-hover)] hover:shadow-md hover:scale-[1.02]
+          border border-transparent hover:border-[var(--tree-border)]
+          ${hasChildren ? 'cursor-pointer' : 'cursor-default'}
+          focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40
+        `}
+        style={{ marginLeft: level * 20 }}
       >
         {hasChildren ? (
           <div 
@@ -145,38 +157,56 @@ function SortableItem({
               e.stopPropagation();
               onToggleExpansion(node.id);
             }}
-            className="cursor-pointer"
+            className="
+              flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200
+              cursor-pointer hover:bg-primary/10 hover:scale-110
+              focus:outline-none focus:ring-2 focus:ring-primary/20
+            "
           >
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <ChevronDown className="w-4 h-4 text-primary transition-transform duration-200" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors duration-200" />
             )}
           </div>
         ) : (
-          <div className="w-4 h-4" />
+          <div className="w-6 h-6 flex items-center justify-center">
+            <div className="w-1 h-1 rounded-full bg-muted-foreground/40"></div>
+          </div>
         )}
 
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab hover:cursor-grabbing"
+          className="
+            flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200
+            cursor-grab hover:cursor-grabbing hover:bg-[var(--drag-handle-hover)]
+            hover:text-primary-foreground hover:scale-110 group/drag
+            focus:outline-none focus:ring-2 focus:ring-primary/20
+          "
+          title="Drag to reorder"
         >
-          <GripVertical className="w-4 h-4 text-muted-foreground" />
+          <GripVertical className="w-4 h-4 text-muted-foreground group-hover/drag:text-primary-foreground transition-colors duration-200" />
         </div>
 
-        {node.item.is_leaf ? (
-          <FileText className="w-4 h-4 text-blue-500" />
-        ) : (
-          <Folder className="w-4 h-4 text-yellow-500" />
-        )}
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br transition-all duration-200 group-hover:scale-110">
+          {node.item.is_leaf ? (
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileText className="w-4 h-4 text-primary" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Folder className="w-4 h-4 text-accent" />
+            </div>
+          )}
+        </div>
         
         {isEditing ? (
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-3 flex-1">
             <Input
               value={editingValue}
               onChange={(e) => onEditingValueChange(e.target.value)}
-              className="flex-1"
+              className="flex-1 border-primary/40 focus:border-primary focus:ring-primary/20"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   onEditSave(node.key, editingValue);
@@ -190,35 +220,44 @@ function SortableItem({
               size="sm"
               variant="ghost"
               onClick={() => onEditSave(node.key, editingValue)}
+              className="h-8 w-8 p-0 hover:bg-success/10 hover:text-success transition-colors duration-200"
             >
-              <Check className="w-4 h-4 text-green-600" />
+              <Check className="w-4 h-4" />
             </Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={onEditCancel}
+              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
             >
-              <X className="w-4 h-4 text-red-600" />
+              <X className="w-4 h-4" />
             </Button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <span 
-              className="text-sm flex-1 cursor-pointer hover:bg-accent/30 rounded px-1 py-0.5"
+              className="
+                text-sm flex-1 cursor-pointer min-w-0 truncate
+                font-medium text-foreground/90
+                hover:text-foreground hover:bg-accent/20 
+                rounded-md px-2 py-1.5 transition-all duration-200
+                focus:outline-none focus:ring-2 focus:ring-primary/20
+              "
               onClick={(e) => {
                 e.stopPropagation();
                 onEditStart(node.key);
               }}
               title="Click to edit description"
+              tabIndex={0}
             >
               {node.description}
             </span>
           </div>
         )}
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           {!node.item.display && (
-            <Badge variant="destructive" className="text-xs">
+            <Badge variant="destructive" className="text-xs animate-pulse">
               Hidden
             </Badge>
           )}
@@ -229,9 +268,15 @@ function SortableItem({
               e.stopPropagation();
               onDelete(node.item);
             }}
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+            className="
+              h-8 w-8 p-0 rounded-lg transition-all duration-200
+              text-muted-foreground hover:text-destructive-foreground
+              hover:bg-destructive/10 hover:scale-110
+              focus:outline-none focus:ring-2 focus:ring-destructive/20
+            "
+            title="Delete item"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -832,11 +877,17 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
   if (structuresLoading) {
     return (
-      <Card>
+      <Card className="shadow-elegant">
         <CardContent className="py-8">
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            <span>Loading structures...</span>
+          <div className="space-y-4">
+            <div className="flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin mr-3 text-primary" />
+              <span className="text-sm font-medium">Loading structures...</span>
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-8 w-3/4 mx-auto" />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -846,28 +897,38 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   // Show structure selection if no structure is selected
   if (!selectedStructureUuid) {
     return (
-      <Card>
-        <CardContent className="space-y-4">
-          <div>
+      <Card className="shadow-elegant animate-fade-in">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-semibold">Select Report Structure</CardTitle>
+          <CardDescription>Choose a structure to modify its line items</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex justify-center">
             <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
-              <SelectTrigger className="w-72">
+              <SelectTrigger className="w-full max-w-md">
                 <SelectValue placeholder="Choose a structure to modify..." />
               </SelectTrigger>
               <SelectContent>
                 {structures.map((structure) => (
                   <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
-                    {structure.report_structure_name}
-                    {structure.is_active && " (Active)"}
+                    <div className="flex items-center justify-between w-full">
+                      <span>{structure.report_structure_name}</span>
+                      {structure.is_active && (
+                        <Badge variant="secondary" className="ml-2 text-xs">Active</Badge>
+                      )}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           {structures.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No report structures found</p>
-              <p className="text-sm">Upload a structure first to begin modification</p>
+            <div className="text-center py-8 text-muted-foreground animate-fade-in">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                <FileText className="h-8 w-8 opacity-50" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">No report structures found</h3>
+              <p className="text-sm max-w-md mx-auto">Upload a structure first to begin modification. You can create and manage structures from the upload section.</p>
             </div>
           )}
         </CardContent>
@@ -877,11 +938,24 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-elegant">
         <CardContent className="py-8">
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            <span>Loading line items...</span>
+          <div className="space-y-6">
+            <div className="flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin mr-3 text-primary" />
+              <span className="text-sm font-medium">Loading line items...</span>
+            </div>
+            <div className="space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3" style={{ marginLeft: (i % 3) * 20 }}>
+                  <Skeleton className="h-6 w-6" />
+                  <Skeleton className="h-6 w-6" />
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-6 flex-1" />
+                  <Skeleton className="h-6 w-6" />
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -926,28 +1000,76 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   const selectedStructure = structures.find(s => s.report_structure_uuid === selectedStructureUuid);
 
   return (
-    <Card>
-      <CardContent className="space-y-6">
-        {/* Structure Selection and Add Button */}
-        <div className="flex items-center justify-between gap-4">
-          <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
-            <SelectTrigger className="w-72">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {structures.map((structure) => (
-                <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
-                  {structure.report_structure_name}
-                  {structure.is_active && " (Active)"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Item
-          </Button>
+    <Card className="shadow-elegant animate-fade-in">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/" className="flex items-center gap-1">
+                      <Home className="w-4 h-4" />
+                      Home
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/report-structures" className="flex items-center gap-1">
+                      <Settings className="w-4 h-4" />
+                      Report Structures
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Modify Structure</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-xl font-semibold">Structure Editor</CardTitle>
+              {selectedStructure && (
+                <Badge variant={selectedStructure.is_active ? "default" : "secondary"} className="text-xs">
+                  {selectedStructure.is_active ? "Active" : "Inactive"}
+                </Badge>
+              )}
+            </div>
+            <CardDescription>
+              Manage line items, hierarchy, and structure organization
+            </CardDescription>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
+              <SelectTrigger className="w-64 lg:w-80">
+                <SelectValue placeholder="Select structure..." />
+              </SelectTrigger>
+              <SelectContent>
+                {structures.map((structure) => (
+                  <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="truncate">{structure.report_structure_name}</span>
+                      {structure.is_active && (
+                        <Badge variant="secondary" className="ml-2 text-xs">Active</Badge>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={() => setCreateDialogOpen(true)} 
+              className="flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200"
+              size="default"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Add Item</span>
+            </Button>
+          </div>
         </div>
+      </CardHeader>
+      <CardContent className="space-y-6 p-6">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -957,17 +1079,24 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
             items={allItems.map(item => item.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-0.5 max-h-96 overflow-y-auto">
-              {renderTreeNodes(treeData)}
+            <div className="relative">
+              <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <div className="space-y-1 max-h-[32rem] overflow-y-auto overflow-x-hidden rounded-lg border bg-card/30 p-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  {renderTreeNodes(treeData)}
+                </div>
+              </div>
             </div>
           </SortableContext>
         </DndContext>
 
-        <ChangeHistoryTable
-          changeHistory={changeHistory}
-          onUndo={handleUndo}
-          recentlyUndoneItems={recentlyUndoneItems}
-        />
+        <div className="border-t pt-6">
+          <ChangeHistoryTable
+            changeHistory={changeHistory}
+            onUndo={handleUndo}
+            recentlyUndoneItems={recentlyUndoneItems}
+          />
+        </div>
 
         <CreateLineItemDialog
           open={createDialogOpen}
