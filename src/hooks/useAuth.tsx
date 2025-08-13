@@ -28,6 +28,9 @@ interface AuthContextType {
   isApproved: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  authError: string | null;
+  authTimeoutCount: number;
+  forceLogout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,59 +40,144 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authTimeoutCount, setAuthTimeoutCount] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Session validation helper
+  const isSessionValid = (session: Session | null): boolean => {
+    if (!session) return false;
+    
+    const now = Date.now() / 1000;
+    const expiresAt = session.expires_at || 0;
+    
+    // Check if session expires within next 5 minutes
+    const isExpiringSoon = expiresAt - now < 300;
+    if (isExpiringSoon) {
+      console.warn('🔐 AuthProvider: Session expiring soon', { expiresAt, now, remainingTime: expiresAt - now });
+    }
+    
+    return expiresAt > now;
+  };
+
+  // Force logout helper
+  const forceLogout = async () => {
+    console.log('🔐 AuthProvider: Force logout triggered');
+    setUser(null);
+    setSession(null);
+    setUserAccount(null);
+    setLoading(false);
+    setAuthError(null);
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
   useEffect(() => {
     let mounted = true;
+    let initTimeoutId: NodeJS.Timeout;
+    
     console.log('🔐 AuthProvider: Initializing auth state listener');
 
-    // Set up auth state listener (no Supabase calls here)
+    // Set timeout for initial auth check
+    initTimeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.error('🔐 AuthProvider: Initial auth check timeout after 15 seconds');
+        setAuthError('Authentication timeout - please refresh the page');
+        setLoading(false);
+        setAuthTimeoutCount(prev => prev + 1);
+      }
+    }, 15000);
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      console.log('🔐 AuthProvider: Auth state changed', { event, hasSession: !!session, hasUser: !!session?.user });
+      
+      console.log('🔐 AuthProvider: Auth state changed', { 
+        event, 
+        hasSession: !!session, 
+        hasUser: !!session?.user,
+        isValid: isSessionValid(session)
+      });
+
+      clearTimeout(initTimeoutId);
+      setAuthError(null);
+
+      // Handle session expiry
+      if (session && !isSessionValid(session)) {
+        console.warn('🔐 AuthProvider: Invalid/expired session detected');
+        forceLogout();
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (!session?.user) {
-        console.log('🔐 AuthProvider: No user, clearing userAccount and stopping loading');
+        console.log('🔐 AuthProvider: No user, clearing state');
         setUserAccount(null);
         setLoading(false);
       } else {
-        console.log('🔐 AuthProvider: User found, starting loading for userAccount fetch');
+        console.log('🔐 AuthProvider: Valid user found, will fetch account');
         setLoading(true);
       }
     });
 
-    // Check for existing session
+    // Check for existing session with timeout
     console.log('🔐 AuthProvider: Checking for existing session');
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (!mounted) return;
-        console.log('🔐 AuthProvider: Initial session check', { hasSession: !!session, hasUser: !!session?.user });
+        
+        if (error) {
+          console.error('🔐 AuthProvider: Session check error:', error);
+          setAuthError('Failed to check session');
+          setLoading(false);
+          return;
+        }
+
+        console.log('🔐 AuthProvider: Initial session check', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          isValid: isSessionValid(session)
+        });
+
+        if (session && !isSessionValid(session)) {
+          console.warn('🔐 AuthProvider: Initial session is invalid/expired');
+          forceLogout();
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
+        
         if (!session?.user) {
-          console.log('🔐 AuthProvider: No initial user, stopping loading');
+          console.log('🔐 AuthProvider: No initial user');
           setLoading(false);
         } else {
-          console.log('🔐 AuthProvider: Initial user found, starting loading');
+          console.log('🔐 AuthProvider: Initial user found');
           setLoading(true);
         }
-      })
-      .catch((error) => {
-        console.error('🔐 AuthProvider: Error getting session:', error);
+      } catch (err) {
+        console.error('🔐 AuthProvider: Unexpected session check error:', err);
         if (mounted) {
-          console.log('🔐 AuthProvider: Session error, stopping loading');
+          setAuthError('Unexpected authentication error');
           setLoading(false);
         }
-      });
+      }
+    };
+
+    checkSession();
 
     return () => {
       console.log('🔐 AuthProvider: Cleaning up auth listener');
       mounted = false;
+      clearTimeout(initTimeoutId);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   // Fetch user account when user changes
   useEffect(() => {
@@ -100,20 +188,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         console.log('👤 AuthProvider: Fetching user account for:', userId);
         
-        // Add timeout to prevent infinite loading
+        // Validate session before fetching
+        if (!isSessionValid(session)) {
+          console.warn('👤 AuthProvider: Session invalid during fetch, forcing logout');
+          forceLogout();
+          return;
+        }
+        
+        // Reduced timeout to 8 seconds
         timeoutId = setTimeout(() => {
           if (!cancelled) {
-            console.error('👤 AuthProvider: User account fetch timeout after 10 seconds');
+            console.error('👤 AuthProvider: User account fetch timeout after 8 seconds');
+            setAuthError('Account loading timeout - please try refreshing');
             setUserAccount(null);
             setLoading(false);
+            setAuthTimeoutCount(prev => prev + 1);
           }
-        }, 10000);
+        }, 8000);
 
         const { data: userAccountData, error } = await supabase
           .from('user_accounts')
           .select('*')
           .eq('supabase_user_uuid', userId)
-          .single();
+          .maybeSingle(); // Use maybeSingle to handle missing records gracefully
 
         if (cancelled) {
           console.log('👤 AuthProvider: Fetch cancelled for user:', userId);
@@ -124,14 +221,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (error) {
           console.error('👤 AuthProvider: Error fetching user account:', error);
+          setAuthError('Failed to load account data');
+          setUserAccount(null);
+        } else if (!userAccountData) {
+          console.warn('👤 AuthProvider: No user account found for user:', userId);
+          setAuthError('Account not found - contact administrator');
           setUserAccount(null);
         } else {
           console.log('👤 AuthProvider: User account fetched successfully:', userAccountData);
           setUserAccount(userAccountData as UserAccount);
+          setAuthError(null);
         }
       } catch (err) {
         console.error('👤 AuthProvider: User account fetch error:', err);
-        if (!cancelled) setUserAccount(null);
+        if (!cancelled) {
+          setAuthError('Unexpected error loading account');
+          setUserAccount(null);
+        }
       } finally {
         if (!cancelled) {
           console.log('👤 AuthProvider: Setting loading to false');
@@ -142,16 +248,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (user?.id) {
       console.log('👤 AuthProvider: User ID changed, fetching account:', user.id);
+      setAuthError(null); // Clear any previous errors
       fetchUserAccount(user.id);
     } else {
       console.log('👤 AuthProvider: No user ID, skipping account fetch');
+      setLoading(false);
     }
 
     return () => {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [user?.id]);
+  }, [user?.id, session]);
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
@@ -252,6 +360,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isApproved,
     isAdmin,
     isSuperAdmin,
+    authError,
+    authTimeoutCount,
+    forceLogout,
   };
 
   return (

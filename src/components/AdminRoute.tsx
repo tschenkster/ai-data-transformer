@@ -7,7 +7,7 @@ interface AdminRouteProps {
 }
 
 export function AdminRoute({ children }: AdminRouteProps) {
-  const { user, userAccount, loading, isAdmin, isApproved } = useAuth();
+  const { user, userAccount, loading, isAdmin, isApproved, authError, authTimeoutCount, forceLogout } = useAuth();
 
   console.log('🛡️ AdminRoute: Checking access', {
     loading,
@@ -23,7 +23,27 @@ export function AdminRoute({ children }: AdminRouteProps) {
     console.log('🛡️ AdminRoute: Still loading, showing loading screen');
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <Card className="w-[400px]">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="text-lg">Loading...</div>
+              {authError && (
+                <div className="text-sm text-destructive text-center">
+                  {authError}
+                </div>
+              )}
+              {authTimeoutCount > 0 && (
+                <button 
+                  onClick={forceLogout}
+                  className="text-sm text-muted-foreground underline hover:text-foreground"
+                >
+                  Having trouble? Try logging in again
+                </button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -49,8 +69,24 @@ export function AdminRoute({ children }: AdminRouteProps) {
         <Card className="w-[400px]">
           <CardHeader>
             <CardTitle>Account Error</CardTitle>
-            <CardDescription>Unable to load your account. Please try refreshing the page.</CardDescription>
+            <CardDescription>
+              {authError || "Unable to load your account. Please try refreshing the page."}
+            </CardDescription>
           </CardHeader>
+          <CardContent>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md"
+            >
+              Refresh Page
+            </button>
+            <button 
+              onClick={forceLogout}
+              className="w-full mt-2 text-sm text-muted-foreground underline hover:text-foreground"
+            >
+              Or try logging in again
+            </button>
+          </CardContent>
         </Card>
       </div>
     );
