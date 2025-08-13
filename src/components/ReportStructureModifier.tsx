@@ -851,15 +851,10 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   if (!selectedStructureUuid) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Structure Modifier</CardTitle>
-          <CardDescription>Select a report structure to modify its line items</CardDescription>
-        </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="structure-select">Select Report Structure</Label>
+          <div>
             <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
-              <SelectTrigger>
+              <SelectTrigger className="w-72">
                 <SelectValue placeholder="Choose a structure to modify..." />
               </SelectTrigger>
               <SelectContent>
