@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Eye, Edit, X, LucideIcon } from 'lucide-react';
+import { Check, Eye, Edit, X, CheckCircle, XCircle, Trash2, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface ActionButtonConfig {
@@ -105,6 +105,68 @@ export const createDeleteAction = (
   onClick,
   disabled,
   className: 'hover:bg-red-50 hover:text-red-700 hover:border-red-200'
+});
+
+// Admin-specific action creators
+export const createApproveAction = (
+  onClick: () => void,
+  disabled?: boolean
+): ActionButtonConfig => ({
+  id: 'approve',
+  label: 'Approve',
+  icon: CheckCircle,
+  onClick,
+  disabled,
+  variant: 'default',
+  className: `
+    h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+    bg-success text-success-foreground hover:bg-success/90
+    border border-success/20 hover:border-success/40
+    shadow-sm hover:shadow-md
+    focus:outline-none focus:ring-2 focus:ring-success/20
+  `
+});
+
+export const createRejectAction = (
+  onClick: () => void,
+  disabled?: boolean
+): ActionButtonConfig => ({
+  id: 'reject',
+  label: 'Reject',
+  icon: XCircle,
+  onClick,
+  disabled,
+  variant: 'destructive',
+  className: `
+    h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+    bg-destructive text-destructive-foreground hover:bg-destructive/90
+    border border-destructive/20 hover:border-destructive/40
+    shadow-sm hover:shadow-md
+    focus:outline-none focus:ring-2 focus:ring-destructive/20
+  `
+});
+
+export const createAdminDeleteAction = (
+  onClick: () => void,
+  disabled?: boolean,
+  title?: string
+): ActionButtonConfig => ({
+  id: 'admin-delete',
+  label: 'Delete',
+  icon: Trash2,
+  onClick,
+  disabled,
+  variant: 'ghost',
+  className: `
+    h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+    text-muted-foreground hover:text-destructive-foreground
+    hover:bg-destructive/10 border border-border hover:border-destructive/40
+    shadow-sm hover:shadow-md
+    focus:outline-none focus:ring-2 focus:ring-destructive/20
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+    disabled:hover:text-muted-foreground disabled:hover:border-border
+    ${disabled ? 'title-attr' : ''}
+  `
 });
 
 export default ActionButtons;
