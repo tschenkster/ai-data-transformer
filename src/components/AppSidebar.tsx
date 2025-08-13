@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -33,6 +34,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
+      <div className="p-2">
+        <SidebarTrigger />
+      </div>
       <SidebarContent>
         {/* Main Navigation */}
         <SidebarGroup>
