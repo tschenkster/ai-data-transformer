@@ -148,22 +148,16 @@ export default function Home() {
         <Card className="bg-gradient-primary text-primary-foreground">
           <CardHeader>
             <CardTitle className="text-center text-2xl">
-              Ready to Transform Your Data?
+              Welcome to Your Data Transformation Hub
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <p className="mb-6 text-lg opacity-90">
-              Start your data transformation journey today. Upload your files and see the AI magic in action.
+              Use the sidebar navigation to access your data transformation tools and features.
             </p>
-            <Button 
-              size="lg"
-              variant="secondary"
-              onClick={() => navigate('/memory')}
-              className="bg-white text-primary hover:bg-gray-100"
-            >
-              Get Started
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
+            <div className="text-sm opacity-75">
+              Navigate to Memory Upload to start transforming your data files
+            </div>
           </CardContent>
         </Card>
       </main>

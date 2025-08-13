@@ -81,9 +81,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch user account when user changes
   useEffect(() => {
     let cancelled = false;
+    let timeoutId: NodeJS.Timeout;
 
     const fetchUserAccount = async (userId: string) => {
       try {
+        console.log('Fetching user account for:', userId);
+        
+        // Add timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (!cancelled) {
+            console.error('User account fetch timeout after 10 seconds');
+            setUserAccount(null);
+            setLoading(false);
+          }
+        }, 10000);
+
         const { data: userAccountData, error } = await supabase
           .from('user_accounts')
           .select('*')
@@ -91,17 +103,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .single();
 
         if (cancelled) return;
+        
+        clearTimeout(timeoutId);
+        
         if (error) {
           console.error('Error fetching user account:', error);
           setUserAccount(null);
         } else {
+          console.log('User account fetched successfully:', userAccountData);
           setUserAccount(userAccountData as UserAccount);
         }
       } catch (err) {
         console.error('User account fetch error:', err);
         if (!cancelled) setUserAccount(null);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          console.log('Setting loading to false');
+          setLoading(false);
+        }
       }
     };
 
@@ -111,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [user?.id]);
 
