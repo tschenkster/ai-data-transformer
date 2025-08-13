@@ -42,6 +42,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Set up auth state listener (no Supabase calls here)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setUserAccount(null);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    });
+
+    // Check for existing session
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!mounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (!session?.user) {
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Error getting session:', error);
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Fetch user account when user changes
+  useEffect(() => {
+    let cancelled = false;
+
     const fetchUserAccount = async (userId: string) => {
       try {
         const { data: userAccountData, error } = await supabase
@@ -49,9 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .select('*')
           .eq('user_id', userId)
           .single();
-          
-        if (!mounted) return;
-        
+
+        if (cancelled) return;
         if (error) {
           console.error('Error fetching user account:', error);
           setUserAccount(null);
@@ -60,62 +99,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (err) {
         console.error('User account fetch error:', err);
-        if (mounted) setUserAccount(null);
+        if (!cancelled) setUserAccount(null);
       } finally {
-        if (mounted) setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          fetchUserAccount(session.user.id);
-        } else {
-          setUserAccount(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserAccount(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    }).catch((error) => {
-      console.error('Error getting session:', error);
-      if (mounted) {
-        setLoading(false);
-      }
-    });
-
-    // Timeout fallback to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn('Auth loading timeout reached');
-        setLoading(false);
-      }
-    }, 10000);
+    if (user?.id) {
+      fetchUserAccount(user.id);
+    }
 
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
-      clearTimeout(timeoutId);
+      cancelled = true;
     };
-  }, []);
+  }, [user?.id]);
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
