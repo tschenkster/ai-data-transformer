@@ -141,14 +141,13 @@ function SortableItem({
     >
       <div 
         className={`
-          flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200
+          flex items-center gap-2 py-1 px-2 rounded transition-all duration-200
           ${level % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
-          hover:bg-[var(--tree-hover)] hover:shadow-md hover:scale-[1.02]
+          hover:bg-[var(--tree-hover)]
           border border-transparent hover:border-[var(--tree-border)]
           ${hasChildren ? 'cursor-pointer' : 'cursor-default'}
-          focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40
         `}
-        style={{ marginLeft: level * 20 }}
+        style={{ marginLeft: level * 12 }}
       >
         {hasChildren ? (
           <div 
@@ -158,47 +157,28 @@ function SortableItem({
               onToggleExpansion(node.id);
             }}
             className="
-              flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200
-              cursor-pointer hover:bg-primary/10 hover:scale-110
-              focus:outline-none focus:ring-2 focus:ring-primary/20
+              flex items-center justify-center w-4 h-4 cursor-pointer
             "
           >
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-primary transition-transform duration-200" />
+              <ChevronDown className="w-3 h-3 text-primary" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors duration-200" />
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
             )}
           </div>
         ) : (
-          <div className="w-6 h-6 flex items-center justify-center">
-            <div className="w-1 h-1 rounded-full bg-muted-foreground/40"></div>
-          </div>
+          <div className="w-4 h-4"></div>
         )}
 
         <div
           {...attributes}
           {...listeners}
           className="
-            flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200
-            cursor-grab hover:cursor-grabbing hover:bg-[var(--drag-handle-hover)]
-            hover:text-primary-foreground hover:scale-110 group/drag
-            focus:outline-none focus:ring-2 focus:ring-primary/20
+            flex items-center justify-center w-4 h-4 cursor-grab hover:cursor-grabbing
           "
           title="Drag to reorder"
         >
-          <GripVertical className="w-4 h-4 text-muted-foreground group-hover/drag:text-primary-foreground transition-colors duration-200" />
-        </div>
-
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br transition-all duration-200 group-hover:scale-110">
-          {node.item.is_leaf ? (
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-primary" />
-            </div>
-          ) : (
-            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-              <Folder className="w-4 h-4 text-accent" />
-            </div>
-          )}
+          <GripVertical className="w-3 h-3 text-muted-foreground" />
         </div>
         
         {isEditing ? (
