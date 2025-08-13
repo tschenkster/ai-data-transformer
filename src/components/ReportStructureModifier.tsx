@@ -47,6 +47,7 @@ import {
   Settings
 } from 'lucide-react';
 import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/lib/sortOrderUtils';
+import debugUtils from '@/utils/debugUtils';
 
 interface ReportLineItem {
   report_line_item_id: number;
@@ -283,6 +284,16 @@ interface ReportStructureModifierProps {
 export default function ReportStructureModifier({}: ReportStructureModifierProps) {
   const { toast } = useToast();
   
+  // Track component lifecycle
+  useEffect(() => {
+    debugUtils.logComponentLifecycle('ReportStructureModifier', 'mount');
+    debugUtils.logMemoryUsage('ReportStructureModifier mount');
+    
+    return () => {
+      debugUtils.logComponentLifecycle('ReportStructureModifier', 'unmount');
+    };
+  }, []);
+  
   const reorderToastRef = useRef<{ id: string; dismiss: () => void; update: (t: any) => void } | null>(null);
   
   // Structure selection state
@@ -328,35 +339,49 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   const fetchStructures = async () => {
     setStructuresLoading(true);
     try {
+      console.log('Fetching report structures...');
       const { data, error } = await supabase
         .from('report_structures')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching structures:', error);
+        throw error;
+      }
 
+      console.log('Structures fetched successfully:', data?.length || 0);
       setStructures(data || []);
       
       // Auto-select active structure if available
       const activeStructure = data?.find(s => s.is_active);
       if (activeStructure) {
+        console.log('Auto-selecting active structure:', activeStructure.report_structure_name);
         setSelectedStructureUuid(activeStructure.report_structure_uuid);
       }
     } catch (error) {
       console.error('Error fetching structures:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch report structures",
+        description: "Failed to fetch report structures. Please refresh the page.",
         variant: "destructive",
       });
+      // Set empty array to prevent further errors
+      setStructures([]);
     } finally {
       setStructuresLoading(false);
     }
   };
 
   const fetchLineItems = async (structureUuid: string) => {
+    if (!structureUuid) {
+      console.warn('fetchLineItems called with empty structureUuid');
+      return;
+    }
+    
     setLoading(true);
     try {
+      console.log('Fetching line items for structure:', structureUuid);
       const { data, error } = await supabase
         .from('report_line_items')
         .select('*')
@@ -364,31 +389,54 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         .order('sort_order', { ascending: true });
 
       if (error) {
-        console.error('Error fetching line items:', error);
+        console.error('Supabase error fetching line items:', error);
         toast({
           title: "Error",
           description: "Failed to load report structure items",
           variant: "destructive",
         });
+        // Reset state on error
+        setLineItems([]);
+        setTreeData([]);
         return;
       }
 
+      console.log('Line items fetched successfully:', data?.length || 0);
       setLineItems(data || []);
       
-      // Build tree data from the fetched items
-      const treeData = buildTreeData(data || []);
-      setTreeData(treeData);
+      // Build tree data from the fetched items with error handling
+      try {
+        const treeData = buildTreeData(data || []);
+        setTreeData(treeData);
+        console.log('Tree data built successfully');
+      } catch (treeError) {
+        console.error('Error building tree data:', treeError);
+        toast({
+          title: "Warning",
+          description: "Data loaded but tree structure may be incomplete",
+          variant: "default",
+        });
+        setTreeData([]);
+      }
       
-      // Load change history
-      await fetchChangeHistory(structureUuid);
+      // Load change history (non-blocking)
+      try {
+        await fetchChangeHistory(structureUuid);
+      } catch (historyError) {
+        console.error('Error loading change history:', historyError);
+        // Don't show toast for history errors as it's not critical
+      }
       
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Unexpected error in fetchLineItems:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred while loading data",
         variant: "destructive",
       });
+      // Reset state on error
+      setLineItems([]);
+      setTreeData([]);
     } finally {
       setLoading(false);
     }
@@ -488,16 +536,34 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     previousState?: any,
     newState?: any
   ) => {
-    if (!selectedStructureUuid) return;
+    if (!selectedStructureUuid) {
+      console.warn('No structure selected for change logging');
+      return;
+    }
     
     try {
-      const { data: structure } = await supabase
+      console.log('Logging structure change:', { 
+        actionType, 
+        lineItemKey, 
+        lineItemDescription,
+        structureUuid: selectedStructureUuid 
+      });
+      
+      const { data: structure, error: structureError } = await supabase
         .from('report_structures')
         .select('report_structure_id')
         .eq('report_structure_uuid', selectedStructureUuid)
         .single();
 
-      if (!structure) return;
+      if (structureError) {
+        console.error('Error fetching structure for logging:', structureError);
+        return;
+      }
+
+      if (!structure) {
+        console.error('Structure not found for UUID:', selectedStructureUuid);
+        return;
+      }
 
       const { error } = await supabase.rpc('log_structure_change', {
         p_structure_uuid: selectedStructureUuid,
@@ -513,9 +579,21 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
       if (error) {
         console.error('Error logging change:', error);
+        // Don't throw here - change logging failures shouldn't break the main operation
+        toast({
+          title: "Warning",
+          description: "Change was saved but logging failed",
+          variant: "default",
+        });
       } else {
-        // Refresh change history
-        await fetchChangeHistory(selectedStructureUuid);
+        console.log('Change logged successfully');
+        // Refresh change history only if logging succeeded
+        try {
+          await fetchChangeHistory(selectedStructureUuid);
+        } catch (historyError) {
+          console.error('Error refreshing change history:', historyError);
+          // Don't break the main flow for history refresh failures
+        }
       }
     } catch (error) {
       console.error('Error logging change:', error);
@@ -535,9 +613,18 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   };
 
   const handleEdit = async (key: string, newDescription: string) => {
+    if (!selectedStructureUuid) {
+      console.warn('No structure selected for edit operation');
+      return;
+    }
+    
     try {
+      console.log('Starting edit operation:', { key, newDescription });
       const item = lineItems.find(item => item.report_line_item_key === key);
-      if (!item || !selectedStructureUuid) return;
+      if (!item) {
+        console.error('Item not found for key:', key);
+        throw new Error('Item not found');
+      }
 
       // Use atomic RPC so rename also refreshes hierarchy_path, levels, and related caches
       const { data, error } = await (supabase as any).rpc('reorder_line_item_with_hierarchy', {
@@ -550,10 +637,17 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         p_regenerate_keys: false, // set to true if you want keys to follow path/name changes
       });
 
-      if (error || !data?.success) {
-        throw new Error(error?.message || data?.error || 'Rename operation failed');
+      if (error) {
+        console.error('RPC error in edit operation:', error);
+        throw new Error(error.message || 'Database operation failed');
+      }
+      
+      if (!data?.success) {
+        console.error('RPC operation unsuccessful:', data);
+        throw new Error(data?.error || 'Rename operation failed');
       }
 
+      console.log('Edit operation successful, refreshing data...');
       // Refresh from DB to get cascaded updates (hierarchy_path, levels, etc.)
       await fetchLineItems(selectedStructureUuid);
 
@@ -566,9 +660,14 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       });
     } catch (error) {
       console.error('Error updating description via RPC:', error);
+      
+      // Reset editing state on error
+      setEditingItem(null);
+      setEditingValue('');
+      
       toast({
         title: 'Error',
-        description: 'Failed to update description',
+        description: error instanceof Error ? error.message : 'Failed to update description',
         variant: 'destructive',
       });
     }
@@ -578,9 +677,16 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     const { active, over } = event;
     
     if (!over || active.id === over.id || !selectedStructureUuid) {
+      console.log('Drag ended early - invalid conditions:', { 
+        hasOver: !!over, 
+        sameId: active.id === over.id, 
+        hasStructure: !!selectedStructureUuid 
+      });
       return;
     }
 
+    console.log('🎯 Starting drag operation:', { activeId: active.id, overId: over.id });
+    
     // Show persistent loading toast immediately
     const toastId = toast({
       title: "Moving item...",
@@ -588,9 +694,10 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       duration: 0, // Persistent until dismissed
     });
 
+    // Set reordering state
+    setIsReordering(true);
+
     try {
-      console.log('🎯 Drag ended:', { activeId: active.id, overId: over.id });
-      
       // Validate the move operation before attempting
       if (active.id === over.id) {
         console.warn('Cannot move item to itself');
@@ -668,6 +775,14 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
     } catch (error) {
       console.error('💥 Drag operation failed:', error);
+      
+      // Refresh data to ensure UI is in sync after failed operation
+      try {
+        await fetchLineItems(selectedStructureUuid);
+      } catch (refreshError) {
+        console.error('Failed to refresh data after drag error:', refreshError);
+      }
+      
       toast({
         title: "Move failed",
         description: error instanceof Error ? error.message : "Failed to move item",
@@ -675,8 +790,13 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         duration: 5000,
       });
     } finally {
-      // Always dismiss the loading toast
-      toastId.dismiss();
+      // Always clean up state and dismiss loading toast
+      setIsReordering(false);
+      try {
+        toastId.dismiss();
+      } catch (dismissError) {
+        console.warn('Failed to dismiss toast:', dismissError);
+      }
     }
   };
 
