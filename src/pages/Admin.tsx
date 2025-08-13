@@ -105,26 +105,25 @@ export default function Admin() {
   };
 
   const deleteUser = async (userId: string, userEmail: string) => {
-    // Check if this is a super admin account
-    const SUPER_ADMIN_EMAILS = ['thomas@cfo-team.de'];
-    if (SUPER_ADMIN_EMAILS.includes(userEmail)) {
-      toast({
-        title: "Cannot Delete",
-        description: "Super admin accounts cannot be deleted to prevent system lockout",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
 
     try {
-      // Delete from auth.users will cascade to user_accounts table
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId, userEmail }
+      });
 
       if (error) throw error;
+
+      if (data.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "Success",
