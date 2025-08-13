@@ -517,25 +517,18 @@ export type Database = {
         }[]
       }
       reorder_line_item_with_hierarchy: {
-        Args:
-          | {
-              p_structure_uuid: string
-              p_moved_item_uuid: string
-              p_new_parent_uuid?: string
-              p_target_position?: number
-            }
-          | {
-              p_structure_uuid: string
-              p_moved_item_uuid: string
-              p_new_parent_uuid?: string
-              p_target_position?: number
-              p_drop_position?: string
-              p_target_sibling_uuid?: string
-              p_new_description?: string
-              p_regenerate_keys?: boolean
-              p_is_calculated_override?: boolean
-              p_line_item_type_override?: string
-            }
+        Args: {
+          p_structure_uuid: string
+          p_moved_item_uuid: string
+          p_new_parent_uuid?: string
+          p_target_position?: number
+          p_drop_position?: string
+          p_target_sibling_uuid?: string
+          p_new_description?: string
+          p_regenerate_keys?: boolean
+          p_is_calculated_override?: boolean
+          p_line_item_type_override?: string
+        }
         Returns: Json
       }
       sparsevec_out: {
