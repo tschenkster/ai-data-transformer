@@ -15,8 +15,6 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import ReportStructures from "./pages/ReportStructures";
-import UploadFile from "./pages/UploadFile";
-import ManualMapping from "./pages/ManualMapping";
 import { MemoryUpload } from "./pages/MemoryUpload";
 import NotFound from "./pages/NotFound";
 
@@ -66,16 +64,6 @@ function AuthenticatedRoutes() {
                 <SuperAdminRoute>
                   <ReportStructures />
                 </SuperAdminRoute>
-              } />
-              <Route path="/upload" element={
-                <ProtectedRoute>
-                  <UploadFile />
-                </ProtectedRoute>
-              } />
-              <Route path="/manual-mapping" element={
-                <ProtectedRoute>
-                  <ManualMapping />
-                </ProtectedRoute>
               } />
               <Route path="/memory" element={
                 <ProtectedRoute>

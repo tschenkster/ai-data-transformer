@@ -155,7 +155,7 @@ export default function Home() {
             <Button 
               size="lg"
               variant="secondary"
-              onClick={() => window.location.href = '/upload'}
+              onClick={() => window.location.href = '/memory'}
               className="bg-white text-primary hover:bg-gray-100"
             >
               Get Started
