@@ -566,22 +566,26 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     try {
       console.log('🎯 Drag ended:', { activeId: active.id, overId: over.id });
       
-      // Enhanced drop position detection - default to 'after' for sibling placement
-      // This ensures items are placed as siblings rather than children by default
-      const dropPosition: 'before' | 'after' | 'inside' = 'after';
-      
       // Validate the move operation before attempting
       if (active.id === over.id) {
         console.warn('Cannot move item to itself');
         throw new Error('Cannot move item to itself');
       }
       
-      // Capture previous state before the move
+      // Determine active/over items
       const activeItem = lineItems.find(item => item.report_line_item_uuid === active.id as string);
       if (!activeItem) {
         throw new Error('Active item not found');
       }
+      const overItem = lineItems.find(item => item.report_line_item_uuid === over.id as string);
       
+      // Decide before/after: if moving upward within same parent, use 'before'
+      let dropPosition: 'before' | 'after' | 'inside' = 'after';
+      if (overItem && activeItem.parent_report_line_item_uuid === overItem.parent_report_line_item_uuid) {
+        dropPosition = overItem.sort_order < activeItem.sort_order ? 'before' : 'after';
+      }
+      
+      // Capture previous state before the move
       const previousState = {
         sort_order: activeItem.sort_order,
         parent_report_line_item_uuid: activeItem.parent_report_line_item_uuid,
