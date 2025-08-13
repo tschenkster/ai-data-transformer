@@ -382,7 +382,8 @@ export default function ReportStructureManager() {
                           {!structure.is_active && (
                             <Button
                               size="sm"
-                              className="h-7 px-2 text-xs"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs hover:bg-green-50 hover:text-green-700 hover:border-green-200"
                               onClick={() => setActiveStructureHandler(structure.report_structure_id)}
                             >
                               <Check className="w-3 h-3 mr-1" />
@@ -391,8 +392,8 @@ export default function ReportStructureManager() {
                           )}
                           <Button
                             size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-xs"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
                             onClick={() => {
                               fetchLineItems(structure.report_structure_id);
                               // Switch to viewer tab
@@ -406,8 +407,8 @@ export default function ReportStructureManager() {
                           {isSuperAdmin && (
                             <Button
                               size="sm"
-                              variant="secondary"
-                              className="h-7 px-2 text-xs"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-200"
                               onClick={() => {
                                 setSelectedStructureForModify(structure.report_structure_id);
                                 // Switch to modifier tab
@@ -421,8 +422,8 @@ export default function ReportStructureManager() {
                           )}
                           <Button
                             size="sm"
-                            variant="destructive"
-                            className="h-7 px-2 text-xs"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs hover:bg-red-50 hover:text-red-700 hover:border-red-200"
                             onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
                             disabled={structuresWithMappings.has(structure.report_structure_id)}
                           >
