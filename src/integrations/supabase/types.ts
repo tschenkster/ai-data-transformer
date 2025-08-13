@@ -379,9 +379,9 @@ export type Database = {
           first_name: string | null
           last_name: string | null
           status: string
+          supabase_user_uuid: string
           user_account_id: number
           user_account_uuid: string
-          user_id: string
         }
         Insert: {
           approved_at?: string | null
@@ -391,9 +391,9 @@ export type Database = {
           first_name?: string | null
           last_name?: string | null
           status?: string
+          supabase_user_uuid: string
           user_account_id: number
           user_account_uuid?: string
-          user_id: string
         }
         Update: {
           approved_at?: string | null
@@ -403,9 +403,9 @@ export type Database = {
           first_name?: string | null
           last_name?: string | null
           status?: string
+          supabase_user_uuid?: string
           user_account_id?: number
           user_account_uuid?: string
-          user_id?: string
         }
         Relationships: []
       }
