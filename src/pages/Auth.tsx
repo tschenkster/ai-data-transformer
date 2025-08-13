@@ -79,8 +79,7 @@ export default function Auth() {
           </div>
           
           <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle className="text-center">Access Required</CardTitle>
+            <CardHeader className="pb-2">
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
