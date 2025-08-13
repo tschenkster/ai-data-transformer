@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield, Database } from 'lucide-react';
+import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield, Database, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 
@@ -104,8 +104,8 @@ export default function Home() {
         <Card className="bg-gradient-primary text-primary-foreground">
           <CardHeader>
             <CardTitle className="flex items-center">
-              <User className="h-5 w-5 mr-2" />
-              Welcome to AI Account Mapper
+              <Zap className="h-5 w-5 mr-2" />
+              Welcome to AI-Powered Data Transformer
             </CardTitle>
           </CardHeader>
           <CardContent>
