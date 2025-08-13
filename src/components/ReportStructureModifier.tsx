@@ -511,56 +511,39 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
   const handleEdit = async (key: string, newDescription: string) => {
     try {
-      // Find the item being edited to record the change
       const item = lineItems.find(item => item.report_line_item_key === key);
-      if (!item) return;
+      if (!item || !selectedStructureUuid) return;
 
-      const previousDescription = item.report_line_item_description || getItemDisplayName(item);
+      // Use atomic RPC so rename also refreshes hierarchy_path, levels, and related caches
+      const { data, error } = await (supabase as any).rpc('reorder_line_item_with_hierarchy', {
+        p_structure_uuid: selectedStructureUuid,
+        p_moved_item_uuid: item.report_line_item_uuid,
+        p_new_parent_uuid: item.parent_report_line_item_uuid ?? null,
+        p_target_position: null, // keep current sibling position
+        p_new_description: newDescription,
+        p_regenerate_keys: false, // set to true if you want keys to follow path/name changes
+      });
 
-      const { error } = await supabase
-        .from('report_line_items')
-        .update({ report_line_item_description: newDescription })
-        .eq('report_line_item_key', key)
-        .eq('report_structure_uuid', selectedStructureUuid);
+      if (error || !data?.success) {
+        throw new Error(error?.message || data?.error || 'Rename operation failed');
+      }
 
-      if (error) throw error;
-
-      // Log the change for undo functionality
-      await logStructureChange(
-        item.report_line_item_uuid,
-        item.report_line_item_id,
-        'rename',
-        key,
-        newDescription,
-        { description: previousDescription },
-        { description: newDescription }
-      );
-
-      // Update local state and rebuild tree to reflect the change immediately
-      const updatedItems = lineItems.map(item => 
-        item.report_line_item_key === key 
-          ? { ...item, report_line_item_description: newDescription }
-          : item
-      );
-      setLineItems(updatedItems);
-      
-      // Rebuild tree data with updated description
-      const newTreeData = buildTreeData(updatedItems);
-      setTreeData(newTreeData);
+      // Refresh from DB to get cascaded updates (hierarchy_path, levels, etc.)
+      await fetchLineItems(selectedStructureUuid);
 
       setEditingItem(null);
       setEditingValue('');
 
       toast({
-        title: "Success",
-        description: "Description updated successfully",
+        title: 'Success',
+        description: 'Description updated successfully',
       });
     } catch (error) {
-      console.error('Error updating description:', error);
+      console.error('Error updating description via RPC:', error);
       toast({
-        title: "Error",
-        description: "Failed to update description",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update description',
+        variant: 'destructive',
       });
     }
   };
