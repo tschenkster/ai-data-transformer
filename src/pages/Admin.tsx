@@ -11,9 +11,12 @@ import Footer from '@/components/Footer';
 import { ActionButtons, createApproveAction, createRejectAction, createAdminDeleteAction, ActionButtonConfig } from '@/components/ui/action-buttons';
 
 interface UserAccount {
-  id: string;
+  user_account_uuid: string;
+  user_account_id: number;
   user_id: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   approved_at?: string;
@@ -70,7 +73,7 @@ export default function Admin() {
     fetchUserAccounts();
   }, []);
 
-  const updateUserStatus = async (userId: string, status: 'approved' | 'rejected') => {
+  const updateUserStatus = async (userAccountUuid: string, status: 'approved' | 'rejected') => {
     try {
       const updates: any = {
         status,
@@ -84,7 +87,7 @@ export default function Admin() {
       const { error } = await supabase
         .from('user_accounts')
         .update(updates)
-        .eq('user_id', userId);
+        .eq('user_account_uuid', userAccountUuid);
 
       if (error) throw error;
 
@@ -104,14 +107,14 @@ export default function Admin() {
     }
   };
 
-  const deleteUser = async (userId: string, userEmail: string) => {
+  const deleteUser = async (userAccountUuid: string, userEmail: string) => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
 
     try {
       const { data, error } = await supabase.functions.invoke('delete-user', {
-        body: { userId, userEmail }
+        body: { userAccountUuid, userEmail }
       });
 
       if (error) throw error;
@@ -174,24 +177,24 @@ export default function Admin() {
 
   // Action configuration functions
   const getPendingUserActions = (userAccount: UserAccount): ActionButtonConfig[] => [
-    createApproveAction(() => updateUserStatus(userAccount.user_id, 'approved')),
-    createRejectAction(() => updateUserStatus(userAccount.user_id, 'rejected'))
+    createApproveAction(() => updateUserStatus(userAccount.user_account_uuid, 'approved')),
+    createRejectAction(() => updateUserStatus(userAccount.user_account_uuid, 'rejected'))
   ];
 
   const getAllUserActions = (userAccount: UserAccount): ActionButtonConfig[] => {
     const actions: ActionButtonConfig[] = [];
     
     if (userAccount.status === 'pending') {
-      actions.push(createApproveAction(() => updateUserStatus(userAccount.user_id, 'approved')));
-      actions.push(createRejectAction(() => updateUserStatus(userAccount.user_id, 'rejected')));
+      actions.push(createApproveAction(() => updateUserStatus(userAccount.user_account_uuid, 'approved')));
+      actions.push(createRejectAction(() => updateUserStatus(userAccount.user_account_uuid, 'rejected')));
     } else if (userAccount.status === 'rejected') {
-      actions.push(createApproveAction(() => updateUserStatus(userAccount.user_id, 'approved')));
+      actions.push(createApproveAction(() => updateUserStatus(userAccount.user_account_uuid, 'approved')));
     } else if (userAccount.status === 'approved') {
-      actions.push(createRejectAction(() => updateUserStatus(userAccount.user_id, 'rejected')));
+      actions.push(createRejectAction(() => updateUserStatus(userAccount.user_account_uuid, 'rejected')));
     }
     
     actions.push(createAdminDeleteAction(
-      () => deleteUser(userAccount.user_id, userAccount.email),
+      () => deleteUser(userAccount.user_account_uuid, userAccount.email),
       isUserSuperAdmin(userAccount.email),
       isUserSuperAdmin(userAccount.email) ? "Cannot delete super admin account" : "Delete user"
     ));
@@ -267,7 +270,7 @@ export default function Admin() {
                     </TableHeader>
                     <TableBody>
                       {pendingUsers.map((userAccount) => (
-                        <TableRow key={userAccount.id}>
+                        <TableRow key={userAccount.user_account_uuid}>
                           <TableCell className="font-medium">{userAccount.email}</TableCell>
                           <TableCell>{getUserRole(userAccount.email)}</TableCell>
                           <TableCell>{formatDate(userAccount.created_at)}</TableCell>
@@ -309,7 +312,7 @@ export default function Admin() {
                 </TableHeader>
                 <TableBody>
                   {userAccounts.map((userAccount) => (
-                    <TableRow key={userAccount.id}>
+                    <TableRow key={userAccount.user_account_uuid}>
                       <TableCell className="font-medium">{userAccount.email}</TableCell>
                       <TableCell>{getUserRole(userAccount.email)}</TableCell>
                       <TableCell>{formatDate(userAccount.created_at)}</TableCell>

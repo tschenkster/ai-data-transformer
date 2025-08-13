@@ -5,7 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 interface UserAccount {
-  id: string;
+  user_account_uuid: string;
+  user_account_id: number;
   user_id: string;
   email: string;
   first_name?: string;

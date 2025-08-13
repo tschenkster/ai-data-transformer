@@ -377,10 +377,10 @@ export type Database = {
           created_at: string
           email: string
           first_name: string | null
-          id: string
           last_name: string | null
           status: string
           user_account_id: number
+          user_account_uuid: string
           user_id: string
         }
         Insert: {
@@ -389,10 +389,10 @@ export type Database = {
           created_at?: string
           email: string
           first_name?: string | null
-          id?: string
           last_name?: string | null
           status?: string
-          user_account_id?: number
+          user_account_id: number
+          user_account_uuid?: string
           user_id: string
         }
         Update: {
@@ -401,10 +401,10 @@ export type Database = {
           created_at?: string
           email?: string
           first_name?: string | null
-          id?: string
           last_name?: string | null
           status?: string
           user_account_id?: number
+          user_account_uuid?: string
           user_id?: string
         }
         Relationships: []

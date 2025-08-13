@@ -6,7 +6,8 @@ const corsHeaders = {
 }
 
 interface DeleteUserRequest {
-  userId: string;
+  userAccountUuid?: string;
+  userId?: string; // Keep for backward compatibility
   userEmail: string;
 }
 
@@ -53,12 +54,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { userId, userEmail }: DeleteUserRequest = await req.json();
+    const { userAccountUuid, userId, userEmail }: DeleteUserRequest = await req.json();
 
-    // Validate input
-    if (!userId || !userEmail) {
+    // Validate input - support both new and old parameter names
+    const userIdToDelete = userAccountUuid || userId;
+    if (!userIdToDelete || !userEmail) {
       return new Response(
-        JSON.stringify({ error: 'Missing userId or userEmail' }),
+        JSON.stringify({ error: 'Missing user identifier or userEmail' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -80,8 +82,23 @@ Deno.serve(async (req) => {
       }
     });
 
-    // Delete user using service role
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    // First, get the actual user_id from user_accounts table to delete from auth.users
+    const { data: userAccountData, error: fetchError } = await supabaseAdmin
+      .from('user_accounts')
+      .select('user_id')
+      .eq('user_account_uuid', userIdToDelete)
+      .single();
+
+    if (fetchError || !userAccountData) {
+      console.error('Error fetching user account:', fetchError);
+      return new Response(
+        JSON.stringify({ error: 'User account not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Delete user using service role (this will cascade delete user_accounts due to foreign key)
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userAccountData.user_id);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
@@ -91,7 +108,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`User ${userEmail} (${userId}) deleted successfully by ${user.email}`);
+    console.log(`User ${userEmail} (${userIdToDelete}) deleted successfully by ${user.email}`);
 
     return new Response(
       JSON.stringify({ success: true, message: 'User deleted successfully' }),
