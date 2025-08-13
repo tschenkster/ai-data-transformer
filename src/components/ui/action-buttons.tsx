@@ -39,7 +39,7 @@ export function ActionButtons({
           return (
             <Button
               key={action.id}
-              variant={action.variant || 'outline'}
+              variant={action.variant || 'ghost'}
               size={size}
               onClick={action.onClick}
               disabled={action.disabled}
@@ -92,7 +92,7 @@ export const createModifyAction = (
   icon: Edit,
   onClick,
   disabled,
-  className: 'hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200'
+  className: 'hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-200'
 });
 
 export const createDeleteAction = (
@@ -104,7 +104,6 @@ export const createDeleteAction = (
   icon: X,
   onClick,
   disabled,
-  variant: 'outline' as const,
   className: 'hover:bg-red-50 hover:text-red-700 hover:border-red-200'
 });
 
