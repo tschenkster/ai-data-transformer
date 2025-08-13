@@ -2,8 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Footer from '@/components/Footer';
 import { Brain, Zap, Target, Shield, Clock, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8 space-y-8">
@@ -155,7 +158,7 @@ export default function Home() {
             <Button 
               size="lg"
               variant="secondary"
-              onClick={() => window.location.href = '/memory'}
+              onClick={() => navigate('/memory')}
               className="bg-white text-primary hover:bg-gray-100"
             >
               Get Started
