@@ -9,7 +9,18 @@ interface AdminRouteProps {
 export function AdminRoute({ children }: AdminRouteProps) {
   const { user, userAccount, loading, isAdmin, isApproved } = useAuth();
 
+  console.log('🛡️ AdminRoute: Checking access', {
+    loading,
+    hasUser: !!user,
+    userEmail: user?.email,
+    hasUserAccount: !!userAccount,
+    userAccountStatus: userAccount?.status,
+    isAdmin,
+    isApproved
+  });
+
   if (loading) {
+    console.log('🛡️ AdminRoute: Still loading, showing loading screen');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">Loading...</div>
@@ -18,6 +29,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!user) {
+    console.log('🛡️ AdminRoute: No user, access denied');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-[400px]">
@@ -31,6 +43,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!userAccount) {
+    console.log('🛡️ AdminRoute: No user account, showing error');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-[400px]">
@@ -44,6 +57,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!isApproved) {
+    console.log('🛡️ AdminRoute: User not approved');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-[400px]">
@@ -57,6 +71,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!isAdmin) {
+    console.log('🛡️ AdminRoute: User not admin');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-[400px]">
@@ -69,5 +84,6 @@ export function AdminRoute({ children }: AdminRouteProps) {
     );
   }
 
+  console.log('🛡️ AdminRoute: Access granted, rendering children');
   return <>{children}</>;
 }

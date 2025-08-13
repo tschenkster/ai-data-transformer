@@ -42,38 +42,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    console.log('🔐 AuthProvider: Initializing auth state listener');
 
     // Set up auth state listener (no Supabase calls here)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
+      console.log('🔐 AuthProvider: Auth state changed', { event, hasSession: !!session, hasUser: !!session?.user });
       setSession(session);
       setUser(session?.user ?? null);
       if (!session?.user) {
+        console.log('🔐 AuthProvider: No user, clearing userAccount and stopping loading');
         setUserAccount(null);
         setLoading(false);
       } else {
+        console.log('🔐 AuthProvider: User found, starting loading for userAccount fetch');
         setLoading(true);
       }
     });
 
     // Check for existing session
+    console.log('🔐 AuthProvider: Checking for existing session');
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         if (!mounted) return;
+        console.log('🔐 AuthProvider: Initial session check', { hasSession: !!session, hasUser: !!session?.user });
         setSession(session);
         setUser(session?.user ?? null);
         if (!session?.user) {
+          console.log('🔐 AuthProvider: No initial user, stopping loading');
           setLoading(false);
         } else {
+          console.log('🔐 AuthProvider: Initial user found, starting loading');
           setLoading(true);
         }
       })
       .catch((error) => {
-        console.error('Error getting session:', error);
-        if (mounted) setLoading(false);
+        console.error('🔐 AuthProvider: Error getting session:', error);
+        if (mounted) {
+          console.log('🔐 AuthProvider: Session error, stopping loading');
+          setLoading(false);
+        }
       });
 
     return () => {
+      console.log('🔐 AuthProvider: Cleaning up auth listener');
       mounted = false;
       subscription.unsubscribe();
     };
@@ -86,12 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const fetchUserAccount = async (userId: string) => {
       try {
-        console.log('Fetching user account for:', userId);
+        console.log('👤 AuthProvider: Fetching user account for:', userId);
         
         // Add timeout to prevent infinite loading
         timeoutId = setTimeout(() => {
           if (!cancelled) {
-            console.error('User account fetch timeout after 10 seconds');
+            console.error('👤 AuthProvider: User account fetch timeout after 10 seconds');
             setUserAccount(null);
             setLoading(false);
           }
@@ -103,30 +115,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq('supabase_user_uuid', userId)
           .single();
 
-        if (cancelled) return;
+        if (cancelled) {
+          console.log('👤 AuthProvider: Fetch cancelled for user:', userId);
+          return;
+        }
         
         clearTimeout(timeoutId);
         
         if (error) {
-          console.error('Error fetching user account:', error);
+          console.error('👤 AuthProvider: Error fetching user account:', error);
           setUserAccount(null);
         } else {
-          console.log('User account fetched successfully:', userAccountData);
+          console.log('👤 AuthProvider: User account fetched successfully:', userAccountData);
           setUserAccount(userAccountData as UserAccount);
         }
       } catch (err) {
-        console.error('User account fetch error:', err);
+        console.error('👤 AuthProvider: User account fetch error:', err);
         if (!cancelled) setUserAccount(null);
       } finally {
         if (!cancelled) {
-          console.log('Setting loading to false');
+          console.log('👤 AuthProvider: Setting loading to false');
           setLoading(false);
         }
       }
     };
 
     if (user?.id) {
+      console.log('👤 AuthProvider: User ID changed, fetching account:', user.id);
       fetchUserAccount(user.id);
+    } else {
+      console.log('👤 AuthProvider: No user ID, skipping account fetch');
     }
 
     return () => {
