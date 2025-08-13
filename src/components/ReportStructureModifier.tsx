@@ -147,7 +147,7 @@ function SortableItem({
           border border-transparent hover:border-[var(--tree-border)]
           ${hasChildren ? 'cursor-pointer' : 'cursor-default'}
         `}
-        style={{ marginLeft: level * 12 }}
+        style={{ marginLeft: level * 24 }}
       >
         {hasChildren ? (
           <div 
@@ -216,13 +216,13 @@ function SortableItem({
         ) : (
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <span 
-              className="
+              className={`
                 text-sm flex-1 cursor-pointer min-w-0 truncate
-                font-medium text-foreground/90
+                ${node.item.line_item_type === 'header' || node.item.line_item_type === 'subtotal' ? 'font-semibold' : 'font-normal'} text-foreground/90
                 hover:text-foreground hover:bg-accent/20 
                 rounded-md px-2 py-1.5 transition-all duration-200
                 focus:outline-none focus:ring-2 focus:ring-primary/20
-              "
+              `}
               onClick={(e) => {
                 e.stopPropagation();
                 onEditStart(node.key);
