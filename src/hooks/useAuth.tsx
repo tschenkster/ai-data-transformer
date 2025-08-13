@@ -40,33 +40,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+
+    const fetchUserAccount = async (userId: string) => {
+      try {
+        const { data: userAccountData, error } = await supabase
+          .from('user_accounts')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+          
+        if (!mounted) return;
+        
+        if (error) {
+          console.error('Error fetching user account:', error);
+          setUserAccount(null);
+        } else {
+          setUserAccount(userAccountData as UserAccount);
+        }
+      } catch (err) {
+        console.error('User account fetch error:', err);
+        if (mounted) setUserAccount(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch user account when user signs in
         if (session?.user) {
-          setTimeout(async () => {
-            try {
-              const { data: userAccountData, error } = await supabase
-                .from('user_accounts')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-                
-              if (error) {
-                console.error('Error fetching user account:', error);
-              } else {
-                setUserAccount(userAccountData as UserAccount);
-              }
-            } catch (err) {
-              console.error('User account fetch error:', err);
-            } finally {
-              setLoading(false);
-            }
-          }, 0);
+          fetchUserAccount(session.user.id);
         } else {
           setUserAccount(null);
           setLoading(false);
@@ -74,38 +83,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Fetch user account for existing session
-        setTimeout(async () => {
-          try {
-            const { data: userAccountData, error } = await supabase
-              .from('user_accounts')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
-              
-            if (error) {
-              console.error('Error fetching user account:', error);
-            } else {
-              setUserAccount(userAccountData as UserAccount);
-            }
-          } catch (err) {
-            console.error('User account fetch error:', err);
-          } finally {
-            setLoading(false);
-          }
-        }, 0);
+        fetchUserAccount(session.user.id);
       } else {
+        setLoading(false);
+      }
+    }).catch((error) => {
+      console.error('Error getting session:', error);
+      if (mounted) {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Timeout fallback to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('Auth loading timeout reached');
+        setLoading(false);
+      }
+    }, 10000);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
