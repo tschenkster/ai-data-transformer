@@ -315,20 +315,20 @@ export default function ReportStructureManager() {
       <TabsList>
         <TabsTrigger value="overview">
           <Database className="w-4 h-4 mr-2" />
-          Overview
+          List Report Structures
         </TabsTrigger>
         <TabsTrigger value="upload">
           <Upload className="w-4 h-4 mr-2" />
-          Upload Structure
+          Upload New Structure
         </TabsTrigger>
         <TabsTrigger value="viewer">
           <Eye className="w-4 h-4 mr-2" />
-          Structure Viewer
+          View Structure
         </TabsTrigger>
         {isSuperAdmin && (
           <TabsTrigger value="modifier">
             <Edit className="w-4 h-4 mr-2" />
-            Structure Modifier
+            Modify Structure
           </TabsTrigger>
         )}
       </TabsList>
