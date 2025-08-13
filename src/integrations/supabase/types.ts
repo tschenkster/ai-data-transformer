@@ -265,7 +265,7 @@ export type Database = {
       report_structures: {
         Row: {
           created_at: string
-          created_by_user_id: string
+          created_by_supabase_user_uuid: string
           created_by_user_name: string
           imported_structure_id: string | null
           is_active: boolean
@@ -278,7 +278,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_by_user_id: string
+          created_by_supabase_user_uuid: string
           created_by_user_name: string
           imported_structure_id?: string | null
           is_active?: boolean
@@ -291,7 +291,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by_user_id?: string
+          created_by_supabase_user_uuid?: string
           created_by_user_name?: string
           imported_structure_id?: string | null
           is_active?: boolean
