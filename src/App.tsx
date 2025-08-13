@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Zap } from "lucide-react";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
@@ -45,7 +46,8 @@ function AuthenticatedRoutes() {
         <div className="flex-1 flex flex-col">
           <header className="h-12 flex items-center border-b px-4">
             <SidebarTrigger />
-            <h1 className="ml-4 font-semibold">AI-Powered Data Transformer</h1>
+            <Zap className="w-5 h-5 ml-4 mr-2 text-primary" />
+            <h1 className="font-semibold">AI-Powered Data Transformer</h1>
           </header>
           <main className="flex-1 overflow-auto">
             <Routes>
