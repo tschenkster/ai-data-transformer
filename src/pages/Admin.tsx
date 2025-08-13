@@ -145,11 +145,11 @@ export default function Admin() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+        return <Badge variant="warning"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
       case 'approved':
-        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+        return <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
       case 'rejected':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+        return <Badge variant="outline" className="text-red-600"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -160,9 +160,9 @@ export default function Admin() {
     const ADMIN_EMAILS = ['thomas@cfo-team.de'];
     
     if (SUPER_ADMIN_EMAILS.includes(email)) {
-      return <Badge variant="default" className="bg-gradient-to-r from-primary to-primary/80"><Crown className="w-3 h-3 mr-1" />Super Admin</Badge>;
+      return <Badge variant="outline" className="text-purple-600"><Crown className="w-3 h-3 mr-1" />Super Admin</Badge>;
     } else if (ADMIN_EMAILS.includes(email)) {
-      return <Badge variant="secondary"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
+      return <Badge variant="outline" className="text-blue-600"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
     } else {
       return <Badge variant="outline"><Users className="w-3 h-3 mr-1" />User</Badge>;
     }

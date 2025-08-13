@@ -117,14 +117,8 @@ export const createApproveAction = (
   icon: CheckCircle,
   onClick,
   disabled,
-  variant: 'default',
-  className: `
-    h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
-    bg-success text-success-foreground hover:bg-success/90
-    border border-success/20 hover:border-success/40
-    shadow-sm hover:shadow-md
-    focus:outline-none focus:ring-2 focus:ring-success/20
-  `
+  variant: 'ghost',
+  className: 'hover:bg-green-50 hover:text-green-700 hover:border-green-200'
 });
 
 export const createRejectAction = (
@@ -136,14 +130,8 @@ export const createRejectAction = (
   icon: XCircle,
   onClick,
   disabled,
-  variant: 'destructive',
-  className: `
-    h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
-    bg-destructive text-destructive-foreground hover:bg-destructive/90
-    border border-destructive/20 hover:border-destructive/40
-    shadow-sm hover:shadow-md
-    focus:outline-none focus:ring-2 focus:ring-destructive/20
-  `
+  variant: 'ghost',
+  className: 'hover:bg-red-50 hover:text-red-700 hover:border-red-200'
 });
 
 export const createAdminDeleteAction = (
