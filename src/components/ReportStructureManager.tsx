@@ -386,7 +386,7 @@ export default function ReportStructureManager() {
                               className="h-7 px-2 text-xs hover:bg-green-50 hover:text-green-700 hover:border-green-200"
                               onClick={() => setActiveStructureHandler(structure.report_structure_id)}
                             >
-                              <Check className="w-3 h-3 mr-1" />
+                              <Check className="w-3 h-3 mr-0.5" />
                               Set Active
                             </Button>
                           )}
@@ -401,7 +401,7 @@ export default function ReportStructureManager() {
                               if (viewerTab) viewerTab.click();
                             }}
                           >
-                            <Eye className="w-3 h-3 mr-1" />
+                            <Eye className="w-3 h-3 mr-0.5" />
                             View
                           </Button>
                           {isSuperAdmin && (
@@ -416,7 +416,7 @@ export default function ReportStructureManager() {
                                 if (modifierTab) modifierTab.click();
                               }}
                             >
-                              <Edit className="w-3 h-3 mr-1" />
+                              <Edit className="w-3 h-3 mr-0.5" />
                               Modify
                             </Button>
                           )}
@@ -427,7 +427,7 @@ export default function ReportStructureManager() {
                             onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
                             disabled={structuresWithMappings.has(structure.report_structure_id)}
                           >
-                            <X className="w-3 h-3 mr-1" />
+                            <X className="w-3 h-3 mr-0.5" />
                             Delete
                           </Button>
                         </div>
