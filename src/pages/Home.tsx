@@ -1,132 +1,166 @@
-import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, BarChart3, Settings, LogOut, User, Shield, Database, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
+import { Brain, Zap, Target, Shield, Clock, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function Home() {
-  const { user, userAccount, signOut, isAdmin } = useAuth();
-
   return (
-    <div className="bg-background">
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Upload Card */}
-          <Card className="shadow-elegant hover:shadow-glow transition-all duration-300">
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center mb-4">
+            <Zap className="h-8 w-8 mr-3 text-primary" />
+            <h1 className="text-4xl font-bold text-foreground">AI-Powered Data Transformer</h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Transform your messy data into clean, structured information with the power of artificial intelligence
+          </p>
+        </div>
+
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {/* Intelligent Mapping */}
+          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Upload className="h-5 w-5 mr-2 text-primary" />
-                Upload File
+                <Brain className="h-6 w-6 mr-3 text-blue-500" />
+                Intelligent Mapping
               </CardTitle>
               <CardDescription>
-                Upload CSV or Excel files for AI-powered account mapping
+                Advanced AI algorithms automatically detect patterns and suggest optimal data mappings
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
-                className="w-full"
-                onClick={() => window.location.href = '/upload'}
-              >
-                Start Upload
-              </Button>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Pattern recognition</li>
+                <li>• Smart suggestions</li>
+                <li>• Context-aware mapping</li>
+              </ul>
             </CardContent>
           </Card>
 
-          {/* Recent Sessions */}
-          <Card className="shadow-elegant">
+          {/* Real-time Processing */}
+          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <FileText className="h-5 w-5 mr-2 text-primary" />
-                Recent Sessions
+                <Clock className="h-6 w-6 mr-3 text-green-500" />
+                Real-time Processing
               </CardTitle>
               <CardDescription>
-                View your mapping history
+                Process large datasets instantly with lightning-fast AI-powered transformation
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
-                View Sessions
-              </Button>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Instant analysis</li>
+                <li>• Bulk processing</li>
+                <li>• Live feedback</li>
+              </ul>
             </CardContent>
           </Card>
 
-
-          {/* Analytics */}
-          <Card className="shadow-elegant">
+          {/* High Accuracy */}
+          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart3 className="h-5 w-5 mr-2 text-primary" />
-                Analytics
+                <Target className="h-6 w-6 mr-3 text-red-500" />
+                High Accuracy
               </CardTitle>
               <CardDescription>
-                Track mapping performance
+                Machine learning models ensure precise data transformation with minimal errors
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
-                View Stats
-              </Button>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• 99%+ accuracy rate</li>
+                <li>• Continuous learning</li>
+                <li>• Error detection</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Secure Processing */}
+          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="h-6 w-6 mr-3 text-purple-500" />
+                Secure Processing
+              </CardTitle>
+              <CardDescription>
+                Enterprise-grade security ensures your sensitive data remains protected
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• End-to-end encryption</li>
+                <li>• Privacy compliant</li>
+                <li>• Audit trails</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Performance Analytics */}
+          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <TrendingUp className="h-6 w-6 mr-3 text-orange-500" />
+                Performance Analytics
+              </CardTitle>
+              <CardDescription>
+                Track transformation quality and optimize your data processing workflows
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Detailed metrics</li>
+                <li>• Quality scores</li>
+                <li>• Process insights</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Smart Automation */}
+          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Sparkles className="h-6 w-6 mr-3 text-yellow-500" />
+                Smart Automation
+              </CardTitle>
+              <CardDescription>
+                Automate repetitive data transformation tasks with intelligent workflows
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Workflow automation</li>
+                <li>• Batch processing</li>
+                <li>• Scheduled transforms</li>
+              </ul>
             </CardContent>
           </Card>
         </div>
 
-        {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-primary">0</div>
-              <p className="text-xs text-muted-foreground">Total Mappings</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-success">0%</div>
-              <p className="text-xs text-muted-foreground">Accuracy Rate</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-accent">0</div>
-              <p className="text-xs text-muted-foreground">Sessions</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-2xl font-bold text-warning">0</div>
-              <p className="text-xs text-muted-foreground">Pending Review</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Welcome Message */}
+        {/* Call to Action */}
         <Card className="bg-gradient-primary text-primary-foreground">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Zap className="h-5 w-5 mr-2" />
-              Welcome to AI-Powered Data Transformer
+            <CardTitle className="text-center text-2xl">
+              Ready to Transform Your Data?
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="mb-4">
-              Get started by uploading a CSV or Excel file with account names. Our AI will analyze 
-              and suggest mappings based on intelligent pattern recognition and standardization.
+          <CardContent className="text-center">
+            <p className="mb-6 text-lg opacity-90">
+              Start your data transformation journey today. Upload your files and see the AI magic in action.
             </p>
-            <div className="flex flex-wrap gap-2">
-              <Button 
-                variant="secondary" 
-                size="sm"
-                onClick={() => window.location.href = '/upload'}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload First File
-              </Button>
-              <Button variant="outline" size="sm" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                <FileText className="h-4 w-4 mr-2" />
-                View Tutorial
-              </Button>
-            </div>
+            <Button 
+              size="lg"
+              variant="secondary"
+              onClick={() => window.location.href = '/upload'}
+              className="bg-white text-primary hover:bg-gray-100"
+            >
+              Get Started
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </Button>
           </CardContent>
         </Card>
       </main>
