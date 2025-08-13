@@ -76,15 +76,11 @@ export default function Auth() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">AI-Powered Data Transformer</h1>
-            <p className="text-muted-foreground">Intelligent financial account mapping system</p>
           </div>
           
           <Card className="shadow-elegant">
             <CardHeader>
               <CardTitle className="text-center">Access Required</CardTitle>
-              <CardDescription className="text-center">
-                Please sign in or request access to continue
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
