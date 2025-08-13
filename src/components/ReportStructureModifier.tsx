@@ -702,19 +702,35 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
           ? JSON.parse(entry.previous_state) 
           : entry.previous_state;
 
-        const current = [...lineItems].sort((a, b) => a.sort_order - b.sort_order);
-        const idx = current.findIndex(i => i.report_line_item_key === entry.line_item_key);
-        if (idx === -1 || previousState?.sortOrder === undefined) {
-          throw new Error('Original item or sort order not found for undo.');
+        // Validate required fields for undo
+        if (!previousState || previousState.sort_order === undefined) {
+          throw new Error('Previous state missing required sort_order for undo operation.');
         }
-        const [item] = current.splice(idx, 1);
-        const targetIndex = Math.max(0, Math.min(previousState.sortOrder, current.length));
-        current.splice(targetIndex, 0, item);
 
-        const reordered = current.map((it, i) => ({ ...it, sort_order: i }));
-        const result = await updateGlobalSortOrderWithTimeout(selectedStructureUuid, reordered, 10000);
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to update sort order during undo.');
+        console.log('🔄 Undoing move operation:', {
+          itemKey: entry.line_item_key,
+          itemUuid: entry.line_item_uuid,
+          previousSortOrder: previousState.sort_order,
+          previousParent: previousState.parent_report_line_item_uuid
+        });
+
+        // Use the reorder RPC function to restore the previous state
+        const result = await supabase.rpc('reorder_line_item_with_hierarchy', {
+          p_structure_uuid: selectedStructureUuid,
+          p_moved_item_uuid: entry.line_item_uuid,
+          p_new_parent_uuid: previousState.parent_report_line_item_uuid || null,
+          p_target_position: previousState.sort_order
+        });
+
+        if (result.error) {
+          console.error('RPC error during undo:', result.error);
+          throw new Error(`Failed to undo move: ${result.error.message}`);
+        }
+
+        // Parse the result data properly
+        const resultData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+        if (!resultData?.success) {
+          throw new Error('Move undo operation failed');
         }
 
         highlightRecentlyUndoneItem(entry.line_item_key);
