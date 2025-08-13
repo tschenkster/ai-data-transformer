@@ -21,12 +21,11 @@ export default function CreateLineItemDialog({ open, onOpenChange, structureUuid
 
   const reset = () => setDescription('');
 
-  const getNextRootSortOrder = async () => {
+  const getNextAvailableSortOrder = async () => {
     const { data, error } = await supabase
       .from('report_line_items')
       .select('sort_order')
       .eq('report_structure_uuid', structureUuid)
-      .is('parent_report_line_item_uuid', null)
       .order('sort_order', { ascending: false })
       .limit(1);
     if (error || !data?.length) return 0;
@@ -66,7 +65,7 @@ export default function CreateLineItemDialog({ open, onOpenChange, structureUuid
         finalKey = `${keyBase}-${Math.random().toString(36).slice(2, 5)}`;
       }
 
-      const sortOrder = await getNextRootSortOrder();
+      const sortOrder = await getNextAvailableSortOrder();
 
       const newItem = {
         report_structure_id: (structure as any).report_structure_id,
