@@ -13,7 +13,7 @@ import { ActionButtons, createApproveAction, createRejectAction, createAdminDele
 interface UserAccount {
   user_account_uuid: string;
   user_account_id: number;
-  user_id: string;
+  supabase_user_uuid: string;
   email: string;
   first_name?: string;
   last_name?: string;

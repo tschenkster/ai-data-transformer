@@ -502,7 +502,7 @@ export type Database = {
           query_embedding: string
           match_threshold: number
           match_count: number
-          filter_user_id?: string
+          filter_supabase_user_uuid?: string
         }
         Returns: {
           id: string
@@ -513,7 +513,7 @@ export type Database = {
           similarity: number
           validated: boolean
           created_at: string
-          user_id: string
+          supabase_user_uuid: string
         }[]
       }
       reorder_line_item_with_hierarchy: {

@@ -145,7 +145,7 @@ serve(async (req) => {
           report_structure_uuid: structureUuid,
           report_structure_name: structureName.trim(),
           is_active: false, // Will be set by trigger if it's the first one
-          created_by_user_id: userId,
+          created_by_supabase_user_uuid: userId,
           created_by_user_name: userEmail,
           version: 1,
           name_of_import_file: filename,

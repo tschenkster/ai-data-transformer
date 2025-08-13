@@ -22,7 +22,7 @@ interface ReportStructure {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  created_by_user_id: string;
+  created_by_supabase_user_uuid: string;
   created_by_user_name: string;
   version: number;
   name_of_import_file?: string;

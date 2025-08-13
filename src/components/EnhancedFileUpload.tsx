@@ -50,7 +50,7 @@ interface ReportStructure {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  created_by_user_id: string;
+  created_by_supabase_user_uuid: string;
   created_by_user_name: string;
   version: number;
 }
@@ -97,7 +97,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
     try {
       const { data, error } = await supabase
         .from('report_structures')
-        .select('report_structure_id, report_structure_uuid, report_structure_name, version, is_active, created_at, updated_at, created_by_user_id, created_by_user_name')
+        .select('report_structure_id, report_structure_uuid, report_structure_name, version, is_active, created_at, updated_at, created_by_supabase_user_uuid, created_by_user_name')
         .order('report_structure_name');
 
       if (error) throw error;

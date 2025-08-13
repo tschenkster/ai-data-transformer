@@ -38,7 +38,7 @@ export const MemoryUpload = () => {
       const accountsData = data.accounts.map(account => ({
         original_account_name: account,
         mapped_account_name: account, // For historical data, these might be the same initially
-        user_id: user.id,
+        supabase_user_uuid: user.id,
         confidence_score: 1.0,
         reasoning: `Historical mapping from ${data.filename}`,
         validated: true

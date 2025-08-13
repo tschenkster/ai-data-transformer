@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 interface UserAccount {
   user_account_uuid: string;
   user_account_id: number;
-  user_id: string;
+  supabase_user_uuid: string;
   email: string;
   first_name?: string;
   last_name?: string;
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: userAccountData, error } = await supabase
           .from('user_accounts')
           .select('*')
-          .eq('user_id', userId)
+          .eq('supabase_user_uuid', userId)
           .single();
 
         if (cancelled) return;

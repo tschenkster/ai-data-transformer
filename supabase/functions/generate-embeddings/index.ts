@@ -85,13 +85,13 @@ serve(async (req) => {
             .upsert({
               original_account_name: account.original_account_name || account.account_name,
               mapped_account_name: account.mapped_account_name || account.account_name,
-              user_id: account.user_id,
+              supabase_user_uuid: account.supabase_user_uuid,
               confidence_score: account.confidence_score || 1.0,
               reasoning: account.reasoning || 'Historical mapping',
               validated: account.validated || false,
               embedding: embedding
             }, {
-              onConflict: 'original_account_name,user_id'
+              onConflict: 'original_account_name,supabase_user_uuid'
             })
             .select();
 

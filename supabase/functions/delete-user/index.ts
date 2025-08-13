@@ -82,10 +82,10 @@ Deno.serve(async (req) => {
       }
     });
 
-    // First, get the actual user_id from user_accounts table to delete from auth.users
+    // First, get the actual supabase_user_uuid from user_accounts table to delete from auth.users
     const { data: userAccountData, error: fetchError } = await supabaseAdmin
       .from('user_accounts')
-      .select('user_id')
+      .select('supabase_user_uuid')
       .eq('user_account_uuid', userIdToDelete)
       .single();
 
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     }
 
     // Delete user using service role (this will cascade delete user_accounts due to foreign key)
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userAccountData.user_id);
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userAccountData.supabase_user_uuid);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
