@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut, Settings } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, Users, Clock, UserCheck, Home, LogOut, Settings, Shield, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 
@@ -22,7 +22,7 @@ interface UserAccount {
 }
 
 export default function Admin() {
-  const { user, userAccount, signOut } = useAuth();
+  const { user, userAccount, signOut, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const [userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +105,18 @@ export default function Admin() {
     }
   };
 
-  const deleteUser = async (userId: string) => {
+  const deleteUser = async (userId: string, userEmail: string) => {
+    // Check if this is a super admin account
+    const SUPER_ADMIN_EMAILS = ['thomas@cfo-team.de'];
+    if (SUPER_ADMIN_EMAILS.includes(userEmail)) {
+      toast({
+        title: "Cannot Delete",
+        description: "Super admin accounts cannot be deleted to prevent system lockout",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
@@ -143,6 +154,24 @@ export default function Admin() {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const getUserRole = (email: string) => {
+    const SUPER_ADMIN_EMAILS = ['thomas@cfo-team.de'];
+    const ADMIN_EMAILS = ['thomas@cfo-team.de'];
+    
+    if (SUPER_ADMIN_EMAILS.includes(email)) {
+      return <Badge variant="default" className="bg-gradient-to-r from-primary to-primary/80"><Crown className="w-3 h-3 mr-1" />Super Admin</Badge>;
+    } else if (ADMIN_EMAILS.includes(email)) {
+      return <Badge variant="secondary"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
+    } else {
+      return <Badge variant="outline"><Users className="w-3 h-3 mr-1" />User</Badge>;
+    }
+  };
+
+  const isUserSuperAdmin = (email: string) => {
+    const SUPER_ADMIN_EMAILS = ['thomas@cfo-team.de'];
+    return SUPER_ADMIN_EMAILS.includes(email);
   };
 
   const formatDate = (dateString: string) => {
@@ -201,44 +230,58 @@ export default function Admin() {
                   <p>No pending users to review</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Signup Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pendingUsers.map((userAccount) => (
-                      <TableRow key={userAccount.id}>
-                        <TableCell className="font-medium">{userAccount.email}</TableCell>
-                        <TableCell>{formatDate(userAccount.created_at)}</TableCell>
-                        <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
-                            >
-                              <XCircle className="w-4 h-4 mr-1" />
-                              Reject
-                            </Button>
-                          </div>
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>User Role</TableHead>
+                        <TableHead>Signup Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingUsers.map((userAccount) => (
+                        <TableRow key={userAccount.id}>
+                          <TableCell className="font-medium">{userAccount.email}</TableCell>
+                          <TableCell>{getUserRole(userAccount.email)}</TableCell>
+                          <TableCell>{formatDate(userAccount.created_at)}</TableCell>
+                          <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
+                                className="
+                                  h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                                  bg-success text-success-foreground hover:bg-success/90
+                                  border border-success/20 hover:border-success/40
+                                  shadow-sm hover:shadow-md
+                                  focus:outline-none focus:ring-2 focus:ring-success/20
+                                "
+                              >
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
+                                className="
+                                  h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                                  bg-destructive text-destructive-foreground hover:bg-destructive/90
+                                  border border-destructive/20 hover:border-destructive/40
+                                  shadow-sm hover:shadow-md
+                                  focus:outline-none focus:ring-2 focus:ring-destructive/20
+                                "
+                              >
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
                 </Table>
               )}
             </CardContent>
@@ -258,6 +301,7 @@ export default function Admin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Email</TableHead>
+                    <TableHead>User Role</TableHead>
                     <TableHead>Signup Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Approved Date</TableHead>
@@ -268,29 +312,42 @@ export default function Admin() {
                   {userAccounts.map((userAccount) => (
                     <TableRow key={userAccount.id}>
                       <TableCell className="font-medium">{userAccount.email}</TableCell>
+                      <TableCell>{getUserRole(userAccount.email)}</TableCell>
                       <TableCell>{formatDate(userAccount.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
                       <TableCell>
                         {userAccount.approved_at ? formatDate(userAccount.approved_at) : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
+                        <div className="flex gap-2">
                           {userAccount.status === 'pending' && (
                             <>
                               <Button
                                 size="sm"
                                 onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
-                                className="bg-green-600 hover:bg-green-700"
+                                className="
+                                  h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                                  bg-success text-success-foreground hover:bg-success/90
+                                  border border-success/20 hover:border-success/40
+                                  shadow-sm hover:shadow-md
+                                  focus:outline-none focus:ring-2 focus:ring-success/20
+                                "
                               >
-                                <CheckCircle className="w-4 h-4 mr-1" />
+                                <CheckCircle className="w-3 h-3 mr-1" />
                                 Approve
                               </Button>
                               <Button
                                 size="sm"
-                                variant="destructive"
                                 onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
+                                className="
+                                  h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                                  bg-destructive text-destructive-foreground hover:bg-destructive/90
+                                  border border-destructive/20 hover:border-destructive/40
+                                  shadow-sm hover:shadow-md
+                                  focus:outline-none focus:ring-2 focus:ring-destructive/20
+                                "
                               >
-                                <XCircle className="w-4 h-4 mr-1" />
+                                <XCircle className="w-3 h-3 mr-1" />
                                 Reject
                               </Button>
                             </>
@@ -299,28 +356,50 @@ export default function Admin() {
                             <Button
                               size="sm"
                               onClick={() => updateUserStatus(userAccount.user_id, 'approved')}
-                              className="bg-green-600 hover:bg-green-700"
+                              className="
+                                h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                                bg-success text-success-foreground hover:bg-success/90
+                                border border-success/20 hover:border-success/40
+                                shadow-sm hover:shadow-md
+                                focus:outline-none focus:ring-2 focus:ring-success/20
+                              "
                             >
-                              <CheckCircle className="w-4 h-4 mr-1" />
+                              <CheckCircle className="w-3 h-3 mr-1" />
                               Approve
                             </Button>
                           )}
                           {userAccount.status === 'approved' && (
                             <Button
                               size="sm"
-                              variant="destructive"
                               onClick={() => updateUserStatus(userAccount.user_id, 'rejected')}
+                              className="
+                                h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                                bg-destructive text-destructive-foreground hover:bg-destructive/90
+                                border border-destructive/20 hover:border-destructive/40
+                                shadow-sm hover:shadow-md
+                                focus:outline-none focus:ring-2 focus:ring-destructive/20
+                              "
                             >
-                              <XCircle className="w-4 h-4 mr-1" />
+                              <XCircle className="w-3 h-3 mr-1" />
                               Reject
                             </Button>
                           )}
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => deleteUser(userAccount.user_id)}
+                            onClick={() => deleteUser(userAccount.user_id, userAccount.email)}
+                            disabled={isUserSuperAdmin(userAccount.email)}
+                            className="
+                              h-8 px-3 text-xs font-medium rounded-md transition-all duration-200
+                              text-muted-foreground hover:text-destructive-foreground
+                              hover:bg-destructive/10 border border-border hover:border-destructive/40
+                              shadow-sm hover:shadow-md
+                              focus:outline-none focus:ring-2 focus:ring-destructive/20
+                              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                              disabled:hover:text-muted-foreground disabled:hover:border-border
+                            "
+                            title={isUserSuperAdmin(userAccount.email) ? "Cannot delete super admin account" : "Delete user"}
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
+                            <Trash2 className="w-3 h-3 mr-1" />
                             Delete
                           </Button>
                         </div>
