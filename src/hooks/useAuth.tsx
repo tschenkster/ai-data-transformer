@@ -63,13 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             } catch (err) {
               console.error('User account fetch error:', err);
+            } finally {
+              setLoading(false);
             }
           }, 0);
         } else {
           setUserAccount(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
@@ -95,8 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           } catch (err) {
             console.error('User account fetch error:', err);
+          } finally {
+            setLoading(false);
           }
-          setLoading(false);
         }, 0);
       } else {
         setLoading(false);
