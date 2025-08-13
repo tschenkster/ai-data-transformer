@@ -833,12 +833,8 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   if (structuresLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Structure Modifier</CardTitle>
-          <CardDescription>Loading available report structures...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
+        <CardContent className="py-8">
+          <div className="flex items-center justify-center">
             <Loader2 className="w-6 h-6 animate-spin mr-2" />
             <span>Loading structures...</span>
           </div>
@@ -882,12 +878,8 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   if (loading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Structure Modifier</CardTitle>
-          <CardDescription>Loading structure data...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
+        <CardContent className="py-8">
+          <div className="flex items-center justify-center">
             <Loader2 className="w-6 h-6 animate-spin mr-2" />
             <span>Loading line items...</span>
           </div>
@@ -899,17 +891,10 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
   if (lineItems.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Structure Modifier</CardTitle>
-          <CardDescription>
-            {structures.find(s => s.report_structure_uuid === selectedStructureUuid)?.report_structure_name || 'Selected Structure'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <Label htmlFor="structure-select">Report Structure</Label>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between gap-4">
             <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
-              <SelectTrigger>
+              <SelectTrigger className="w-72">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -921,6 +906,10 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
                 ))}
               </SelectContent>
             </Select>
+            <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Item
+            </Button>
           </div>
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -938,42 +927,27 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <CardTitle>Structure Modifier</CardTitle>
-            <CardDescription>
-              {selectedStructure?.report_structure_name}
-              {selectedStructure?.is_active && " (Active)"}
-            </CardDescription>
-          </div>
+      <CardContent className="space-y-6">
+        {/* Structure Selection and Add Button */}
+        <div className="flex items-center justify-between gap-4">
+          <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
+            <SelectTrigger className="w-72">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {structures.map((structure) => (
+                <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
+                  {structure.report_structure_name}
+                  {structure.is_active && " (Active)"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Add Item
           </Button>
         </div>
-        
-        {/* Structure Selection */}
-        <div className="pt-4 border-t">
-          <div className="space-y-2">
-            <Label htmlFor="structure-select">Report Structure</Label>
-            <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {structures.map((structure) => (
-                  <SelectItem key={structure.report_structure_uuid} value={structure.report_structure_uuid}>
-                    {structure.report_structure_name}
-                    {structure.is_active && " (Active)"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
