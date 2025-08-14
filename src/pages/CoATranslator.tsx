@@ -218,9 +218,21 @@ export default function CoATranslator() {
   };
 
   const exportToCSV = () => {
-    const csvData = Papa.unparse(translatedData, {
-      header: true,
-      columns: ['accountNumber', 'originalDescription', 'translatedDescription', 'sourceLanguage', 'targetLanguage']
+    // Get language codes for headers
+    const sourceLang = translatedData[0]?.sourceLanguage || sourceLanguage;
+    const targetLang = translatedData[0]?.targetLanguage || targetLanguage;
+    
+    // Create data with custom headers
+    const dataWithCustomHeaders = translatedData.map(row => ({
+      'Account Number': row.accountNumber,
+      [`Account Description [${sourceLang.toUpperCase()}]`]: row.originalDescription,
+      [`Account Description [${targetLang.toUpperCase()}]`]: row.translatedDescription,
+      'Source Language': row.sourceLanguage,
+      'Target Language': row.targetLanguage
+    }));
+
+    const csvData = Papa.unparse(dataWithCustomHeaders, {
+      header: true
     });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -235,13 +247,26 @@ export default function CoATranslator() {
   };
 
   const exportToXLSX = () => {
-    const ws = XLSX.utils.json_to_sheet(translatedData);
+    // Get language codes for headers
+    const sourceLang = translatedData[0]?.sourceLanguage || sourceLanguage;
+    const targetLang = translatedData[0]?.targetLanguage || targetLanguage;
+    
+    // Create data with custom headers
+    const dataWithCustomHeaders = translatedData.map(row => ({
+      'Account Number': row.accountNumber,
+      [`Account Description [${sourceLang.toUpperCase()}]`]: row.originalDescription,
+      [`Account Description [${targetLang.toUpperCase()}]`]: row.translatedDescription,
+      'Source Language': row.sourceLanguage,
+      'Target Language': row.targetLanguage
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataWithCustomHeaders);
     ws['!cols'] = [
       { wch: 15 }, // Account Number
-      { wch: 40 }, // Original Description
-      { wch: 40 }, // Translated Description
-      { wch: 12 }, // Source Language
-      { wch: 12 }  // Target Language
+      { wch: 40 }, // Account Description (Source)
+      { wch: 40 }, // Account Description (Target)
+      { wch: 15 }, // Source Language
+      { wch: 15 }  // Target Language
     ];
 
     const wb = XLSX.utils.book_new();
