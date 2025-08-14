@@ -229,10 +229,10 @@ export default function Admin() {
         {/* Management Tabs */}
         <Tabs defaultValue="all" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="all">All Users</TabsTrigger>
             <TabsTrigger value="pending">
               Pending Users ({stats.pending})
             </TabsTrigger>
-            <TabsTrigger value="all">All Users</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
