@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import ReportStructures from "./pages/ReportStructures";
+import CoATranslator from "./pages/CoATranslator";
 import { MemoryUpload } from "./pages/MemoryUpload";
 import NotFound from "./pages/NotFound";
 
@@ -71,6 +72,11 @@ function AuthenticatedRoutes() {
                 <SuperAdminRoute>
                   <ReportStructures />
                 </SuperAdminRoute>
+              } />
+              <Route path="/coa-translator" element={
+                <AdminRoute>
+                  <CoATranslator />
+                </AdminRoute>
               } />
               <Route path="/memory" element={
                 <ProtectedRoute>

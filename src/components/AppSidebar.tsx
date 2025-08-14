@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Brain, Settings, LogOut, User, Database } from "lucide-react";
+import { Home, Brain, Settings, LogOut, User, Database, Languages } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -129,6 +129,24 @@ export function AppSidebar() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton>
+                      <NavLink
+                        to="/coa-translator"
+                        end
+                        className={({ isActive }) => 
+                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
+                            isActive 
+                              ? "bg-accent text-accent-foreground font-medium" 
+                              : "text-foreground hover:bg-accent/50"
+                          }`
+                        }
+                      >
+                        <Languages className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">CoA Translator</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

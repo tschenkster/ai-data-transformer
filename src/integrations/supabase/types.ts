@@ -62,6 +62,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coa_translation_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          filename: string
+          id: string
+          processed_accounts: number | null
+          session_data: Json
+          session_id: string
+          source_language: string | null
+          status: string
+          target_language: string
+          total_accounts: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          filename: string
+          id?: string
+          processed_accounts?: number | null
+          session_data?: Json
+          session_id?: string
+          source_language?: string | null
+          status?: string
+          target_language: string
+          total_accounts: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          filename?: string
+          id?: string
+          processed_accounts?: number | null
+          session_data?: Json
+          session_id?: string
+          source_language?: string | null
+          status?: string
+          target_language?: string
+          total_accounts?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mapping_decisions: {
         Row: {
           confidence_score: number | null

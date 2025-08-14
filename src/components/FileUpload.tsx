@@ -9,8 +9,8 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
 interface FileUploadProps {
-  onFileProcessed: (data: { accounts: string[]; filename: string; totalAccounts: number }) => void;
-  mode?: 'accounts' | 'report-structure';
+  onFileProcessed: (data: { accounts: any[]; filename: string; totalAccounts: number }) => void;
+  mode?: 'accounts' | 'report-structure' | 'coa-translation';
 }
 
 interface FileData {
@@ -53,6 +53,34 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               
               // Return the raw data for report structure processing
               resolve(results.data as any);
+            } else if (mode === 'coa-translation') {
+              // CoA Translation mode - flexible column mapping
+              const headers = results.meta.fields || [];
+              
+              // Find account number and description columns
+              const accountNumberCol = headers.find(h => 
+                h.toLowerCase().includes('account') && (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+              ) || headers[0];
+              
+              const descriptionCol = headers.find(h => 
+                h.toLowerCase().includes('description') || h.toLowerCase().includes('name')
+              ) || headers[1];
+              
+              if (!accountNumberCol || !descriptionCol) {
+                reject(new Error('Could not identify account number and description columns'));
+                return;
+              }
+              
+              // Map to standard format
+              const accountData = results.data
+                .filter((row: any) => row[accountNumberCol] && row[descriptionCol])
+                .map((row: any) => ({
+                  accountNumber: String(row[accountNumberCol]).trim(),
+                  originalDescription: String(row[descriptionCol]).trim()
+                }));
+              
+              console.log('CoA translation data:', accountData);
+              resolve(accountData as any);
             } else {
               // Original account extraction logic
               const accounts: string[] = [];
@@ -130,6 +158,39 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
             }
             
             resolve(structuredData as any);
+          } else if (mode === 'coa-translation') {
+            // CoA Translation mode - flexible column mapping
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            const headers = jsonData[0] || [];
+            
+            // Find account number and description columns
+            const accountNumberIndex = (headers as string[]).findIndex((h: string) => 
+              h.toLowerCase().includes('account') && (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+            );
+            
+            const descriptionIndex = (headers as string[]).findIndex((h: string) => 
+              h.toLowerCase().includes('description') || h.toLowerCase().includes('name')
+            );
+            
+            // Use first two columns as fallback
+            const accountColIndex = accountNumberIndex >= 0 ? accountNumberIndex : 0;
+            const descColIndex = descriptionIndex >= 0 ? descriptionIndex : 1;
+            
+            if ((headers as string[]).length < 2) {
+              reject(new Error('File must contain at least 2 columns (account number and description)'));
+              return;
+            }
+            
+            // Map to standard format
+            const accountData = jsonData.slice(1)
+              .filter((row: any) => row[accountColIndex] && row[descColIndex])
+              .map((row: any) => ({
+                accountNumber: String(row[accountColIndex]).trim(),
+                originalDescription: String(row[descColIndex]).trim()
+              }));
+            
+            console.log('CoA translation data:', accountData);
+            resolve(accountData as any);
           } else {
             // Original account extraction logic
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
@@ -195,6 +256,18 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
           filename: file.name,
           totalAccounts: accounts.length
         });
+      } else if (mode === 'coa-translation') {
+        if (!Array.isArray(accounts) || accounts.length === 0) {
+          throw new Error('No valid account data found in the file');
+        }
+        
+        setUploadProgress(100);
+        
+        onFileProcessed({
+          accounts: accounts as any, // For CoA translation, this contains AccountData[]
+          filename: file.name,
+          totalAccounts: accounts.length
+        });
       } else {
         if (accounts.length === 0) {
           throw new Error('No account names found in the file');
@@ -213,6 +286,8 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
         title: "File processed successfully",
         description: mode === 'report-structure' 
           ? `Processed ${accounts.length} report line items ready for upload.`
+          : mode === 'coa-translation'
+          ? `Processed ${accounts.length} accounts ready for translation.`
           : `Found ${accounts.length} account names ready for mapping.`,
       });
 
@@ -270,6 +345,8 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
         <CardDescription>
           {mode === 'report-structure' 
             ? 'Upload a CSV or Excel file containing your report structure with required columns'
+            : mode === 'coa-translation'
+            ? 'Upload a CSV or Excel file containing account numbers and descriptions for translation'
             : 'Upload a CSV or Excel file containing account names for AI-powered mapping'
           }
         </CardDescription>
