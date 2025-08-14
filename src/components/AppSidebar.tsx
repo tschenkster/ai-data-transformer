@@ -17,6 +17,7 @@ import {
 
 const navigationItems = [
   { title: "Home", url: "/home", icon: Home },
+  { title: "CoA Translator", url: "/coa-translator", icon: Languages },
 ];
 
 export function AppSidebar() {
@@ -129,24 +130,6 @@ export function AppSidebar() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      <NavLink
-                        to="/coa-translator"
-                        end
-                        className={({ isActive }) => 
-                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
-                            isActive 
-                              ? "bg-accent text-accent-foreground font-medium" 
-                              : "text-foreground hover:bg-accent/50"
-                          }`
-                        }
-                      >
-                        <Languages className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">CoA Translator</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
