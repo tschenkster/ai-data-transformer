@@ -97,21 +97,67 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Delete user using service role (this will cascade delete user_accounts due to foreign key)
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userAccountData.supabase_user_uuid);
-
-    if (deleteError) {
-      console.error('Error deleting user:', deleteError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to delete user', details: deleteError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Check if user exists in auth.users before attempting deletion
+    let authUserExists = true;
+    let deletionMessage = '';
+    
+    try {
+      const { data: authUser, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(userAccountData.supabase_user_uuid);
+      
+      if (getUserError || !authUser.user) {
+        console.log(`User ${userAccountData.supabase_user_uuid} not found in auth.users, will only clean up user_accounts table`);
+        authUserExists = false;
+        deletionMessage = 'User account cleaned up (auth user already removed)';
+      }
+    } catch (error) {
+      console.log(`Error checking user existence: ${error.message}, treating as non-existent`);
+      authUserExists = false;
+      deletionMessage = 'User account cleaned up (auth user check failed)';
     }
 
-    console.log(`User ${userEmail} (${userIdToDelete}) deleted successfully by ${user.email}`);
+    // Delete from auth.users only if user exists there
+    if (authUserExists) {
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userAccountData.supabase_user_uuid);
+      
+      if (deleteError) {
+        console.error('Error deleting user from auth:', deleteError);
+        
+        // If auth deletion fails due to user not found, continue with user_accounts cleanup
+        if (deleteError.message.includes('User not found')) {
+          console.log('User not found in auth, proceeding with user_accounts cleanup');
+          deletionMessage = 'User account cleaned up (auth user not found)';
+        } else {
+          // For other errors, return error response
+          return new Response(
+            JSON.stringify({ error: 'Failed to delete user', details: deleteError.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        deletionMessage = 'User deleted successfully from both auth and accounts';
+      }
+    }
+
+    // If auth deletion failed or user didn't exist in auth, manually clean up user_accounts
+    if (!authUserExists || deletionMessage.includes('auth user not found')) {
+      const { error: accountDeleteError } = await supabaseAdmin
+        .from('user_accounts')
+        .delete()
+        .eq('user_account_uuid', userIdToDelete);
+
+      if (accountDeleteError) {
+        console.error('Error deleting from user_accounts:', accountDeleteError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to delete user account', details: accountDeleteError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    console.log(`User ${userEmail} (${userIdToDelete}) deleted successfully by ${user.email}. ${deletionMessage}`);
 
     return new Response(
-      JSON.stringify({ success: true, message: 'User deleted successfully' }),
+      JSON.stringify({ success: true, message: deletionMessage }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
