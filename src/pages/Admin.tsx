@@ -226,117 +226,103 @@ export default function Admin() {
     <div className="bg-background">
       {/* Main Content */}
       <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Admin Panel</h1>
-            <p className="text-muted-foreground">Manage user accounts and approvals</p>
-          </div>
-        </div>
+        {/* Management Tabs */}
+        <Tabs defaultValue="pending" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="pending">
+              Pending Users ({stats.pending})
+            </TabsTrigger>
+            <TabsTrigger value="all">All Users</TabsTrigger>
+          </TabsList>
 
-
-      {/* Management Tabs */}
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">
-            Pending Users ({stats.pending})
-          </TabsTrigger>
-          <TabsTrigger value="all">All Users</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pending" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Approvals</CardTitle>
-              <CardDescription>
-                Users awaiting approval to access the system
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {pendingUsers.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <UserCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No pending users to review</p>
-                </div>
-              ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Email</TableHead>
-                        <TableHead>User Role</TableHead>
-                        <TableHead>Signup Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingUsers.map((userAccount) => (
-                        <TableRow key={userAccount.user_account_uuid}>
-                          <TableCell className="font-medium">{userAccount.email}</TableCell>
-                          <TableCell>{getUserRole(userAccount.email)}</TableCell>
-                          <TableCell>{formatDate(userAccount.created_at)}</TableCell>
-                          <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
-                          <TableCell>
-                            <ActionButtons 
-                              actions={getPendingUserActions(userAccount)}
-                              className="gap-2"
-                            />
-                          </TableCell>
+          <TabsContent value="pending" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Approvals</CardTitle>
+                <CardDescription>
+                  Users awaiting approval to access the system
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {pendingUsers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <UserCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No pending users to review</p>
+                  </div>
+                ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Email</TableHead>
+                          <TableHead>User Role</TableHead>
+                          <TableHead>Signup Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingUsers.map((userAccount) => (
+                          <TableRow key={userAccount.user_account_uuid}>
+                            <TableCell className="font-medium">{userAccount.email}</TableCell>
+                            <TableCell>{getUserRole(userAccount.email)}</TableCell>
+                            <TableCell>{formatDate(userAccount.created_at)}</TableCell>
+                            <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
+                            <TableCell>
+                              <ActionButtons 
+                                actions={getPendingUserActions(userAccount)}
+                                className="gap-2"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="all" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>
-                Complete list of all user accounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>User Role</TableHead>
-                    <TableHead>Signup Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Approved Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {userAccounts.map((userAccount) => (
-                    <TableRow key={userAccount.user_account_uuid}>
-                      <TableCell className="font-medium">{userAccount.email}</TableCell>
-                      <TableCell>{getUserRole(userAccount.email)}</TableCell>
-                      <TableCell>{formatDate(userAccount.created_at)}</TableCell>
-                      <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
-                      <TableCell>
-                        {userAccount.approved_at ? formatDate(userAccount.approved_at) : '-'}
-                      </TableCell>
-                       <TableCell>
-                         <ActionButtons 
-                           actions={getAllUserActions(userAccount)}
-                           className="gap-2"
-                         />
-                       </TableCell>
+          <TabsContent value="all" className="space-y-4">
+            <Card>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>User Role</TableHead>
+                      <TableHead>Signup Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Approved Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  </TableHeader>
+                  <TableBody>
+                    {userAccounts.map((userAccount) => (
+                      <TableRow key={userAccount.user_account_uuid}>
+                        <TableCell className="font-medium">{userAccount.email}</TableCell>
+                        <TableCell>{getUserRole(userAccount.email)}</TableCell>
+                        <TableCell>{formatDate(userAccount.created_at)}</TableCell>
+                        <TableCell>{getStatusBadge(userAccount.status)}</TableCell>
+                        <TableCell>
+                          {userAccount.approved_at ? formatDate(userAccount.approved_at) : '-'}
+                        </TableCell>
+                         <TableCell>
+                           <ActionButtons 
+                             actions={getAllUserActions(userAccount)}
+                             className="gap-2"
+                           />
+                         </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      </Tabs>
+        </Tabs>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
-  );
+    );
 }
