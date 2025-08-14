@@ -227,7 +227,7 @@ export default function Admin() {
       {/* Main Content */}
       <div className="container mx-auto p-6 space-y-6">
         {/* Management Tabs */}
-        <Tabs defaultValue="pending" className="space-y-4">
+        <Tabs defaultValue="all" className="space-y-4">
           <TabsList>
             <TabsTrigger value="pending">
               Pending Users ({stats.pending})

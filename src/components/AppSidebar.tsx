@@ -88,7 +88,7 @@ export function AppSidebar() {
                         }
                       >
                         <Settings className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Users</span>
+                        <span className="truncate">User Management</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
