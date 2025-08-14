@@ -57,13 +57,16 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               // CoA Translation mode - flexible column mapping
               const headers = results.meta.fields || [];
               
-              // Find account number and description columns
+              // Find account number and description columns with null safety
+              console.log('Headers with types:', headers.map(h => ({ value: h, type: typeof h })));
+              
               const accountNumberCol = headers.find(h => 
-                h.toLowerCase().includes('account') && (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+                h && typeof h === 'string' && h.toLowerCase().includes('account') && 
+                (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
               ) || headers[0];
               
               const descriptionCol = headers.find(h => 
-                h.toLowerCase().includes('description') || h.toLowerCase().includes('name')
+                h && typeof h === 'string' && (h.toLowerCase().includes('description') || h.toLowerCase().includes('name'))
               ) || headers[1];
               
               if (!accountNumberCol || !descriptionCol) {
@@ -87,9 +90,11 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               const headers = results.meta.fields || [];
               
               const accountColumn = headers.find(header => 
-                header.toLowerCase().includes('account') || 
-                header.toLowerCase().includes('name') ||
-                header.toLowerCase().includes('description')
+                header && typeof header === 'string' && (
+                  header.toLowerCase().includes('account') || 
+                  header.toLowerCase().includes('name') ||
+                  header.toLowerCase().includes('description')
+                )
               ) || headers[0];
 
               results.data.forEach((row: any) => {
@@ -163,13 +168,16 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             const headers = jsonData[0] || [];
             
-            // Find account number and description columns
-            const accountNumberIndex = (headers as string[]).findIndex((h: string) => 
-              h.toLowerCase().includes('account') && (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+            // Find account number and description columns with null safety
+            console.log('Excel headers with types:', Array.isArray(headers) ? headers.map(h => ({ value: h, type: typeof h })) : 'Headers not array');
+            
+            const accountNumberIndex = (headers as any[]).findIndex((h: any) => 
+              h && typeof h === 'string' && h.toLowerCase().includes('account') && 
+              (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
             );
             
-            const descriptionIndex = (headers as string[]).findIndex((h: string) => 
-              h.toLowerCase().includes('description') || h.toLowerCase().includes('name')
+            const descriptionIndex = (headers as any[]).findIndex((h: any) => 
+              h && typeof h === 'string' && (h.toLowerCase().includes('description') || h.toLowerCase().includes('name'))
             );
             
             // Use first two columns as fallback
@@ -198,9 +206,11 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
             const headers = jsonData[0] as string[] || [];
             
             const accountColumnIndex = headers.findIndex(header => 
-              header?.toString().toLowerCase().includes('account') || 
-              header?.toString().toLowerCase().includes('name') ||
-              header?.toString().toLowerCase().includes('description')
+              header && typeof header === 'string' && (
+                header.toLowerCase().includes('account') || 
+                header.toLowerCase().includes('name') ||
+                header.toLowerCase().includes('description')
+              )
             );
             
             const columnIndex = accountColumnIndex !== -1 ? accountColumnIndex : 0;
