@@ -45,58 +45,69 @@ const TransformationVisualization = () => {
           <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-destructive/5 rounded-full blur-lg" />
         </Card>
 
-        {/* AI Magic Wand Center */}
+        {/* AI Gears Center */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
-          {/* AI Magic Wand Container */}
+          {/* AI Gears Container */}
           <div className="relative w-24 h-24 flex items-center justify-center">
-            {/* Magic Wand */}
-            <div className="relative z-20 flex flex-col items-center">
-              {/* Star tip with dynamic glow */}
-              <div className="relative mb-1">
-                <div className="w-6 h-6 bg-gradient-to-br from-orange-300 to-orange-500 rounded-sm rotate-45 shadow-lg shadow-orange-400/60 animate-pulse" />
-                <div className="absolute inset-0 w-6 h-6 bg-gradient-to-tl from-orange-200 to-orange-400 rounded-sm rotate-45 opacity-70" />
-                {/* Dynamic star rays */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border border-orange-300/30 rounded-sm rotate-45 animate-ping" style={{ animationDuration: '1.8s' }} />
-              </div>
-              
-              {/* Wand handle with gradient */}
-              <div className="w-2 h-12 bg-gradient-to-b from-blue-400 via-blue-600 to-blue-800 rounded-full shadow-lg shadow-blue-600/50 relative animate-pulse" style={{ animationDuration: '2s' }}>
-                {/* Handle shine */}
-                <div className="absolute left-0 top-2 w-0.5 h-8 bg-gradient-to-b from-blue-200 to-blue-300 rounded-full opacity-70" />
-              </div>
+            {/* Large Central Gear */}
+            <div className="relative z-20 w-16 h-16 rounded-full border-4 border-blue-400 bg-blue-50 animate-spin" style={{ animationDuration: '4s' }}>
+              {/* Gear teeth */}
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
+              <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
+              <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
+              <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
+              <div className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
+              <div className="absolute bottom-1 left-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
+              <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
+              {/* Central hub */}
+              <div className="absolute inset-4 rounded-full bg-blue-500 border-2 border-blue-600" />
+            </div>
+
+            {/* Medium Right Gear */}
+            <div className="absolute top-2 right-1 z-10 w-10 h-10 rounded-full border-3 border-pink-400 bg-pink-50 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
+              {/* Gear teeth */}
+              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
+              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
+              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
+              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
+              {/* Central hub */}
+              <div className="absolute inset-2 rounded-full bg-pink-500 border border-pink-600" />
+            </div>
+
+            {/* Small Top-Left Gear */}
+            <div className="absolute -top-1 -left-1 z-15 w-6 h-6 rounded-full border-2 border-orange-400 bg-orange-50 animate-spin" style={{ animationDuration: '2s' }}>
+              {/* Gear teeth */}
+              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
+              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
+              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
+              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
+              {/* Central hub */}
+              <div className="absolute inset-1 rounded-full bg-orange-500" />
+            </div>
+
+            {/* Small Bottom-Right Gear */}
+            <div className="absolute bottom-0 right-2 z-15 w-7 h-7 rounded-full border-2 border-cyan-400 bg-cyan-50 animate-spin" style={{ animationDuration: '2.5s', animationDirection: 'reverse' }}>
+              {/* Gear teeth */}
+              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
+              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
+              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
+              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
+              {/* Central hub */}
+              <div className="absolute inset-1 rounded-full bg-cyan-500" />
             </div>
             
-            {/* Animated sparkles in specified colors */}
-            <div className="absolute -top-5 -left-8 w-3 h-3 bg-blue-400 rounded-full animate-bounce opacity-85" style={{ animationDelay: '0s', animationDuration: '1.3s' }} />
-            <div className="absolute -top-3 right-6 w-2.5 h-2.5 bg-pink-400 rounded-full animate-bounce opacity-90" style={{ animationDelay: '0.3s', animationDuration: '1.5s' }} />
-            <div className="absolute top-0 -left-9 w-2 h-2 bg-orange-400 rounded-full animate-bounce opacity-80" style={{ animationDelay: '0.6s', animationDuration: '1.7s' }} />
-            <div className="absolute top-3 right-7 w-3.5 h-3.5 bg-cyan-400 rounded-full animate-bounce opacity-85" style={{ animationDelay: '0.9s', animationDuration: '1.4s' }} />
-            <div className="absolute top-6 -left-6 w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce opacity-75" style={{ animationDelay: '1.2s', animationDuration: '1.6s' }} />
-            <div className="absolute bottom-4 right-5 w-2 h-2 bg-pink-500 rounded-full animate-bounce opacity-80" style={{ animationDelay: '1.5s', animationDuration: '1.8s' }} />
-            <div className="absolute bottom-1 -left-7 w-3 h-3 bg-cyan-500 rounded-full animate-bounce opacity-90" style={{ animationDelay: '1.8s', animationDuration: '1.2s' }} />
-            <div className="absolute bottom-6 left-1 w-2.5 h-2.5 bg-orange-500 rounded-full animate-bounce opacity-85" style={{ animationDelay: '2.1s', animationDuration: '1.9s' }} />
-            
-            {/* AI letters with dynamic movement */}
-            <div className="absolute -top-7 -left-12 text-3xl font-bold text-blue-600 animate-bounce opacity-95" style={{ animationDelay: '0.2s', animationDuration: '2.2s' }}>A</div>
-            <div className="absolute -bottom-5 right-10 text-3xl font-bold text-pink-600 animate-bounce opacity-95" style={{ animationDelay: '1.4s', animationDuration: '2.2s' }}>I</div>
+            {/* Mechanical particles */}
+            <div className="absolute -top-6 -left-10 w-2 h-2 border border-blue-400 rounded-sm animate-spin opacity-75" style={{ animationDelay: '0s', animationDuration: '3s' }} />
+            <div className="absolute -top-4 right-8 w-1.5 h-1.5 border border-pink-400 rounded-sm animate-spin opacity-80" style={{ animationDelay: '0.5s', animationDuration: '2.5s' }} />
+            <div className="absolute top-1 -left-10 w-2.5 h-2.5 border border-orange-400 rounded-sm animate-spin opacity-70" style={{ animationDelay: '1s', animationDuration: '3.5s' }} />
+            <div className="absolute top-4 right-9 w-2 h-2 border border-cyan-400 rounded-sm animate-spin opacity-85" style={{ animationDelay: '1.5s', animationDuration: '2s' }} />
+            <div className="absolute top-7 -left-8 w-1.5 h-1.5 border border-blue-500 rounded-sm animate-spin opacity-65" style={{ animationDelay: '2s', animationDuration: '4s' }} />
+            <div className="absolute bottom-3 right-7 w-2.5 h-2.5 border border-pink-500 rounded-sm animate-spin opacity-75" style={{ animationDelay: '2.5s', animationDuration: '2.8s' }} />
             
             {/* Energy pulse rings */}
-            <div className="absolute inset-0 border-2 border-blue-300/40 rounded-full animate-ping" style={{ animationDuration: '2.5s' }} />
-            <div className="absolute inset-3 border border-pink-400/30 rounded-full animate-ping" style={{ animationDuration: '2s', animationDelay: '0.7s' }} />
-            <div className="absolute inset-1 border border-orange-300/25 rounded-full animate-ping" style={{ animationDuration: '1.8s', animationDelay: '1.2s' }} />
-          </div>
-          
-          {/* AI Magic Label */}
-          <div className="text-center space-y-2">
-            <div className="flex items-center gap-2 justify-center">
-              <Zap className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full border border-purple-200">
-                AI Magic
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground font-medium">
-              Instant Transformation
-            </p>
+            <div className="absolute inset-0 border border-blue-300/30 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
+            <div className="absolute inset-2 border border-pink-400/25 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.8s' }} />
           </div>
           
           {/* Blue Animated Arrow */}
