@@ -410,7 +410,7 @@ export default function CoATranslator() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 justify-end">
               <Button variant="outline" onClick={() => setStep(1)}>
                 Back
               </Button>
