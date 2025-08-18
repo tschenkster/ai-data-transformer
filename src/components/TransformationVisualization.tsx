@@ -55,43 +55,45 @@ const TransformationVisualization = () => {
           <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-destructive/5 rounded-full blur-lg" />
         </Card>
 
-        {/* Transformation Arrow with AI Magic */}
+        {/* AI Magic Wand Center */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
-          {/* 3D Magic Wand with Dynamic Sparkles */}
-          <div className="relative w-20 h-20 flex items-center justify-center">
+          {/* AI Magic Wand Container */}
+          <div className="relative w-24 h-24 flex items-center justify-center">
             {/* Magic Wand */}
-            <div className="relative z-10 flex flex-col items-center">
-              {/* Diamond star at tip */}
-              <div className="relative mb-2">
-                <div className="w-5 h-5 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-sm rotate-45 shadow-lg shadow-yellow-500/50 animate-pulse" />
-                <div className="absolute inset-0 w-5 h-5 bg-gradient-to-tl from-yellow-200 to-yellow-400 rounded-sm rotate-45 opacity-80" />
-                {/* Star sparkle effect */}
-                <div className="absolute -top-1 -left-1 w-7 h-7 border border-yellow-300/40 rounded-sm rotate-45 animate-ping" style={{ animationDuration: '2s' }} />
+            <div className="relative z-20 flex flex-col items-center">
+              {/* Star tip with dynamic glow */}
+              <div className="relative mb-1">
+                <div className="w-6 h-6 bg-gradient-to-br from-orange-300 to-orange-500 rounded-sm rotate-45 shadow-lg shadow-orange-400/60 animate-pulse" />
+                <div className="absolute inset-0 w-6 h-6 bg-gradient-to-tl from-orange-200 to-orange-400 rounded-sm rotate-45 opacity-70" />
+                {/* Dynamic star rays */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border border-orange-300/30 rounded-sm rotate-45 animate-ping" style={{ animationDuration: '1.8s' }} />
               </div>
               
-              {/* Wand handle */}
-              <div className="w-1.5 h-10 bg-gradient-to-b from-purple-400 via-purple-600 to-purple-800 rounded-full shadow-lg shadow-purple-600/40 relative animate-pulse" style={{ animationDuration: '1.5s' }}>
-                {/* Handle highlight */}
-                <div className="absolute left-0 top-1 w-0.5 h-6 bg-gradient-to-b from-purple-200 to-purple-300 rounded-full opacity-60" />
+              {/* Wand handle with gradient */}
+              <div className="w-2 h-12 bg-gradient-to-b from-blue-400 via-blue-600 to-blue-800 rounded-full shadow-lg shadow-blue-600/50 relative animate-pulse" style={{ animationDuration: '2s' }}>
+                {/* Handle shine */}
+                <div className="absolute left-0 top-2 w-0.5 h-8 bg-gradient-to-b from-blue-200 to-blue-300 rounded-full opacity-70" />
               </div>
             </div>
             
-            {/* Dynamic Colorful Sparkles */}
-            <div className="absolute -top-4 -left-6 w-3 h-3 bg-blue-400 rounded-full animate-bounce opacity-90" style={{ animationDelay: '0s', animationDuration: '1.2s' }} />
-            <div className="absolute -top-2 right-4 w-2 h-2 bg-pink-400 rounded-full animate-bounce opacity-80" style={{ animationDelay: '0.2s', animationDuration: '1.4s' }} />
-            <div className="absolute top-1 -left-7 w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce opacity-85" style={{ animationDelay: '0.4s', animationDuration: '1.6s' }} />
-            <div className="absolute top-4 right-6 w-3 h-3 bg-cyan-400 rounded-full animate-bounce opacity-90" style={{ animationDelay: '0.6s', animationDuration: '1.3s' }} />
-            <div className="absolute bottom-2 -left-5 w-2 h-2 bg-blue-500 rounded-full animate-bounce opacity-75" style={{ animationDelay: '0.8s', animationDuration: '1.5s' }} />
-            <div className="absolute bottom-6 right-4 w-2.5 h-2.5 bg-pink-500 rounded-full animate-bounce opacity-80" style={{ animationDelay: '1s', animationDuration: '1.7s' }} />
-            <div className="absolute -bottom-1 left-2 w-2 h-2 bg-turquoise-400 rounded-full animate-bounce opacity-85" style={{ animationDelay: '1.2s', animationDuration: '1.4s' }} />
+            {/* Animated sparkles in specified colors */}
+            <div className="absolute -top-5 -left-8 w-3 h-3 bg-blue-400 rounded-full animate-bounce opacity-85" style={{ animationDelay: '0s', animationDuration: '1.3s' }} />
+            <div className="absolute -top-3 right-6 w-2.5 h-2.5 bg-pink-400 rounded-full animate-bounce opacity-90" style={{ animationDelay: '0.3s', animationDuration: '1.5s' }} />
+            <div className="absolute top-0 -left-9 w-2 h-2 bg-orange-400 rounded-full animate-bounce opacity-80" style={{ animationDelay: '0.6s', animationDuration: '1.7s' }} />
+            <div className="absolute top-3 right-7 w-3.5 h-3.5 bg-cyan-400 rounded-full animate-bounce opacity-85" style={{ animationDelay: '0.9s', animationDuration: '1.4s' }} />
+            <div className="absolute top-6 -left-6 w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce opacity-75" style={{ animationDelay: '1.2s', animationDuration: '1.6s' }} />
+            <div className="absolute bottom-4 right-5 w-2 h-2 bg-pink-500 rounded-full animate-bounce opacity-80" style={{ animationDelay: '1.5s', animationDuration: '1.8s' }} />
+            <div className="absolute bottom-1 -left-7 w-3 h-3 bg-cyan-500 rounded-full animate-bounce opacity-90" style={{ animationDelay: '1.8s', animationDuration: '1.2s' }} />
+            <div className="absolute bottom-6 left-1 w-2.5 h-2.5 bg-orange-500 rounded-full animate-bounce opacity-85" style={{ animationDelay: '2.1s', animationDuration: '1.9s' }} />
             
-            {/* Floating AI Letters */}
-            <div className="absolute -top-6 -left-10 text-2xl font-bold text-purple-600 animate-bounce opacity-90" style={{ animationDelay: '0.1s', animationDuration: '2s' }}>A</div>
-            <div className="absolute -bottom-4 right-8 text-2xl font-bold text-purple-600 animate-bounce opacity-90" style={{ animationDelay: '1.1s', animationDuration: '2s' }}>I</div>
+            {/* AI letters with dynamic movement */}
+            <div className="absolute -top-7 -left-12 text-3xl font-bold text-blue-600 animate-bounce opacity-95" style={{ animationDelay: '0.2s', animationDuration: '2.2s' }}>A</div>
+            <div className="absolute -bottom-5 right-10 text-3xl font-bold text-pink-600 animate-bounce opacity-95" style={{ animationDelay: '1.4s', animationDuration: '2.2s' }}>I</div>
             
-            {/* Pulsing energy rings */}
-            <div className="absolute inset-0 border-2 border-purple-300/30 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-            <div className="absolute inset-2 border border-purple-400/20 rounded-full animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }} />
+            {/* Energy pulse rings */}
+            <div className="absolute inset-0 border-2 border-blue-300/40 rounded-full animate-ping" style={{ animationDuration: '2.5s' }} />
+            <div className="absolute inset-3 border border-pink-400/30 rounded-full animate-ping" style={{ animationDuration: '2s', animationDelay: '0.7s' }} />
+            <div className="absolute inset-1 border border-orange-300/25 rounded-full animate-ping" style={{ animationDuration: '1.8s', animationDelay: '1.2s' }} />
           </div>
           
           {/* AI Magic Label */}
