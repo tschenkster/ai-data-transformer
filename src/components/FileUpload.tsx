@@ -75,14 +75,26 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               }
               
               // Map to standard format
+              console.log('Raw CSV data rows:', results.data.length);
               const accountData = results.data
-                .filter((row: any) => row[accountNumberCol] && row[descriptionCol])
-                .map((row: any) => ({
-                  accountNumber: String(row[accountNumberCol]).trim(),
-                  originalDescription: String(row[descriptionCol]).trim()
-                }));
+                .map((row: any, index: number) => {
+                  const accountNumber = row[accountNumberCol] ? String(row[accountNumberCol]).trim() : '';
+                  const description = row[descriptionCol] ? String(row[descriptionCol]).trim() : '';
+                  
+                  if (!accountNumber || !description) {
+                    console.warn(`Skipping row ${index + 1}: accountNumber="${accountNumber}", description="${description}"`);
+                    return null;
+                  }
+                  
+                  return {
+                    accountNumber,
+                    originalDescription: description
+                  };
+                })
+                .filter((item: any) => item !== null);
               
               console.log('CoA translation data:', accountData);
+              console.log('Filtered accounts count:', accountData.length);
               resolve(accountData as any);
             } else {
               // Original account extraction logic
@@ -190,14 +202,26 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
             }
             
             // Map to standard format
+            console.log('Raw Excel data rows:', jsonData.length - 1); // -1 for header
             const accountData = jsonData.slice(1)
-              .filter((row: any) => row[accountColIndex] && row[descColIndex])
-              .map((row: any) => ({
-                accountNumber: String(row[accountColIndex]).trim(),
-                originalDescription: String(row[descColIndex]).trim()
-              }));
+              .map((row: any, index: number) => {
+                const accountNumber = row[accountColIndex] ? String(row[accountColIndex]).trim() : '';
+                const description = row[descColIndex] ? String(row[descColIndex]).trim() : '';
+                
+                if (!accountNumber || !description) {
+                  console.warn(`Skipping Excel row ${index + 2}: accountNumber="${accountNumber}", description="${description}"`); // +2 for header and 0-based index
+                  return null;
+                }
+                
+                return {
+                  accountNumber,
+                  originalDescription: description
+                };
+              })
+              .filter((item: any) => item !== null);
             
             console.log('CoA translation data:', accountData);
+            console.log('Filtered Excel accounts count:', accountData.length);
             resolve(accountData as any);
           } else {
             // Original account extraction logic
