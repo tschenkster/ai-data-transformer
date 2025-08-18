@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Brain, Settings, LogOut, User, Database, Languages, Map, FileSpreadsheet, BookOpen, BarChart3 } from "lucide-react";
+import { Home, Brain, Settings, LogOut, User, Database, Languages, Map, FileSpreadsheet, BookOpen, BarChart3, Table } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -196,6 +196,26 @@ export function AppSidebar() {
                       isActive ? "text-primary" : ""
                     }`} />
                     <span className="truncate">Reports</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <NavLink
+                    to="/sql-tables"
+                    end
+                    className={({ isActive }) => 
+                      `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
+                        isActive 
+                          ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                          : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
+                      }`
+                    }
+                  >
+                    <Table className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                      isActive ? "text-primary" : ""
+                    }`} />
+                    <span className="truncate">SQL Tables</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
