@@ -49,14 +49,16 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) => 
-                        `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
+                        `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
                           isActive 
-                            ? "bg-accent text-accent-foreground font-medium" 
-                            : "text-foreground hover:bg-accent/50"
+                            ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                            : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
                         }`
                       }
                     >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                        isActive ? "text-primary" : ""
+                      }`} />
                       <span className="truncate">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -80,14 +82,16 @@ export function AppSidebar() {
                         to="/admin"
                         end
                         className={({ isActive }) => 
-                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
+                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
                             isActive 
-                              ? "bg-accent text-accent-foreground font-medium" 
-                              : "text-foreground hover:bg-accent/50"
+                              ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                              : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
                           }`
                         }
                       >
-                        <Settings className="h-4 w-4 flex-shrink-0" />
+                        <Settings className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                          isActive ? "text-primary" : ""
+                        }`} />
                         <span className="truncate">User Management</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -98,14 +102,16 @@ export function AppSidebar() {
                         to="/memory"
                         end
                         className={({ isActive }) => 
-                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
+                          `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
                             isActive 
-                              ? "bg-accent text-accent-foreground font-medium" 
-                              : "text-foreground hover:bg-accent/50"
+                              ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                              : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
                           }`
                         }
                       >
-                        <Brain className="h-4 w-4 flex-shrink-0" />
+                        <Brain className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                          isActive ? "text-primary" : ""
+                        }`} />
                         <span className="truncate">Memory</span>
                       </NavLink>
                     </SidebarMenuButton>
@@ -117,14 +123,16 @@ export function AppSidebar() {
                           to="/report-structures"
                           end
                           className={({ isActive }) => 
-                            `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${
+                            `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
                               isActive 
-                                ? "bg-accent text-accent-foreground font-medium" 
-                                : "text-foreground hover:bg-accent/50"
+                                ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                                : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
                             }`
                           }
                         >
-                          <Database className="h-4 w-4 flex-shrink-0" />
+                          <Database className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                            isActive ? "text-primary" : ""
+                          }`} />
                           <span className="truncate">Report Structures</span>
                         </NavLink>
                       </SidebarMenuButton>
