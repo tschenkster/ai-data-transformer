@@ -40,10 +40,10 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section className="container mx-auto px-4 pt-6 pb-20 md:pt-10 md:pb-32">
-          <div className="text-center space-y-12 max-w-6xl mx-auto">
+        <section className="container mx-auto px-4 pb-20 md:pb-32">
+          <div className="text-center space-y-8 max-w-6xl mx-auto">
             {/* Main Headline */}
-            <div className="animate-fade-in space-y-6" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+            <div className="animate-fade-in space-y-4" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
               <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight bg-gradient-primary bg-clip-text text-transparent">
                 Decision-Ready Finance Data for Startup CFOs
               </h1>
