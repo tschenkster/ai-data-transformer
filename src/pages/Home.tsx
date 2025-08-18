@@ -41,14 +41,6 @@ export default function Home() {
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-20 md:py-32">
           <div className="text-center space-y-12 max-w-6xl mx-auto">
-            {/* Announcement Badge */}
-            <div className="animate-fade-in">
-              <Badge variant="secondary" className="px-6 py-2 text-sm font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
-                <Star className="h-4 w-4 mr-2" />
-                Trusted by 2,000+ Startup CFOs
-              </Badge>
-            </div>
-
             {/* Main Headline */}
             <div className="animate-fade-in space-y-6" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
               <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight bg-gradient-primary bg-clip-text text-transparent">
@@ -64,10 +56,6 @@ export default function Home() {
               <Button size="lg" className="text-lg px-8 py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-glow hover:shadow-xl group">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-primary/30 hover:bg-primary/10">
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Watch Demo
               </Button>
             </div>
 
@@ -790,10 +778,6 @@ export default function Home() {
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-white text-white hover:bg-white/10">
-                  <PlayCircle className="mr-2 h-5 w-5" />
-                  Watch Demo
-                </Button>
               </div>
 
               <div className="pt-8 text-center opacity-80">
@@ -822,9 +806,6 @@ export default function Home() {
             <div className="flex gap-3">
               <Button className="flex-1 bg-gradient-primary hover:opacity-90">
                 Start Free Trial
-              </Button>
-              <Button variant="outline" className="px-6">
-                <PlayCircle className="h-4 w-4" />
               </Button>
             </div>
           </div>
