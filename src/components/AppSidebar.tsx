@@ -112,7 +112,7 @@ export function AppSidebar() {
                           <Database className={`h-4 w-4 flex-shrink-0 transition-colors ${
                             isActive ? "text-primary" : ""
                           }`} />
-                          <span className="truncate">Report Structures</span>
+                          <span className="truncate">Report Configuration</span>
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
