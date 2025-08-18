@@ -15,7 +15,7 @@ const TransformationVisualization = () => {
             
             {/* Title */}
             <div>
-              <h3 className="text-xl font-bold text-destructive mb-2">
+              <h3 className="text-lg font-semibold text-destructive mb-2">
                 DATEV Reports & Excel Hell
               </h3>
               <div className="space-y-3">
@@ -152,7 +152,7 @@ const TransformationVisualization = () => {
             
             {/* Title */}
             <div>
-              <h3 className="text-xl font-bold text-success mb-2">
+              <h3 className="text-lg font-semibold text-success mb-2">
                 Cleansed Data in a Warehouse
               </h3>
               <div className="space-y-3">
