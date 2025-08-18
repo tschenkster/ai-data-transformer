@@ -176,7 +176,7 @@ export function AppSidebar() {
 
         {/* Reports Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>Reports</SidebarGroupLabel>
+          <SidebarGroupLabel>Data Downloads & Reports</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -195,7 +195,7 @@ export function AppSidebar() {
                     <BarChart3 className={`h-4 w-4 flex-shrink-0 transition-colors ${
                       isActive ? "text-primary" : ""
                     }`} />
-                    <span className="truncate">Reports</span>
+                    <span className="truncate">Financial Reports</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
