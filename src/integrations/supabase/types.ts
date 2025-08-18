@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -469,10 +469,10 @@ export type Database = {
       get_current_user_details: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_uuid: string
+          user_email: string
           user_first_name: string
           user_last_name: string
-          user_email: string
+          user_uuid: string
         }[]
       }
       halfvec_avg: {
@@ -533,49 +533,49 @@ export type Database = {
       }
       log_structure_change: {
         Args: {
-          p_structure_uuid: string
-          p_structure_id: number
-          p_line_item_uuid: string
-          p_line_item_id: number
           p_action_type: Database["public"]["Enums"]["change_action_type"]
-          p_line_item_key: string
           p_line_item_description: string
-          p_previous_state?: Json
+          p_line_item_id: number
+          p_line_item_key: string
+          p_line_item_uuid: string
           p_new_state?: Json
+          p_previous_state?: Json
+          p_structure_id: number
+          p_structure_uuid: string
         }
         Returns: string
       }
       match_account_embeddings: {
         Args: {
-          query_embedding: string
-          match_threshold: number
-          match_count: number
           filter_supabase_user_uuid?: string
+          match_count: number
+          match_threshold: number
+          query_embedding: string
         }
         Returns: {
-          id: string
-          original_account_name: string
-          mapped_account_name: string
           confidence_score: number
+          created_at: string
+          id: string
+          mapped_account_name: string
+          original_account_name: string
           reasoning: string
           similarity: number
-          validated: boolean
-          created_at: string
           supabase_user_uuid: string
+          validated: boolean
         }[]
       }
       reorder_line_item_with_hierarchy: {
         Args: {
-          p_structure_uuid: string
-          p_moved_item_uuid: string
-          p_new_parent_uuid?: string
-          p_target_position?: number
           p_drop_position?: string
-          p_target_sibling_uuid?: string
-          p_new_description?: string
-          p_regenerate_keys?: boolean
           p_is_calculated_override?: boolean
           p_line_item_type_override?: string
+          p_moved_item_uuid: string
+          p_new_description?: string
+          p_new_parent_uuid?: string
+          p_regenerate_keys?: boolean
+          p_structure_uuid: string
+          p_target_position?: number
+          p_target_sibling_uuid?: string
         }
         Returns: Json
       }
