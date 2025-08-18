@@ -330,20 +330,10 @@ export default function CoATranslator() {
 
       {/* Step 1: File Upload */}
       {step === 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Upload className="w-5 h-5 mr-2" />
-              Upload Chart of Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FileUpload 
-              onFileProcessed={handleFileProcessed}
-              mode="coa-translation"
-            />
-          </CardContent>
-        </Card>
+        <FileUpload 
+          onFileProcessed={handleFileProcessed}
+          mode="coa-translation"
+        />
       )}
 
       {/* Step 2: Language Configuration */}
