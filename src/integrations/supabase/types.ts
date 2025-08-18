@@ -418,6 +418,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          target_user_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          target_user_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          target_user_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_accounts: {
         Row: {
           approved_at: string | null
@@ -457,6 +490,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -491,6 +548,13 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       hnsw_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -508,6 +572,14 @@ export type Database = {
         Returns: unknown
       }
       is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_admin_user_v2: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_super_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -529,6 +601,10 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
+      log_security_event: {
+        Args: { p_action: string; p_details?: Json; p_target_user_id?: string }
         Returns: string
       }
       log_structure_change: {
@@ -621,6 +697,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "user" | "admin" | "super_admin"
       change_action_type: "create" | "delete" | "rename" | "move"
     }
     CompositeTypes: {
@@ -749,6 +826,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["user", "admin", "super_admin"],
       change_action_type: ["create", "delete", "rename", "move"],
     },
   },

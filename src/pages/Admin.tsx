@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Clock, UserCheck, Shield, Crown, CheckCircle, XCircle } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 import { ActionButtons, createApproveAction, createRejectAction, createAdminDeleteAction, ActionButtonConfig } from '@/components/ui/action-buttons';
 
 interface UserAccount {
@@ -24,7 +25,7 @@ interface UserAccount {
 }
 
 export default function Admin() {
-  const { user, userAccount, signOut, isSuperAdmin } = useAuth();
+  const { user, userAccount, signOut, isSuperAdmin, logSecurityEvent } = useAuth();
   const { toast } = useToast();
   const [userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +92,17 @@ export default function Admin() {
 
       if (error) throw error;
 
+      // Log security event
+      if (logSecurityEvent) {
+        const targetUser = userAccounts.find(u => u.user_account_uuid === userAccountUuid);
+        await logSecurityEvent(`user_${status}`, targetUser?.supabase_user_uuid, {
+          target_user_email: targetUser?.email,
+          target_user_name: `${targetUser?.first_name} ${targetUser?.last_name}`,
+          previous_status: targetUser?.status,
+          new_status: status
+        });
+      }
+
       toast({
         title: "Success",
         description: `User ${status} successfully`,
@@ -126,6 +138,15 @@ export default function Admin() {
           variant: "destructive",
         });
         return;
+      }
+
+      // Log security event
+      if (logSecurityEvent) {
+        const targetUser = userAccounts.find(u => u.user_account_uuid === userAccountUuid);
+        await logSecurityEvent('user_deleted', targetUser?.supabase_user_uuid, {
+          deleted_user_email: targetUser?.email,
+          deleted_user_name: `${targetUser?.first_name} ${targetUser?.last_name}`
+        });
       }
 
       toast({
@@ -233,6 +254,7 @@ export default function Admin() {
             <TabsTrigger value="pending">
               Pending Users ({stats.pending})
             </TabsTrigger>
+            <TabsTrigger value="audit">Security Audit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
@@ -318,6 +340,10 @@ export default function Admin() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="audit" className="space-y-4">
+            <SecurityAuditLog />
           </TabsContent>
 
         </Tabs>
