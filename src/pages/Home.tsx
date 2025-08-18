@@ -51,9 +51,8 @@ export default function Home() {
               </p>
             </div>
 
-
             {/* Visual Demo Preview */}
-            <div className="animate-fade-in pt-16" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
+            <div className="animate-fade-in pt-12" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
               <div className="relative max-w-5xl mx-auto">
                 <div className="bg-gradient-to-r from-destructive/10 via-background to-primary/10 rounded-3xl p-8 border border-border shadow-2xl backdrop-blur-sm">
                   <div className="grid md:grid-cols-[1fr_auto_1fr] gap-8 items-center">
