@@ -51,13 +51,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="animate-fade-in flex flex-col sm:flex-row gap-4 justify-center items-center" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
-              <Button size="lg" className="text-lg px-8 py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-glow hover:shadow-xl group">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
 
             {/* Visual Demo Preview */}
             <div className="animate-fade-in pt-16" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
