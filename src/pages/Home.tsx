@@ -1,163 +1,194 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import Footer from '@/components/Footer';
-import { Brain, Zap, Target, Shield, Clock, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { TrendingUp, Database, FileSpreadsheet, AlertTriangle, BarChart3, Users, CheckCircle } from 'lucide-react';
 
 export default function Home() {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main className="container mx-auto px-4 py-8 space-y-12">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <Zap className="h-8 w-8 mr-3 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">AI-Powered Data Transformer</h1>
-          </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Transform your messy data into clean, structured information with the power of artificial intelligence
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl font-bold text-foreground leading-tight">
+            Decision-Ready Finance Data for Startup CFOs
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Turn messy DATEV exports into clean, actionable insights — without Excel headaches or overpriced BI tools.
+          </p>
+          <p className="text-lg font-medium text-primary">
+            From chaos to clarity in days, not months.
           </p>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {/* Intelligent Mapping */}
-          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Brain className="h-6 w-6 mr-3 text-blue-500" />
-                Intelligent Mapping
-              </CardTitle>
-              <CardDescription>
-                Advanced AI algorithms automatically detect patterns and suggest optimal data mappings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Pattern recognition</li>
-                <li>• Smart suggestions</li>
-                <li>• Context-aware mapping</li>
-              </ul>
-            </CardContent>
-          </Card>
+        {/* Target Audience Section */}
+        <section className="max-w-4xl mx-auto text-center space-y-6">
+          <h2 className="text-3xl font-bold text-foreground">For CFOs of Startups with 10–100 Employees</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            You need board-ready insights yesterday, but you don't have a large finance team or expensive infrastructure. 
+            You're stuck with DATEV outputs that tell you nothing useful and Excel sheets that break every time you breathe on them. 
+            You know there's a better way, but traditional BI tools cost more than your entire finance budget.
+          </p>
+        </section>
 
-          {/* Real-time Processing */}
-          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Clock className="h-6 w-6 mr-3 text-green-500" />
-                Real-time Processing
-              </CardTitle>
-              <CardDescription>
-                Process large datasets instantly with lightning-fast AI-powered transformation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Instant analysis</li>
-                <li>• Bulk processing</li>
-                <li>• Live feedback</li>
-              </ul>
-            </CardContent>
-          </Card>
+        {/* Pain Points Section */}
+        <section className="space-y-8">
+          <h2 className="text-3xl font-bold text-foreground text-center">The Startup CFO Struggle</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center text-destructive">
+                  <AlertTriangle className="h-6 w-6 mr-3" />
+                  DATEV reports = useless for decisions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Raw DATEV exports are built for compliance, not insights. You get endless rows of cryptic account codes 
+                  that tell you nothing about your business performance or cash flow trends.
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* High Accuracy */}
-          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Target className="h-6 w-6 mr-3 text-red-500" />
-                High Accuracy
-              </CardTitle>
-              <CardDescription>
-                Machine learning models ensure precise data transformation with minimal errors
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• 99%+ accuracy rate</li>
-                <li>• Continuous learning</li>
-                <li>• Error detection</li>
-              </ul>
-            </CardContent>
-          </Card>
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center text-destructive">
+                  <FileSpreadsheet className="h-6 w-6 mr-3" />
+                  Drowning in manual Excel work
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Every month, you spend hours manually cleaning, categorizing, and restructuring data just to get 
+                  basic P&L insights. One formula breaks and you're back to square one.
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* Secure Processing */}
-          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Shield className="h-6 w-6 mr-3 text-purple-500" />
-                Secure Processing
-              </CardTitle>
-              <CardDescription>
-                Enterprise-grade security ensures your sensitive data remains protected
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• End-to-end encryption</li>
-                <li>• Privacy compliant</li>
-                <li>• Audit trails</li>
-              </ul>
-            </CardContent>
-          </Card>
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center text-destructive">
+                  <AlertTriangle className="h-6 w-6 mr-3" />
+                  Stuck in "Excel hell"
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Your "financial reporting system" is a collection of fragile spreadsheets that only you understand. 
+                  Scaling your finance operations feels impossible when everything breaks with growth.
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* Performance Analytics */}
-          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <TrendingUp className="h-6 w-6 mr-3 text-orange-500" />
-                Performance Analytics
-              </CardTitle>
-              <CardDescription>
-                Track transformation quality and optimize your data processing workflows
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Detailed metrics</li>
-                <li>• Quality scores</li>
-                <li>• Process insights</li>
-              </ul>
-            </CardContent>
-          </Card>
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center text-destructive">
+                  <Users className="h-6 w-6 mr-3" />
+                  No internal finance infrastructure yet
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  You're not ready for enterprise-grade solutions, but you've outgrown basic bookkeeping. 
+                  You need something that bridges the gap without breaking the bank or requiring a data team.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
-          {/* Smart Automation */}
-          <Card className="shadow-elegant hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Sparkles className="h-6 w-6 mr-3 text-yellow-500" />
-                Smart Automation
-              </CardTitle>
-              <CardDescription>
-                Automate repetitive data transformation tasks with intelligent workflows
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Workflow automation</li>
-                <li>• Batch processing</li>
-                <li>• Scheduled transforms</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Solution Section */}
+        <section className="space-y-8">
+          <h2 className="text-3xl font-bold text-foreground text-center">The Solution: AI-Powered Data Transformer</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center text-primary">
+                  <CheckCircle className="h-6 w-6 mr-3" />
+                  From DATEV chaos to clarity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Upload your DATEV exports and watch AI instantly transform cryptic account codes into meaningful 
+                  business categories. Get P&L insights in minutes, not hours.
+                </p>
+              </CardContent>
+            </Card>
 
-        {/* Call to Action */}
-        <Card className="bg-gradient-primary text-primary-foreground">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl">
-              Welcome to Your Data Transformation Hub
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-6 text-lg opacity-90">
-              Use the sidebar navigation to access your data transformation tools and features.
-            </p>
-            <div className="text-sm opacity-75">
-              Navigate to Memory Upload to start transforming your data files
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center text-primary">
+                  <Database className="h-6 w-6 mr-3" />
+                  SQL database as your finance backbone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Your cleaned data lives in a proper database, not fragile spreadsheets. Scale your reporting 
+                  as your startup grows without rebuilding everything from scratch.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center text-primary">
+                  <TrendingUp className="h-6 w-6 mr-3" />
+                  Flexible reporting structures
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Map your accounts to any reporting structure you need. Board reports, investor updates, 
+                  department budgets — all from the same clean data foundation.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant hover:shadow-lg transition-shadow border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center text-primary">
+                  <BarChart3 className="h-6 w-6 mr-3" />
+                  Plug into your favorite BI tools
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Export clean data to Tableau, Power BI, or any visualization tool. Or keep it simple with 
+                  our built-in dashboards for quick insights and trend analysis.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Persona Section */}
+        <section className="max-w-4xl mx-auto space-y-6">
+          <h2 className="text-3xl font-bold text-foreground text-center">Who It's For</h2>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+              <p className="text-lg text-muted-foreground">CFOs of startups with lean finance teams (up to 100 employees)</p>
             </div>
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+              <p className="text-lg text-muted-foreground">Finance managers who need insights without a data team</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+              <p className="text-lg text-muted-foreground">Founders responsible for finance who want clarity without complexity</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Closing Statement */}
+        <Card className="bg-gradient-primary text-primary-foreground">
+          <CardContent className="text-center py-12">
+            <p className="text-2xl font-bold leading-relaxed">
+              👉 Stop wrestling with Excel. Start driving your startup with real-time, decision-ready finance data.
+            </p>
+            <p className="text-lg opacity-90 mt-4">
+              Use the sidebar navigation to start transforming your DATEV exports today.
+            </p>
           </CardContent>
         </Card>
       </main>
