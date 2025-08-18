@@ -13,6 +13,7 @@ import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import ReportStructures from "./pages/ReportStructures";
@@ -44,6 +45,7 @@ function AuthenticatedRoutes() {
     return (
       <Routes>
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
@@ -57,6 +59,7 @@ function AuthenticatedRoutes() {
         <main className="flex-1 overflow-auto">
           <Routes>
             <Route path="/auth" element={<Navigate to="/home" replace />} />
+            <Route path="/auth/callback" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={
               <ProtectedRoute>
                 <Home />
