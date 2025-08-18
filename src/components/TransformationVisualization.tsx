@@ -12,16 +12,6 @@ const TransformationVisualization = () => {
         {/* Before State */}
         <Card className="relative overflow-hidden border-destructive/20 bg-gradient-to-br from-destructive/5 to-destructive/10 backdrop-blur-sm">
           <div className="p-8 space-y-6">
-            {/* Icon Header */}
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
-                <AlertTriangle className="w-6 h-6 text-destructive" />
-              </div>
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-destructive/70" />
-                <span className="text-sm font-medium text-destructive/70">Current State</span>
-              </div>
-            </div>
             
             {/* Title */}
             <div>
@@ -123,16 +113,6 @@ const TransformationVisualization = () => {
         {/* After State */}
         <Card className="relative overflow-hidden border-success/20 bg-gradient-to-br from-success/5 to-success/10 backdrop-blur-sm">
           <div className="p-8 space-y-6">
-            {/* Icon Header */}
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-success/10 border border-success/20">
-                <CheckCircle className="w-6 h-6 text-success" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-success/70" />
-                <span className="text-sm font-medium text-success/70">Transformed</span>
-              </div>
-            </div>
             
             {/* Title */}
             <div>
