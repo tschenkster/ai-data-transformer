@@ -473,7 +473,7 @@ export type Database = {
           last_name?: string | null
           status?: string
           supabase_user_uuid: string
-          user_account_id: number
+          user_account_id?: number
           user_account_uuid?: string
         }
         Update: {
