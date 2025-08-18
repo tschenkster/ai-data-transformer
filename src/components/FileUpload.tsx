@@ -54,20 +54,29 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               // Return the raw data for report structure processing
               resolve(results.data as any);
             } else if (mode === 'coa-translation') {
-              // CoA Translation mode - flexible column mapping
-              const headers = results.meta.fields || [];
-              
-              // Find account number and description columns with null safety
-              console.log('Headers with types:', headers.map(h => ({ value: h, type: typeof h })));
-              
-              const accountNumberCol = headers.find(h => 
-                h && typeof h === 'string' && h.toLowerCase().includes('account') && 
-                (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
-              ) || headers[0];
-              
-              const descriptionCol = headers.find(h => 
-                h && typeof h === 'string' && (h.toLowerCase().includes('description') || h.toLowerCase().includes('name'))
-              ) || headers[1];
+              // CoA Translation mode - support files with or without header
+              const rows: any[] = results.data as any[];
+              const firstRow = rows[0] || [];
+              const keywords = ['account', 'number', 'code', 'description', 'name'];
+              const isHeaderRow = Array.isArray(firstRow) && firstRow.some((cell: any) =>
+                typeof cell === 'string' && keywords.some((k) => cell.toLowerCase().includes(k))
+              );
+
+              // Determine column indices
+              let accountColIndex = 0;
+              let descColIndex = 1;
+              if (isHeaderRow) {
+                const headers = firstRow as any[];
+                const accIdx = headers.findIndex((h: any) =>
+                  h && typeof h === 'string' && h.toLowerCase().includes('account') &&
+                  (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+                );
+                const dIdx = headers.findIndex((h: any) =>
+                  h && typeof h === 'string' && (h.toLowerCase().includes('description') || h.toLowerCase().includes('name'))
+                );
+                if (accIdx >= 0) accountColIndex = accIdx;
+                if (dIdx >= 0) descColIndex = dIdx;
+              }
               
               if (!accountNumberCol || !descriptionCol) {
                 reject(new Error('Could not identify account number and description columns'));
