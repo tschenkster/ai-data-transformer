@@ -26,22 +26,22 @@ serve(async (req) => {
     const sampleAccounts = accounts.slice(0, 10);
     const accountTexts = sampleAccounts.map((acc: any) => acc.originalDescription).join('\n');
 
-    const prompt = `You are analyzing accounting/financial descriptions to detect their language.
+    const prompt = `Analyze these accounting/financial descriptions to detect their language.
 
-Account descriptions to analyze:
+Account descriptions:
 ${accountTexts}
 
-Guidelines:
+Language detection rules:
 - German: compound words, umlauts (ä, ö, ü, ß), capitalized nouns
-- French: accents (é, è, à, ç), articles (le, la, les, du, des)
+- French: accents (é, è, à, ç), articles (le, la, les, du, des)  
 - Spanish: ñ, accents (á, é, í, ó, ú), articles (el, la, los, las)
 - Italian: double consonants, endings in -o/-a/-e, articles (il, la, gli, le)
 - English: articles (the, a, an), no special characters
-- Return JSON with detections array and overallLanguage
-- Use two-letter language codes (en, de, fr, es, it, etc.)
-- Set overallLanguage to "mixed" if multiple languages detected
+- Swedish: å, ä, ö characters, compound words, articles (den, det, en, ett)
 
-Return JSON format:
+CRITICAL: Return ONLY valid JSON with NO explanations, analysis, or additional text.
+
+Required JSON format:
 {
   "detections": [
     {"accountNumber": "1000", "language": "en", "confidence": 0.95},
@@ -78,21 +78,36 @@ Return JSON format:
     
     console.log('Claude response:', content);
 
-    // Parse Claude's JSON response
+    // Parse Claude's JSON response with improved extraction
     let result;
     try {
+      // First try direct parsing
       result = JSON.parse(content);
     } catch (parseError) {
-      console.error('Failed to parse Claude response:', parseError);
-      // Fallback to English if parsing fails
-      result = {
-        detections: sampleAccounts.map((acc: any) => ({
-          accountNumber: acc.accountNumber,
-          language: 'en',
-          confidence: 0.5
-        })),
-        overallLanguage: 'en'
-      };
+      console.error('Direct JSON parse failed, attempting extraction:', parseError);
+      console.log('Raw Claude response:', content);
+      
+      // Try to extract JSON from response if Claude added extra text
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          console.log('Extracted JSON:', jsonMatch[0]);
+          result = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON found in response');
+        }
+      } catch (extractError) {
+        console.error('JSON extraction also failed:', extractError);
+        // Fallback with better mapping
+        result = {
+          detections: sampleAccounts.map((acc: any) => ({
+            accountNumber: acc.accountNumber,
+            language: 'en',
+            confidence: 0.5
+          })),
+          overallLanguage: 'en'
+        };
+      }
     }
 
     console.log(`Language detection complete. Overall language: ${result.overallLanguage}`);
