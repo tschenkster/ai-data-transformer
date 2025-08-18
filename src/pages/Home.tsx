@@ -47,7 +47,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight bg-gradient-primary bg-clip-text text-transparent">
                 Decision-Ready Finance Data for Startup CFOs
               </h1>
-              <p className="text-4xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
+              <p className="text-4xl font-bold text-foreground max-w-6xl mx-auto leading-relaxed">
                 Turn messy DATEV exports into clean data & reports.
               </p>
             </div>
