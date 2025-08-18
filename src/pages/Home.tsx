@@ -4,7 +4,7 @@ import { TrendingUp, Database, FileSpreadsheet, AlertTriangle, BarChart3, Users,
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-primary opacity-5 rounded-full animate-pulse"></div>
@@ -12,9 +12,9 @@ export default function Home() {
         <div className="absolute bottom-0 right-1/4 w-1/3 h-1/3 bg-primary/5 rounded-full animate-[pulse_4s_ease-in-out_infinite]"></div>
       </div>
 
-      <main className="container mx-auto px-4 py-16 space-y-20 relative z-10">
+      <main className="container mx-auto px-4 py-8 space-y-20 relative z-10">
         {/* Hero Section */}
-        <div className="text-center space-y-8 py-20">
+        <div className="text-center space-y-8 py-8">
           <div className="animate-fade-in">
             <h1 className="text-6xl md:text-7xl font-bold text-foreground leading-tight mb-6 bg-gradient-primary bg-clip-text text-transparent">
               Decision-Ready Finance Data for Startup CFOs
@@ -137,7 +137,7 @@ export default function Home() {
         {/* Solution Section */}
         <section className="space-y-12 bg-gradient-subtle/30 py-16 rounded-3xl border border-primary/10">
           <div className="text-center animate-fade-in">
-            <h2 className="text-4xl font-bold text-foreground mb-4">The Solution: AI-Powered Data Transformer</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">The Solution</h2>
             <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-8">
