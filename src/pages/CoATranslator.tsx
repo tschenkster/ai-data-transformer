@@ -502,11 +502,11 @@ export default function CoATranslator() {
                   <TableBody>
                     {translatedData.slice(0, 5).map((account, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-mono text-sm">{account.accountNumber}</TableCell>
-                        <TableCell className="truncate text-sm max-w-0" title={account.originalDescription}>
+                        <TableCell className="font-mono text-xs">{account.accountNumber}</TableCell>
+                        <TableCell className="truncate text-xs max-w-0" title={account.originalDescription}>
                           {account.originalDescription}
                         </TableCell>
-                        <TableCell className="truncate text-sm max-w-0" title={account.translatedDescription}>
+                        <TableCell className="truncate text-xs max-w-0" title={account.translatedDescription}>
                           {account.translatedDescription}
                         </TableCell>
                       </TableRow>
@@ -517,17 +517,17 @@ export default function CoATranslator() {
             </div>
 
             {/* Export Options */}
-            <div className="flex flex-col gap-3">
-              <Button onClick={() => {/* Placeholder for future functionality */}} className="bg-green-600 hover:bg-green-700 text-white">
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => {/* Placeholder for future functionality */}} className="bg-green-600 hover:bg-green-700 text-white h-8 text-sm">
                 Save to SQL DB
               </Button>
-              <Button onClick={exportToXLSX} className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={exportToXLSX} className="bg-green-600 hover:bg-green-700 text-white h-8 text-sm">
                 Download xlsx file
               </Button>
-              <Button onClick={exportToCSV} variant="outline">
+              <Button onClick={exportToCSV} variant="outline" className="h-8 text-sm">
                 Download csv file
               </Button>
-              <Button onClick={resetTranslator} variant="secondary">
+              <Button onClick={resetTranslator} variant="secondary" className="h-8 text-sm">
                 Start new translation
               </Button>
             </div>
