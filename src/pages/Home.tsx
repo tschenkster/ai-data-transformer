@@ -67,7 +67,7 @@ export default function Home() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-destructive">
                         <AlertTriangle className="h-5 w-5" />
-                        <span className="font-medium">Before: DATEV Chaos</span>
+                        <span className="font-medium">Before: DATEV Reports & Excel Hell</span>
                       </div>
                       <div className="space-y-2">
                         <div className="h-3 bg-destructive/20 rounded animate-pulse"></div>
