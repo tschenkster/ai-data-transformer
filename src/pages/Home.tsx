@@ -61,35 +61,58 @@ export default function Home() {
 
             {/* Visual Demo Preview */}
             <div className="animate-fade-in pt-16" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
-              <div className="relative max-w-4xl mx-auto">
-                <div className="bg-gradient-to-r from-destructive/20 to-primary/20 rounded-2xl p-8 border border-border shadow-2xl backdrop-blur-sm">
-                  <div className="grid md:grid-cols-2 gap-8 items-center">
-                    <div className="space-y-4">
-                      <div className="text-destructive">
-                        <span className="font-medium">DATEV Reports & Excel Hell</span>
+              <div className="relative max-w-5xl mx-auto">
+                <div className="bg-gradient-to-r from-destructive/10 via-background to-primary/10 rounded-3xl p-8 border border-border shadow-2xl backdrop-blur-sm">
+                  <div className="grid md:grid-cols-[1fr_auto_1fr] gap-8 items-center">
+                    {/* Problem Side */}
+                    <div className="space-y-4 p-6 bg-destructive/5 rounded-2xl border border-destructive/20">
+                      <div className="text-destructive flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="font-bold text-lg">DATEV Reports & Excel Hell</span>
                       </div>
-                      <div className="space-y-2">
-                        <div className="h-3 bg-destructive/20 rounded animate-pulse"></div>
-                        <div className="h-3 bg-destructive/20 rounded animate-pulse w-3/4"></div>
-                        <div className="h-3 bg-destructive/20 rounded animate-pulse w-1/2"></div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-destructive/30 rounded animate-pulse"></div>
+                        <div className="h-4 bg-destructive/25 rounded animate-pulse w-3/4"></div>
+                        <div className="h-4 bg-destructive/20 rounded animate-pulse w-1/2"></div>
+                        <div className="h-4 bg-destructive/15 rounded animate-pulse w-2/3"></div>
+                      </div>
+                      <div className="text-xs text-destructive/70 font-medium">Messy • Manual • Error-prone</div>
+                    </div>
+
+                    {/* AI Magic Transformation */}
+                    <div className="flex flex-col items-center space-y-4 py-8">
+                      <div className="relative">
+                        <div className="bg-gradient-primary p-4 rounded-full shadow-glow animate-pulse">
+                          <Zap className="h-8 w-8 text-primary-foreground animate-[pulse_1.5s_ease-in-out_infinite]" />
+                        </div>
+                        {/* Magic sparkles */}
+                        <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full animate-ping"></div>
+                        <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-primary/70 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                        <div className="absolute top-0 left-8 w-2 h-2 bg-primary/50 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm font-bold bg-gradient-primary bg-clip-text text-transparent">AI Magic</div>
+                        <div className="text-xs text-muted-foreground">Instant transformation</div>
+                      </div>
+                      <ArrowRight className="h-6 w-6 text-primary animate-[pulse_2s_ease-in-out_infinite]" />
+                    </div>
+
+                    {/* Solution Side */}
+                    <div className="space-y-4 p-6 bg-primary/5 rounded-2xl border border-primary/20 shadow-glow">
+                      <div className="text-primary flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="font-bold text-lg">Clean Data & Warehouse Heaven</span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-gradient-to-r from-primary/40 to-primary/20 rounded shadow-sm"></div>
+                        <div className="h-4 bg-gradient-to-r from-primary/35 to-primary/15 rounded shadow-sm w-4/5"></div>
+                        <div className="h-4 bg-gradient-to-r from-primary/30 to-primary/10 rounded shadow-sm w-3/5"></div>
+                        <div className="h-4 bg-gradient-to-r from-primary/25 to-primary/5 rounded shadow-sm w-4/5"></div>
+                      </div>
+                      <div className="text-xs text-primary font-medium bg-primary/10 px-3 py-1 rounded-full inline-block">
+                        Structured • Automated • Reliable
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <div className="text-primary">
-                        <span className="font-medium">Clean Data & Warehouse Heaven</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-3 bg-primary/20 rounded"></div>
-                        <div className="h-3 bg-primary/20 rounded w-4/5"></div>
-                        <div className="h-3 bg-primary/20 rounded w-3/5"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* Floating transformation arrow */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                  <div className="bg-background border border-primary p-3 rounded-full shadow-glow animate-pulse">
-                    <ArrowRight className="h-6 w-6 text-primary" />
                   </div>
                 </div>
               </div>
