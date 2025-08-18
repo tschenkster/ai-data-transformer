@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigationItems = [
-  { title: "Home", url: "/home", icon: Home },
   { title: "CoA Translator", url: "/coa-translator", icon: Languages },
 ];
 
@@ -37,6 +36,34 @@ export function AppSidebar() {
         <SidebarTrigger />
       </div>
       <SidebarContent>
+        {/* Home - Prominent Top Position */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <NavLink
+                    to="/home"
+                    end
+                    className={({ isActive }) => 
+                      `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
+                        isActive 
+                          ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                          : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
+                      }`
+                    }
+                  >
+                    <Home className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                      isActive ? "text-primary" : ""
+                    }`} />
+                    <span className="truncate">Home</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
