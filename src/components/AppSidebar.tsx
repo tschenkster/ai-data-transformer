@@ -145,7 +145,7 @@ export function AppSidebar() {
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Data Transformation</SidebarGroupLabel>
+          <SidebarGroupLabel>Data Transformation & Import</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
