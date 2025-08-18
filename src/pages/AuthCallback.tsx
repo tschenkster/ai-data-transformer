@@ -13,43 +13,73 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Handle the auth callback from Supabase
+        // Parse both hash and search params (Supabase commonly uses hash)
+        const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+        const hashParams = new URLSearchParams(hash);
+        const searchParams = new URLSearchParams(window.location.search);
+
+        // Handle explicit error returned from Supabase
+        const errorParam = hashParams.get('error') || searchParams.get('error');
+        const errorDescriptionParam = hashParams.get('error_description') || searchParams.get('error_description');
+
+        if (errorParam) {
+          console.error('Auth callback error from provider:', errorParam, errorDescriptionParam);
+          setStatus('error');
+          const code = hashParams.get('error_code') || searchParams.get('error_code');
+          if (code === 'otp_expired') {
+            setMessage('This confirmation link has expired. Please sign in or sign up again to receive a new email.');
+          } else {
+            setMessage(`Error: ${errorDescriptionParam || 'Authentication failed.'}`);
+          }
+          return;
+        }
+
+        // If tokens are present in hash, establish the session
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        if (accessToken && refreshToken) {
+          const { error: setError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (setError) {
+            console.error('setSession error:', setError);
+            setStatus('error');
+            setMessage(`Could not establish session: ${setError.message}`);
+            return;
+          }
+        } else {
+          // If PKCE code exists (OAuth/magic-link variants), exchange it
+          const code = searchParams.get('code');
+          if (code) {
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (exchangeError) {
+              console.error('exchangeCodeForSession error:', exchangeError);
+              setStatus('error');
+              setMessage(`Could not complete sign-in: ${exchangeError.message}`);
+              return;
+            }
+          }
+        }
+
+        // Finally, verify session
         const { data, error } = await supabase.auth.getSession();
-        
         if (error) {
-          console.error('Auth callback error:', error);
+          console.error('getSession error:', error);
           setStatus('error');
           setMessage(`Email verification failed: ${error.message}`);
           return;
         }
 
         if (data.session?.user) {
-          // Check if user was confirmed via email
-          if (data.session.user.email_confirmed_at) {
-            setStatus('success');
-            setMessage('Email confirmed successfully! Redirecting to your dashboard...');
-            
-            // Wait a moment then redirect
-            setTimeout(() => {
-              navigate('/home');
-            }, 2000);
-          } else {
-            setStatus('error');
-            setMessage('Email verification is still pending. Please check your email.');
-          }
+          setStatus('success');
+          setMessage('Email confirmed successfully! Redirecting to your dashboard...');
+          setTimeout(() => {
+            navigate('/home');
+          }, 1200);
         } else {
-          // No session but check URL for confirmation parameters
-          const urlParams = new URLSearchParams(window.location.search);
-          const errorParam = urlParams.get('error');
-          const errorDescriptionParam = urlParams.get('error_description');
-
-          if (errorParam && errorDescriptionParam) {
-            setStatus('error');
-            setMessage(`Error: ${errorDescriptionParam}`);
-          } else {
-            setStatus('error');
-            setMessage('No confirmation token found. Please check your email link or try signing up again.');
-          }
+          setStatus('error');
+          setMessage('No active session found. Please sign in to continue.');
         }
       } catch (err) {
         console.error('Unexpected error during auth callback:', err);
