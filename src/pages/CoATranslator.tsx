@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowRight, Upload, Languages, Download, RefreshCw, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Upload, Languages, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FileUpload } from '@/components/FileUpload';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -483,77 +483,36 @@ export default function CoATranslator() {
           <CardHeader>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Results Preview with AI Magic */}
+            {/* Results Preview */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-                <h3 className="text-lg font-semibold">AI Translation Results</h3>
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">Showing 5 of {translatedData.length} accounts</p>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
-                {/* Original Column */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <h4 className="font-semibold text-red-700 dark:text-red-300">
-                      Problem: {languages.find(l => l.code === (sourceLanguage === 'auto' ? detectedLanguage : sourceLanguage))?.name}
-                    </h4>
-                  </div>
-                  <div className="space-y-2">
+              <p className="text-sm text-muted-foreground mb-2">Showing 5 of {translatedData.length} accounts</p>
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-20">#</TableHead>
+                      <TableHead className="w-1/2">
+                        Original ({languages.find(l => l.code === (sourceLanguage === 'auto' ? detectedLanguage : sourceLanguage))?.name})
+                      </TableHead>
+                      <TableHead className="w-1/2">
+                        Translated ({languages.find(l => l.code === targetLanguage)?.name})
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {translatedData.slice(0, 5).map((account, index) => (
-                      <div key={`original-${index}`} className="p-3 bg-muted/50 rounded-lg border border-muted">
-                        <div className="text-xs font-mono text-muted-foreground mb-1">#{account.accountNumber}</div>
-                        <div className="text-sm font-medium text-foreground" title={account.originalDescription}>
+                      <TableRow key={index}>
+                        <TableCell className="font-mono text-xs">{account.accountNumber}</TableCell>
+                        <TableCell className="truncate text-xs max-w-0" title={account.originalDescription}>
                           {account.originalDescription}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* AI Magic Arrow */}
-                <div className="flex flex-col items-center justify-center py-8">
-                  <div className="relative">
-                    <div className="absolute -top-2 -left-2 text-yellow-400 animate-pulse">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 text-blue-400 animate-pulse delay-300">
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    <div className="absolute top-1 right-1 text-purple-400 animate-pulse delay-150">
-                      <Sparkles className="w-3 h-3" />
-                    </div>
-                    <ArrowRight className="w-8 h-8 text-primary animate-pulse" />
-                  </div>
-                  <div className="mt-3 text-center">
-                    <div className="text-sm font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                      AI Magic
-                    </div>
-                    <div className="text-xs text-muted-foreground">Claude 3.5 Haiku</div>
-                  </div>
-                </div>
-
-                {/* Translated Column */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <h4 className="font-semibold text-green-700 dark:text-green-300">
-                      Solution: {languages.find(l => l.code === targetLanguage)?.name}
-                    </h4>
-                  </div>
-                  <div className="space-y-2">
-                    {translatedData.slice(0, 5).map((account, index) => (
-                      <div key={`translated-${index}`} className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 animate-fade-in">
-                        <div className="text-xs font-mono text-muted-foreground mb-1">#{account.accountNumber}</div>
-                        <div className="text-sm font-medium text-green-800 dark:text-green-200" title={account.translatedDescription}>
+                        </TableCell>
+                        <TableCell className="truncate text-xs max-w-0" title={account.translatedDescription}>
                           {account.translatedDescription}
-                        </div>
-                      </div>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </div>
-                </div>
+                  </TableBody>
+                </Table>
               </div>
             </div>
 
