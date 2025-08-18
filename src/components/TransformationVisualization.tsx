@@ -57,18 +57,41 @@ const TransformationVisualization = () => {
 
         {/* Transformation Arrow with AI Magic */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
-          {/* Magic sparkles */}
+          {/* 3D Magic Wand with Sparkles */}
           <div className="relative">
-            <Sparkles className="w-8 h-8 text-primary animate-pulse absolute -top-2 -left-2" />
-            <Sparkles className="w-6 h-6 text-primary/70 animate-pulse absolute -bottom-1 -right-1" style={{ animationDelay: '0.5s' }} />
-            <Wand2 className="w-10 h-10 text-primary" />
+            {/* Magic Wand */}
+            <div className="relative z-10 flex flex-col items-center">
+              {/* Star at tip */}
+              <div className="relative mb-1">
+                <div className="w-6 h-6 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-sm rotate-45 shadow-lg shadow-yellow-500/50" />
+                <div className="absolute inset-0 w-6 h-6 bg-gradient-to-tl from-yellow-200 to-yellow-400 rounded-sm rotate-45 opacity-70" />
+              </div>
+              
+              {/* Wand handle */}
+              <div className="w-2 h-12 bg-gradient-to-b from-purple-400 via-purple-600 to-purple-800 rounded-full shadow-lg shadow-purple-600/40 relative">
+                {/* Handle highlight */}
+                <div className="absolute left-0 top-1 w-1 h-8 bg-gradient-to-b from-purple-200 to-purple-300 rounded-full opacity-60" />
+              </div>
+            </div>
+            
+            {/* Colorful Sparkles */}
+            <div className="absolute -top-6 -left-6 w-4 h-4 bg-blue-400 rounded-full animate-pulse opacity-80" style={{ animationDelay: '0s' }} />
+            <div className="absolute -top-4 right-2 w-3 h-3 bg-pink-400 rounded-full animate-pulse opacity-70" style={{ animationDelay: '0.3s' }} />
+            <div className="absolute top-2 -left-8 w-2 h-2 bg-orange-400 rounded-full animate-pulse opacity-90" style={{ animationDelay: '0.6s' }} />
+            <div className="absolute top-6 -right-4 w-3 h-3 bg-cyan-400 rounded-full animate-pulse opacity-80" style={{ animationDelay: '0.9s' }} />
+            <div className="absolute -bottom-2 -left-4 w-2 h-2 bg-blue-300 rounded-full animate-pulse opacity-60" style={{ animationDelay: '1.2s' }} />
+            <div className="absolute bottom-4 right-6 w-4 h-4 bg-pink-300 rounded-full animate-pulse opacity-70" style={{ animationDelay: '1.5s' }} />
+            
+            {/* AI Letters */}
+            <div className="absolute -top-8 -left-12 text-2xl font-bold text-purple-600 animate-pulse opacity-80" style={{ animationDelay: '0.2s' }}>A</div>
+            <div className="absolute -bottom-6 right-8 text-2xl font-bold text-purple-600 animate-pulse opacity-80" style={{ animationDelay: '0.8s' }}>I</div>
           </div>
           
           {/* AI Magic Label */}
           <div className="text-center space-y-2">
             <div className="flex items-center gap-2 justify-center">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+              <Zap className="w-4 h-4 text-purple-600" />
+              <span className="text-sm font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full border border-purple-200">
                 AI Magic
               </span>
             </div>
@@ -77,14 +100,14 @@ const TransformationVisualization = () => {
             </p>
           </div>
           
-          {/* Animated Arrow */}
+          {/* Blue Animated Arrow */}
           <div className="hidden lg:block">
-            <ArrowRight className="w-8 h-8 text-primary animate-pulse" />
+            <ArrowRight className="w-8 h-8 text-blue-500 animate-pulse" />
           </div>
           
-          {/* Mobile Arrow */}
+          {/* Mobile Blue Arrow */}
           <div className="block lg:hidden rotate-90">
-            <ArrowRight className="w-8 h-8 text-primary animate-pulse" />
+            <ArrowRight className="w-8 h-8 text-blue-500 animate-pulse" />
           </div>
         </div>
 
