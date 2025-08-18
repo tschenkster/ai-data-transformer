@@ -486,21 +486,29 @@ export default function CoATranslator() {
             {/* Results Preview */}
             <div>
               <h3 className="font-semibold mb-2">Translation Results ({translatedData.length} accounts)</h3>
-              <div className="border rounded-lg overflow-auto max-h-96">
+              <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap">Account #</TableHead>
-                      <TableHead className="whitespace-nowrap">Original</TableHead>
-                      <TableHead className="whitespace-nowrap">Translated</TableHead>
+                      <TableHead className="w-20">Account #</TableHead>
+                      <TableHead className="w-1/2">
+                        Original ({languages.find(l => l.code === (sourceLanguage === 'auto' ? detectedLanguage : sourceLanguage))?.name})
+                      </TableHead>
+                      <TableHead className="w-1/2">
+                        Translated ({languages.find(l => l.code === targetLanguage)?.name})
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {translatedData.slice(0, 5).map((account, index) => (
                       <TableRow key={index}>
-                        <TableCell className="whitespace-nowrap font-mono">{account.accountNumber}</TableCell>
-                        <TableCell className="whitespace-nowrap">{account.originalDescription}</TableCell>
-                        <TableCell className="whitespace-nowrap">{account.translatedDescription}</TableCell>
+                        <TableCell className="font-mono text-sm">{account.accountNumber}</TableCell>
+                        <TableCell className="truncate text-sm max-w-0" title={account.originalDescription}>
+                          {account.originalDescription}
+                        </TableCell>
+                        <TableCell className="truncate text-sm max-w-0" title={account.translatedDescription}>
+                          {account.translatedDescription}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
