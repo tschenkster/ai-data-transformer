@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Brain, Settings, LogOut, User, Database, Languages } from "lucide-react";
+import { Home, Brain, Settings, LogOut, User, Database, Languages, Map, FileSpreadsheet, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -17,6 +17,9 @@ import {
 
 const navigationItems = [
   { title: "CoA Translator", url: "/coa-translator", icon: Languages },
+  { title: "CoA Mapper", url: "/coa-mapper", icon: Map },
+  { title: "Trial Balance Import", url: "/trial-balance-import", icon: FileSpreadsheet },
+  { title: "Journal Import", url: "/journal-import", icon: BookOpen },
 ];
 
 export function AppSidebar() {

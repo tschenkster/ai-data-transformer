@@ -17,6 +17,9 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import ReportStructures from "./pages/ReportStructures";
 import CoATranslator from "./pages/CoATranslator";
+import CoAMapper from "./pages/CoAMapper";
+import TrialBalanceImport from "./pages/TrialBalanceImport";
+import JournalImport from "./pages/JournalImport";
 import { MemoryUpload } from "./pages/MemoryUpload";
 import NotFound from "./pages/NotFound";
 
@@ -73,6 +76,21 @@ function AuthenticatedRoutes() {
               <AdminRoute>
                 <CoATranslator />
               </AdminRoute>
+            } />
+            <Route path="/coa-mapper" element={
+              <ProtectedRoute>
+                <CoAMapper />
+              </ProtectedRoute>
+            } />
+            <Route path="/trial-balance-import" element={
+              <ProtectedRoute>
+                <TrialBalanceImport />
+              </ProtectedRoute>
+            } />
+            <Route path="/journal-import" element={
+              <ProtectedRoute>
+                <JournalImport />
+              </ProtectedRoute>
             } />
             <Route path="/memory" element={
               <ProtectedRoute>
