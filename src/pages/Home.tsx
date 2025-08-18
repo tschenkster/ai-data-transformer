@@ -39,7 +39,7 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section className="container mx-auto px-4 py-20 md:py-32">
+        <section className="container mx-auto px-4 pt-6 pb-20 md:pt-10 md:pb-32">
           <div className="text-center space-y-12 max-w-6xl mx-auto">
             {/* Main Headline */}
             <div className="animate-fade-in space-y-6" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
