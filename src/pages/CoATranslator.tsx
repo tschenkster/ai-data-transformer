@@ -468,8 +468,7 @@ export default function CoATranslator() {
                 <Progress value={session.progress} className="w-full" />
                 
                 <div className="text-sm text-muted-foreground text-center">
-                  Batch {session.currentBatch} of {session.totalBatches} 
-                  ({Math.round(session.progress)}% complete)
+                  Batch {session.currentBatch} of {session.totalBatches} ({Math.round(session.progress)}% complete)
                 </div>
               </div>
             )}
