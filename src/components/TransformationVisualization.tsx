@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle, Sparkles, ArrowRight, Zap, Database, FileSpreadsheet, Wand2, Settings } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Sparkles, ArrowRight, Zap, Database, FileSpreadsheet, Wand2, Brain, Cpu } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 const TransformationVisualization = () => {
@@ -47,61 +47,37 @@ const TransformationVisualization = () => {
 
         {/* AI Tech Center */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
-          {/* AI Tech Container */}
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            {/* Circuit Board Background */}
-            <div className="absolute inset-0 bg-slate-900 rounded-lg border-2 border-slate-700">
-              {/* Circuit traces */}
-              <div className="absolute top-2 left-0 w-8 h-0.5 bg-slate-400" />
-              <div className="absolute top-4 left-0 w-12 h-0.5 bg-slate-400" />
-              <div className="absolute top-6 left-0 w-6 h-0.5 bg-slate-400" />
-              <div className="absolute top-8 left-0 w-10 h-0.5 bg-slate-400" />
-              <div className="absolute top-10 left-0 w-14 h-0.5 bg-slate-400" />
-              <div className="absolute top-12 left-0 w-8 h-0.5 bg-slate-400" />
+          {/* AI Processing Container */}
+          <div className="relative flex items-center justify-center w-32 h-32 bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-slate-600/50">
+            {/* Central AI Brain Icon with Pulse Animation */}
+            <div className="relative">
+              <Brain 
+                className="w-16 h-16 text-blue-400 animate-pulse" 
+                style={{ animationDuration: '2s' }}
+              />
               
-              <div className="absolute top-2 right-0 w-6 h-0.5 bg-slate-400" />
-              <div className="absolute top-4 right-0 w-10 h-0.5 bg-slate-400" />
-              <div className="absolute top-6 right-0 w-8 h-0.5 bg-slate-400" />
-              <div className="absolute top-8 right-0 w-12 h-0.5 bg-slate-400" />
-              <div className="absolute top-10 right-0 w-6 h-0.5 bg-slate-400" />
-              
-              {/* Circuit nodes */}
-              <div className="absolute top-1.5 left-6 w-1 h-1 bg-slate-300 rounded-full" />
-              <div className="absolute top-3.5 left-10 w-1 h-1 bg-slate-300 rounded-full" />
-              <div className="absolute top-5.5 left-4 w-1 h-1 bg-slate-300 rounded-full" />
-              <div className="absolute top-7.5 left-8 w-1 h-1 bg-slate-300 rounded-full" />
-              <div className="absolute top-9.5 left-12 w-1 h-1 bg-slate-300 rounded-full" />
-              <div className="absolute top-11.5 left-6 w-1 h-1 bg-slate-300 rounded-full" />
+              {/* CPU Circuit Overlay */}
+              <Cpu 
+                className="absolute inset-0 w-16 h-16 text-green-400/60 animate-pulse" 
+                style={{ animationDuration: '3s', animationDelay: '1s' }}
+              />
             </div>
-
-            {/* Central AI Display */}
-            <div className="relative z-20 w-20 h-16 bg-slate-800 border-2 border-slate-600 rounded flex items-center justify-center">
-              <span className="text-2xl font-bold text-white tracking-wider">AI</span>
-            </div>
-
-            {/* Large Gear - Top Right */}
-            <Settings 
-              className="absolute -top-2 -right-2 z-10 w-12 h-12 text-slate-300 animate-spin" 
-              style={{ animationDuration: '4s' }}
-            />
-
-            {/* Medium Gear - Bottom Right */}
-            <Settings 
-              className="absolute -bottom-1 -right-1 z-15 w-8 h-8 text-slate-400 animate-spin" 
-              style={{ animationDuration: '3s', animationDirection: 'reverse' }}
-            />
-
-            {/* Small Gear - Bottom Left */}
-            <Settings 
-              className="absolute -bottom-2 -left-2 z-15 w-6 h-6 text-slate-500 animate-spin" 
-              style={{ animationDuration: '2.5s' }}
-            />
             
-            {/* Processing indicators */}
-            <div className="absolute top-0 left-1/4 w-1 h-1 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
-            <div className="absolute top-2 right-1/4 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-            <div className="absolute bottom-2 left-1/3 w-1 h-1 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-            <div className="absolute bottom-0 right-1/3 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }} />
+            {/* Circuit Pattern Background */}
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute top-4 left-4 w-2 h-8 bg-blue-400/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute top-6 left-2 w-8 h-2 bg-blue-400/60 animate-pulse" style={{ animationDelay: '1s' }} />
+              <div className="absolute bottom-4 right-4 w-2 h-8 bg-purple-400/60 animate-pulse" style={{ animationDelay: '1.5s' }} />
+              <div className="absolute bottom-6 right-2 w-8 h-2 bg-purple-400/60 animate-pulse" style={{ animationDelay: '2s' }} />
+              <div className="absolute top-1/2 left-8 w-4 h-0.5 bg-green-400/60 animate-pulse" style={{ animationDelay: '0.7s' }} />
+              <div className="absolute top-1/2 right-8 w-4 h-0.5 bg-green-400/60 animate-pulse" style={{ animationDelay: '1.3s' }} />
+            </div>
+
+            {/* Processing Dots Around Icon */}
+            <div className="absolute top-2 left-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+            <div className="absolute right-2 top-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+            <div className="absolute bottom-2 left-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.6s' }} />
+            <div className="absolute left-2 top-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.9s' }} />
           </div>
           
           {/* Blue Animated Arrow */}
