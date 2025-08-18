@@ -47,7 +47,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight bg-gradient-primary bg-clip-text text-transparent">
                 Decision-Ready Finance Data for Startup CFOs
               </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              <p className="text-4xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
                 Turn messy DATEV exports into clean data and meaningful reports.
               </p>
             </div>
@@ -63,7 +63,7 @@ export default function Home() {
           <div className="max-w-5xl mx-auto text-center space-y-12">
             <div className="animate-fade-in space-y-4">
               <Badge variant="secondary" className="px-4 py-2 bg-primary/10 text-primary">Perfect For</Badge>
-              <h2 className="text-xl md:text-2xl text-muted-foreground">CFOs of Startups with 10–100 Employees</h2>
+              <h2 className="text-4xl font-bold text-foreground">CFOs of Startups with 10–100 Employees</h2>
               <p className="text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
                 You need board-ready insights yesterday, but you don't have a large finance team or expensive infrastructure. 
                 You're stuck with DATEV outputs that tell you nothing useful and Excel sheets that break every time you breathe on them.
