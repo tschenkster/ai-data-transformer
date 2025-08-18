@@ -101,7 +101,7 @@ export default function Home() {
                     <div className="space-y-4 p-6 bg-primary/5 rounded-2xl border border-primary/20 shadow-glow">
                       <div className="text-primary flex items-center gap-2">
                         <CheckCircle className="h-5 w-5" />
-                        <span className="font-bold text-lg">Clean Data & Warehouse Heaven</span>
+                        <span className="font-bold text-lg">Cleansed Data in a Warehouse</span>
                       </div>
                       <div className="space-y-3">
                         <div className="h-4 bg-gradient-to-r from-primary/40 to-primary/20 rounded shadow-sm"></div>
