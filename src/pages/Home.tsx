@@ -48,7 +48,7 @@ export default function Home() {
                 Decision-Ready Finance Data for Startup CFOs
               </h1>
               <p className="text-4xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
-                Turn messy DATEV exports into clean data and meaningful reports.
+                Turn messy DATEV exports into clean data & reports.
               </p>
             </div>
 
