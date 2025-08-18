@@ -442,8 +442,7 @@ export default function CoATranslator() {
               <div className="text-center space-y-4">
                 <p>Ready to translate {uploadedData.length} accounts</p>
                 <p className="text-sm text-muted-foreground">
-                  From {languages.find(l => l.code === (sourceLanguage === 'auto' ? detectedLanguage : sourceLanguage))?.name} 
-                  to {languages.find(l => l.code === targetLanguage)?.name}
+                  From {languages.find(l => l.code === (sourceLanguage === 'auto' ? detectedLanguage : sourceLanguage))?.name} to {languages.find(l => l.code === targetLanguage)?.name}
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Button variant="outline" onClick={() => setStep(2)}>
