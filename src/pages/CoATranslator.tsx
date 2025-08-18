@@ -304,9 +304,6 @@ export default function CoATranslator() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Chart of Accounts Translator</h1>
-        <p className="text-muted-foreground">
-          Upload your Chart of Accounts and translate account descriptions between 22+ languages using AI
-        </p>
       </div>
 
       {/* Progress Steps */}
@@ -339,9 +336,6 @@ export default function CoATranslator() {
               <Upload className="w-5 h-5 mr-2" />
               Upload Chart of Accounts
             </CardTitle>
-            <CardDescription>
-              Upload a CSV or Excel file containing your Chart of Accounts with account numbers and descriptions
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <FileUpload 
