@@ -55,7 +55,7 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
               resolve(results.data as any);
             } else if (mode === 'coa-translation') {
               // CoA Translation mode - support files with or without header
-              const rows: any[] = results.data as any[];
+              const rows: any[] = results.data as any[]; // arrays because header=false in this mode
               const firstRow = rows[0] || [];
               const keywords = ['account', 'number', 'code', 'description', 'name'];
               const isHeaderRow = Array.isArray(firstRow) && firstRow.some((cell: any) =>
@@ -77,31 +77,33 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
                 if (accIdx >= 0) accountColIndex = accIdx;
                 if (dIdx >= 0) descColIndex = dIdx;
               }
-              
-              if (!accountNumberCol || !descriptionCol) {
-                reject(new Error('Could not identify account number and description columns'));
+
+              if ((firstRow as any[]).length < 2) {
+                reject(new Error('File must contain at least 2 columns (account number and description)'));
                 return;
               }
-              
-              // Map to standard format
-              console.log('Raw CSV data rows:', results.data.length);
-              const accountData = results.data
+
+              const dataRows = isHeaderRow ? rows.slice(1) : rows;
+              console.log('CSV header detected:', isHeaderRow, 'accountColIndex:', accountColIndex, 'descColIndex:', descColIndex);
+              console.log('Raw CSV data rows:', dataRows.length);
+
+              const accountData = dataRows
                 .map((row: any, index: number) => {
-                  const accountNumber = row[accountNumberCol] ? String(row[accountNumberCol]).trim() : '';
-                  const description = row[descriptionCol] ? String(row[descriptionCol]).trim() : '';
-                  
+                  const accountNumber = row[accountColIndex] ? String(row[accountColIndex]).trim() : '';
+                  const description = row[descColIndex] ? String(row[descColIndex]).trim() : '';
+
                   if (!accountNumber || !description) {
-                    console.warn(`Skipping row ${index + 1}: accountNumber="${accountNumber}", description="${description}"`);
+                    console.warn(`Skipping CSV row ${index + (isHeaderRow ? 2 : 1)}: accountNumber="${accountNumber}", description="${description}"`);
                     return null;
                   }
-                  
+
                   return {
                     accountNumber,
                     originalDescription: description
                   };
                 })
                 .filter((item: any) => item !== null);
-              
+
               console.log('CoA translation data:', accountData);
               console.log('Filtered accounts count:', accountData.length);
               resolve(accountData as any);
@@ -185,50 +187,56 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
             
             resolve(structuredData as any);
           } else if (mode === 'coa-translation') {
-            // CoA Translation mode - flexible column mapping
+            // CoA Translation mode - support files with or without header
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            const headers = jsonData[0] || [];
-            
-            // Find account number and description columns with null safety
-            console.log('Excel headers with types:', Array.isArray(headers) ? headers.map(h => ({ value: h, type: typeof h })) : 'Headers not array');
-            
-            const accountNumberIndex = (headers as any[]).findIndex((h: any) => 
-              h && typeof h === 'string' && h.toLowerCase().includes('account') && 
-              (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+            const firstRow = jsonData[0] || [];
+            const keywords = ['account', 'number', 'code', 'description', 'name'];
+            const isHeaderRow = Array.isArray(firstRow) && firstRow.some((cell: any) =>
+              typeof cell === 'string' && keywords.some((k) => cell.toLowerCase().includes(k))
             );
             
-            const descriptionIndex = (headers as any[]).findIndex((h: any) => 
-              h && typeof h === 'string' && (h.toLowerCase().includes('description') || h.toLowerCase().includes('name'))
-            );
-            
-            // Use first two columns as fallback
-            const accountColIndex = accountNumberIndex >= 0 ? accountNumberIndex : 0;
-            const descColIndex = descriptionIndex >= 0 ? descriptionIndex : 1;
-            
-            if ((headers as string[]).length < 2) {
+            // Determine column indices
+            let accountColIndex = 0;
+            let descColIndex = 1;
+            if (isHeaderRow) {
+              const headers = firstRow as any[];
+              const accIdx = headers.findIndex((h: any) =>
+                h && typeof h === 'string' && h.toLowerCase().includes('account') &&
+                (h.toLowerCase().includes('number') || h.toLowerCase().includes('code'))
+              );
+              const dIdx = headers.findIndex((h: any) =>
+                h && typeof h === 'string' && (h.toLowerCase().includes('description') || h.toLowerCase().includes('name'))
+              );
+              if (accIdx >= 0) accountColIndex = accIdx;
+              if (dIdx >= 0) descColIndex = dIdx;
+            }
+
+            if ((firstRow as any[]).length < 2) {
               reject(new Error('File must contain at least 2 columns (account number and description)'));
               return;
             }
-            
-            // Map to standard format
-            console.log('Raw Excel data rows:', jsonData.length - 1); // -1 for header
-            const accountData = jsonData.slice(1)
+
+            const dataRows = isHeaderRow ? jsonData.slice(1) : jsonData;
+            console.log('Excel header detected:', isHeaderRow, 'accountColIndex:', accountColIndex, 'descColIndex:', descColIndex);
+            console.log('Raw Excel data rows:', dataRows.length);
+
+            const accountData = dataRows
               .map((row: any, index: number) => {
                 const accountNumber = row[accountColIndex] ? String(row[accountColIndex]).trim() : '';
                 const description = row[descColIndex] ? String(row[descColIndex]).trim() : '';
-                
+
                 if (!accountNumber || !description) {
-                  console.warn(`Skipping Excel row ${index + 2}: accountNumber="${accountNumber}", description="${description}"`); // +2 for header and 0-based index
+                  console.warn(`Skipping Excel row ${index + (isHeaderRow ? 2 : 1)}: accountNumber="${accountNumber}", description="${description}"`);
                   return null;
                 }
-                
+
                 return {
                   accountNumber,
                   originalDescription: description
                 };
               })
               .filter((item: any) => item !== null);
-            
+
             console.log('CoA translation data:', accountData);
             console.log('Filtered Excel accounts count:', accountData.length);
             resolve(accountData as any);
