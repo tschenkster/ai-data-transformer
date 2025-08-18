@@ -37,6 +37,7 @@ export default function CoATranslator() {
   const [detectedLanguage, setDetectedLanguage] = useState<string>('');
   const [session, setSession] = useState<TranslationSession | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isDetectingLanguage, setIsDetectingLanguage] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   
   const { toast } = useToast();
@@ -85,6 +86,7 @@ export default function CoATranslator() {
   };
 
   const detectLanguage = async (data: AccountData[]) => {
+    setIsDetectingLanguage(true);
     try {
       const { data: result, error } = await supabase.functions.invoke('detect-language', {
         body: { accounts: data.slice(0, 10) } // Sample first 10 for detection
@@ -107,6 +109,8 @@ export default function CoATranslator() {
         description: "Please select the source language manually",
         variant: "destructive",
       });
+    } finally {
+      setIsDetectingLanguage(false);
     }
   };
 
@@ -353,20 +357,38 @@ export default function CoATranslator() {
             <div>
               <h3 className="font-semibold mb-2">Data Preview ({uploadedData.length} accounts)</h3>
               <div className="border rounded-lg overflow-hidden">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead className="bg-muted">
                     <tr>
-                      <th className="text-left p-3 font-medium">Account Number</th>
-                      <th className="text-left p-3 font-medium">Description</th>
+                      <th className="text-left p-2 font-medium text-xs">Account Number</th>
+                      <th className="text-left p-2 font-medium text-xs">Description</th>
+                      <th className="text-left p-2 font-medium text-xs">Source Language</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {uploadedData.slice(0, 5).map((account, index) => (
-                      <tr key={index} className="border-t">
-                        <td className="p-3 font-mono">{account.accountNumber}</td>
-                        <td className="p-3">{account.originalDescription}</td>
-                      </tr>
-                    ))}
+                    {uploadedData.slice(0, 5).map((account, index) => {
+                      const accountLanguage = detectedLanguage || 'en';
+                      const languageInfo = languages.find(l => l.code === accountLanguage);
+                      return (
+                        <tr key={index} className="border-t">
+                          <td className="p-2 font-mono text-xs">{account.accountNumber}</td>
+                          <td className="p-2 text-xs">{account.originalDescription}</td>
+                          <td className="p-2 text-xs">
+                            {isDetectingLanguage ? (
+                              <div className="flex items-center gap-1">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span className="text-muted-foreground">Detecting...</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <span className="text-base">{languageInfo?.flag || '🏳️'}</span>
+                                <span className="font-mono font-medium uppercase">{accountLanguage}</span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
