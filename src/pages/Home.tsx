@@ -75,9 +75,8 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-primary">
-                        <CheckCircle className="h-5 w-5" />
-                        <span className="font-medium">After: Clear Insights</span>
+                      <div className="text-primary">
+                        <span className="font-medium">Clean Data & Warehouse Heaven</span>
                       </div>
                       <div className="space-y-2">
                         <div className="h-3 bg-primary/20 rounded"></div>
