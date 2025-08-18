@@ -67,37 +67,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Data Transformation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className={({ isActive }) => 
-                        `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
-                          isActive 
-                            ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
-                            : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
-                        }`
-                      }
-                    >
-                      <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                        isActive ? "text-primary" : ""
-                      }`} />
-                      <span className="truncate">{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
         {/* Admin Section */}
         {isAdmin && (
           <>
@@ -173,6 +142,37 @@ export function AppSidebar() {
             </SidebarGroup>
           </>
         )}
+
+        {/* Main Navigation */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Data Transformation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navigationItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className={({ isActive }) => 
+                        `flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-all duration-200 relative ${
+                          isActive 
+                            ? "bg-primary/5 text-primary font-medium border-l-2 border-l-primary ml-0" 
+                            : "text-foreground hover:bg-accent/30 border-l-2 border-l-transparent"
+                        }`
+                      }
+                    >
+                      <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                        isActive ? "text-primary" : ""
+                      }`} />
+                      <span className="truncate">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         {/* User Account Section */}
         <SidebarSeparator />
