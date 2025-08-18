@@ -45,69 +45,94 @@ const TransformationVisualization = () => {
           <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-destructive/5 rounded-full blur-lg" />
         </Card>
 
-        {/* AI Gears Center */}
+        {/* AI Tech Center */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
-          {/* AI Gears Container */}
-          <div className="relative w-24 h-24 flex items-center justify-center">
-            {/* Large Central Gear */}
-            <div className="relative z-20 w-16 h-16 rounded-full border-4 border-blue-400 bg-blue-50 animate-spin" style={{ animationDuration: '4s' }}>
-              {/* Gear teeth */}
-              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
-              <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
-              <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-400 rounded-sm" />
-              <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
-              <div className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
-              <div className="absolute bottom-1 left-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
-              <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-blue-400 rounded-sm rotate-45" />
-              {/* Central hub */}
-              <div className="absolute inset-4 rounded-full bg-blue-500 border-2 border-blue-600" />
+          {/* AI Tech Container */}
+          <div className="relative w-32 h-32 flex items-center justify-center">
+            {/* Circuit Board Background */}
+            <div className="absolute inset-0 bg-slate-900 rounded-lg border-2 border-slate-700">
+              {/* Circuit traces */}
+              <div className="absolute top-2 left-0 w-8 h-0.5 bg-slate-400" />
+              <div className="absolute top-4 left-0 w-12 h-0.5 bg-slate-400" />
+              <div className="absolute top-6 left-0 w-6 h-0.5 bg-slate-400" />
+              <div className="absolute top-8 left-0 w-10 h-0.5 bg-slate-400" />
+              <div className="absolute top-10 left-0 w-14 h-0.5 bg-slate-400" />
+              <div className="absolute top-12 left-0 w-8 h-0.5 bg-slate-400" />
+              
+              <div className="absolute top-2 right-0 w-6 h-0.5 bg-slate-400" />
+              <div className="absolute top-4 right-0 w-10 h-0.5 bg-slate-400" />
+              <div className="absolute top-6 right-0 w-8 h-0.5 bg-slate-400" />
+              <div className="absolute top-8 right-0 w-12 h-0.5 bg-slate-400" />
+              <div className="absolute top-10 right-0 w-6 h-0.5 bg-slate-400" />
+              
+              {/* Circuit nodes */}
+              <div className="absolute top-1.5 left-6 w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="absolute top-3.5 left-10 w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="absolute top-5.5 left-4 w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="absolute top-7.5 left-8 w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="absolute top-9.5 left-12 w-1 h-1 bg-slate-300 rounded-full" />
+              <div className="absolute top-11.5 left-6 w-1 h-1 bg-slate-300 rounded-full" />
             </div>
 
-            {/* Medium Right Gear */}
-            <div className="absolute top-2 right-1 z-10 w-10 h-10 rounded-full border-3 border-pink-400 bg-pink-50 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
-              {/* Gear teeth */}
-              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
-              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
-              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
-              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-pink-400 rounded-sm" />
-              {/* Central hub */}
-              <div className="absolute inset-2 rounded-full bg-pink-500 border border-pink-600" />
+            {/* Central AI Display */}
+            <div className="relative z-20 w-20 h-16 bg-slate-800 border-2 border-slate-600 rounded flex items-center justify-center">
+              <span className="text-2xl font-bold text-white tracking-wider">AI</span>
             </div>
 
-            {/* Small Top-Left Gear */}
-            <div className="absolute -top-1 -left-1 z-15 w-6 h-6 rounded-full border-2 border-orange-400 bg-orange-50 animate-spin" style={{ animationDuration: '2s' }}>
-              {/* Gear teeth */}
-              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
-              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
-              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
-              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-orange-400 rounded-sm" />
-              {/* Central hub */}
-              <div className="absolute inset-1 rounded-full bg-orange-500" />
+            {/* Large Gear - Top Right */}
+            <div className="absolute -top-2 -right-2 z-10 w-12 h-12 animate-spin" style={{ animationDuration: '4s' }}>
+              <div className="relative w-full h-full">
+                {/* Gear body */}
+                <div className="absolute inset-2 bg-slate-700 rounded-full border border-slate-500" />
+                {/* Gear teeth */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-600" />
+                <div className="absolute top-1 right-0 w-2 h-2 bg-slate-600" />
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-600" />
+                <div className="absolute bottom-1 right-0 w-2 h-2 bg-slate-600" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-600" />
+                <div className="absolute bottom-1 left-0 w-2 h-2 bg-slate-600" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-600" />
+                <div className="absolute top-1 left-0 w-2 h-2 bg-slate-600" />
+                {/* Center hub */}
+                <div className="absolute inset-4 bg-slate-800 rounded-full border border-slate-400" />
+              </div>
             </div>
 
-            {/* Small Bottom-Right Gear */}
-            <div className="absolute bottom-0 right-2 z-15 w-7 h-7 rounded-full border-2 border-cyan-400 bg-cyan-50 animate-spin" style={{ animationDuration: '2.5s', animationDirection: 'reverse' }}>
-              {/* Gear teeth */}
-              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
-              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
-              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
-              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-1 bg-cyan-400 rounded-sm" />
-              {/* Central hub */}
-              <div className="absolute inset-1 rounded-full bg-cyan-500" />
+            {/* Medium Gear - Bottom Right */}
+            <div className="absolute -bottom-1 -right-1 z-15 w-8 h-8 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
+              <div className="relative w-full h-full">
+                {/* Gear body */}
+                <div className="absolute inset-1 bg-slate-700 rounded-full border border-slate-500" />
+                {/* Gear teeth */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-600" />
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-slate-600" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-600" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-slate-600" />
+                {/* Center hub */}
+                <div className="absolute inset-2.5 bg-slate-800 rounded-full" />
+              </div>
+            </div>
+
+            {/* Small Gear - Bottom Left */}
+            <div className="absolute -bottom-2 -left-2 z-15 w-6 h-6 animate-spin" style={{ animationDuration: '2.5s' }}>
+              <div className="relative w-full h-full">
+                {/* Gear body */}
+                <div className="absolute inset-1 bg-slate-700 rounded-full border border-slate-500" />
+                {/* Gear teeth */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-slate-600" />
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-600" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-slate-600" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-600" />
+                {/* Center hub */}
+                <div className="absolute inset-2 bg-slate-800 rounded-full" />
+              </div>
             </div>
             
-            {/* Mechanical particles */}
-            <div className="absolute -top-6 -left-10 w-2 h-2 border border-blue-400 rounded-sm animate-spin opacity-75" style={{ animationDelay: '0s', animationDuration: '3s' }} />
-            <div className="absolute -top-4 right-8 w-1.5 h-1.5 border border-pink-400 rounded-sm animate-spin opacity-80" style={{ animationDelay: '0.5s', animationDuration: '2.5s' }} />
-            <div className="absolute top-1 -left-10 w-2.5 h-2.5 border border-orange-400 rounded-sm animate-spin opacity-70" style={{ animationDelay: '1s', animationDuration: '3.5s' }} />
-            <div className="absolute top-4 right-9 w-2 h-2 border border-cyan-400 rounded-sm animate-spin opacity-85" style={{ animationDelay: '1.5s', animationDuration: '2s' }} />
-            <div className="absolute top-7 -left-8 w-1.5 h-1.5 border border-blue-500 rounded-sm animate-spin opacity-65" style={{ animationDelay: '2s', animationDuration: '4s' }} />
-            <div className="absolute bottom-3 right-7 w-2.5 h-2.5 border border-pink-500 rounded-sm animate-spin opacity-75" style={{ animationDelay: '2.5s', animationDuration: '2.8s' }} />
-            
-            {/* Energy pulse rings */}
-            <div className="absolute inset-0 border border-blue-300/30 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
-            <div className="absolute inset-2 border border-pink-400/25 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.8s' }} />
+            {/* Processing indicators */}
+            <div className="absolute top-0 left-1/4 w-1 h-1 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
+            <div className="absolute top-2 right-1/4 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+            <div className="absolute bottom-2 left-1/3 w-1 h-1 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute bottom-0 right-1/3 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }} />
           </div>
           
           {/* Blue Animated Arrow */}
