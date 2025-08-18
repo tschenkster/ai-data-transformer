@@ -51,44 +51,38 @@ function AuthenticatedRoutes() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center border-b px-4">
-            <Zap className="w-5 h-5 mr-2 text-primary" />
-            <h1 className="font-semibold">AI-Powered Data Transformer</h1>
-          </header>
-          <main className="flex-1 overflow-auto">
-            <Routes>
-              <Route path="/auth" element={<Navigate to="/home" replace />} />
-              <Route path="/home" element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <AdminRoute>
-                  <Admin />
-                </AdminRoute>
-              } />
-              <Route path="/report-structures" element={
-                <SuperAdminRoute>
-                  <ReportStructures />
-                </SuperAdminRoute>
-              } />
-              <Route path="/coa-translator" element={
-                <AdminRoute>
-                  <CoATranslator />
-                </AdminRoute>
-              } />
-              <Route path="/memory" element={
-                <ProtectedRoute>
-                  <MemoryUpload />
-                </ProtectedRoute>
-              } />
-              <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
+        <main className="flex-1 overflow-auto">
+          <Routes>
+            <Route path="/auth" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            } />
+            <Route path="/report-structures" element={
+              <SuperAdminRoute>
+                <ReportStructures />
+              </SuperAdminRoute>
+            } />
+            <Route path="/coa-translator" element={
+              <AdminRoute>
+                <CoATranslator />
+              </AdminRoute>
+            } />
+            <Route path="/memory" element={
+              <ProtectedRoute>
+                <MemoryUpload />
+              </ProtectedRoute>
+            } />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
       </div>
     </SidebarProvider>
   );
