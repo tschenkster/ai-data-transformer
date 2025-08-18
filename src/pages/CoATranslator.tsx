@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowRight, Upload, Languages, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FileUpload } from '@/components/FileUpload';
@@ -485,25 +486,25 @@ export default function CoATranslator() {
             {/* Results Preview */}
             <div>
               <h3 className="font-semibold mb-2">Translation Results ({translatedData.length} accounts)</h3>
-              <div className="border rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="text-left p-3 font-medium">Account #</th>
-                      <th className="text-left p-3 font-medium">Original</th>
-                      <th className="text-left p-3 font-medium">Translated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <div className="border rounded-lg overflow-auto max-h-96">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Account #</TableHead>
+                      <TableHead className="whitespace-nowrap">Original</TableHead>
+                      <TableHead className="whitespace-nowrap">Translated</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {translatedData.slice(0, 5).map((account, index) => (
-                      <tr key={index} className="border-t">
-                        <td className="p-3 font-mono">{account.accountNumber}</td>
-                        <td className="p-3">{account.originalDescription}</td>
-                        <td className="p-3">{account.translatedDescription}</td>
-                      </tr>
+                      <TableRow key={index}>
+                        <TableCell className="whitespace-nowrap font-mono">{account.accountNumber}</TableCell>
+                        <TableCell className="whitespace-nowrap">{account.originalDescription}</TableCell>
+                        <TableCell className="whitespace-nowrap">{account.translatedDescription}</TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
 
