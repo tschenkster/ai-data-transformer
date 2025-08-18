@@ -27,7 +27,7 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
   const processCSV = (file: File): Promise<string[]> => {
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
-        header: true,
+        header: mode !== 'coa-translation',
         skipEmptyLines: true,
         complete: (results) => {
           try {
