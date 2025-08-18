@@ -343,16 +343,7 @@ export default function CoATranslator() {
       {/* Step 2: Language Configuration */}
       {step === 2 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Languages className="w-5 h-5 mr-2" />
-              Language Configuration
-            </CardTitle>
-            <CardDescription>
-              Configure source and target languages for translation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pt-6">
             {/* Data Preview */}
             <div>
               <h3 className="font-semibold mb-2">Data Preview ({uploadedData.length} accounts)</h3>
