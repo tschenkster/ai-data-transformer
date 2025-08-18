@@ -490,7 +490,7 @@ export default function CoATranslator() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-20">Account #</TableHead>
+                      <TableHead className="w-20">#</TableHead>
                       <TableHead className="w-1/2">
                         Original ({languages.find(l => l.code === (sourceLanguage === 'auto' ? detectedLanguage : sourceLanguage))?.name})
                       </TableHead>
@@ -518,16 +518,16 @@ export default function CoATranslator() {
 
             {/* Export Options */}
             <div className="flex flex-col gap-2">
-              <Button onClick={() => {/* Placeholder for future functionality */}} className="bg-green-600 hover:bg-green-700 text-white h-8 text-sm">
+              <Button onClick={() => {/* Placeholder for future functionality */}} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                 Save to SQL DB
               </Button>
-              <Button onClick={exportToXLSX} className="bg-green-600 hover:bg-green-700 text-white h-8 text-sm">
+              <Button onClick={exportToXLSX} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                 Download xlsx file
               </Button>
-              <Button onClick={exportToCSV} variant="outline" className="h-8 text-sm">
+              <Button onClick={exportToCSV} variant="outline" size="sm">
                 Download csv file
               </Button>
-              <Button onClick={resetTranslator} variant="secondary" className="h-8 text-sm">
+              <Button onClick={resetTranslator} variant="secondary" size="sm">
                 Start new translation
               </Button>
             </div>
