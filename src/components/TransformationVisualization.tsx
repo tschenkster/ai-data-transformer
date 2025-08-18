@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle, Sparkles, ArrowRight, Zap, Database, FileSpreadsheet, Wand2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Sparkles, ArrowRight, Zap, Database, FileSpreadsheet, Wand2, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 const TransformationVisualization = () => {
@@ -80,53 +80,22 @@ const TransformationVisualization = () => {
             </div>
 
             {/* Large Gear - Top Right */}
-            <div className="absolute -top-2 -right-2 z-10 w-12 h-12 animate-spin" style={{ animationDuration: '4s' }}>
-              <div className="relative w-full h-full">
-                {/* Gear body */}
-                <div className="absolute inset-2 bg-slate-700 rounded-full border border-slate-500" />
-                {/* Gear teeth */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-600" />
-                <div className="absolute top-1 right-0 w-2 h-2 bg-slate-600" />
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-600" />
-                <div className="absolute bottom-1 right-0 w-2 h-2 bg-slate-600" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-600" />
-                <div className="absolute bottom-1 left-0 w-2 h-2 bg-slate-600" />
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-600" />
-                <div className="absolute top-1 left-0 w-2 h-2 bg-slate-600" />
-                {/* Center hub */}
-                <div className="absolute inset-4 bg-slate-800 rounded-full border border-slate-400" />
-              </div>
-            </div>
+            <Settings 
+              className="absolute -top-2 -right-2 z-10 w-12 h-12 text-slate-300 animate-spin" 
+              style={{ animationDuration: '4s' }}
+            />
 
             {/* Medium Gear - Bottom Right */}
-            <div className="absolute -bottom-1 -right-1 z-15 w-8 h-8 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
-              <div className="relative w-full h-full">
-                {/* Gear body */}
-                <div className="absolute inset-1 bg-slate-700 rounded-full border border-slate-500" />
-                {/* Gear teeth */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-600" />
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-slate-600" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-600" />
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-slate-600" />
-                {/* Center hub */}
-                <div className="absolute inset-2.5 bg-slate-800 rounded-full" />
-              </div>
-            </div>
+            <Settings 
+              className="absolute -bottom-1 -right-1 z-15 w-8 h-8 text-slate-400 animate-spin" 
+              style={{ animationDuration: '3s', animationDirection: 'reverse' }}
+            />
 
             {/* Small Gear - Bottom Left */}
-            <div className="absolute -bottom-2 -left-2 z-15 w-6 h-6 animate-spin" style={{ animationDuration: '2.5s' }}>
-              <div className="relative w-full h-full">
-                {/* Gear body */}
-                <div className="absolute inset-1 bg-slate-700 rounded-full border border-slate-500" />
-                {/* Gear teeth */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-slate-600" />
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-600" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-slate-600" />
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-600" />
-                {/* Center hub */}
-                <div className="absolute inset-2 bg-slate-800 rounded-full" />
-              </div>
-            </div>
+            <Settings 
+              className="absolute -bottom-2 -left-2 z-15 w-6 h-6 text-slate-500 animate-spin" 
+              style={{ animationDuration: '2.5s' }}
+            />
             
             {/* Processing indicators */}
             <div className="absolute top-0 left-1/4 w-1 h-1 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '0s' }} />
