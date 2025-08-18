@@ -485,7 +485,7 @@ export default function CoATranslator() {
           <CardContent className="space-y-6">
             {/* Results Preview */}
             <div>
-              <h3 className="font-semibold mb-2">Translation Results ({translatedData.length} accounts)</h3>
+              <p className="text-sm text-muted-foreground mb-2">Showing 5 of {translatedData.length} accounts</p>
               <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
