@@ -59,26 +59,6 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Social Proof Stats */}
-            <div className="animate-fade-in grid grid-cols-2 md:grid-cols-4 gap-8 pt-16" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">2,000+</div>
-                <div className="text-sm text-muted-foreground">CFOs Trust Us</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">30s</div>
-                <div className="text-sm text-muted-foreground">Avg Transform Time</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">95%</div>
-                <div className="text-sm text-muted-foreground">Time Saved</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">50+</div>
-                <div className="text-sm text-muted-foreground">Report Templates</div>
-              </div>
-            </div>
-
             {/* Visual Demo Preview */}
             <div className="animate-fade-in pt-16" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
               <div className="relative max-w-4xl mx-auto">
