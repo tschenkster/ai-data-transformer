@@ -517,15 +517,18 @@ export default function CoATranslator() {
             </div>
 
             {/* Export Options */}
-            <div className="flex flex-wrap gap-4">
-              <Button onClick={exportToCSV} variant="outline">
-                Export as CSV
+            <div className="flex flex-col gap-3">
+              <Button onClick={() => {/* Placeholder for future functionality */}} className="bg-green-600 hover:bg-green-700 text-white">
+                Save to SQL DB
               </Button>
-              <Button onClick={exportToXLSX} variant="outline">
-                Export as Excel
+              <Button onClick={exportToXLSX} className="bg-green-600 hover:bg-green-700 text-white">
+                Download xlsx file
+              </Button>
+              <Button onClick={exportToCSV} variant="outline">
+                Download csv file
               </Button>
               <Button onClick={resetTranslator} variant="secondary">
-                Start New Translation
+                Start new translation
               </Button>
             </div>
           </CardContent>
