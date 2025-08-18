@@ -97,62 +97,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Trust & Social Proof Section */}
-        <section className="bg-gradient-subtle/30 py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center space-y-12">
-              <div className="animate-fade-in">
-                <h2 className="text-lg font-medium text-muted-foreground mb-8">Trusted by startup finance teams at</h2>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center opacity-60">
-                  {[1,2,3,4,5].map((i) => (
-                    <div key={i} className="bg-muted/20 h-12 rounded-lg flex items-center justify-center">
-                      <span className="text-muted-foreground/60 font-medium">Company {i}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Key Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                <Card className="text-center p-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 transition-all duration-300 group">
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                      <Shield className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-primary mb-1">SOC 2</div>
-                      <div className="text-sm text-muted-foreground">Compliant & Secure</div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="text-center p-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 transition-all duration-300 group">
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                      <Clock className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-primary mb-1">10x</div>
-                      <div className="text-sm text-muted-foreground">Faster Reporting</div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="text-center p-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 transition-all duration-300 group">
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
-                      <Award className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-primary mb-1">4.9/5</div>
-                      <div className="text-sm text-muted-foreground">User Rating</div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Target Audience Section */}
         <section className="container mx-auto px-4 py-20">
@@ -788,6 +732,63 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Trust & Social Proof Section */}
+        <section className="bg-gradient-subtle/30 py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center space-y-12">
+              <div className="animate-fade-in">
+                <h2 className="text-lg font-medium text-muted-foreground mb-8">Trusted by startup finance teams at</h2>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center opacity-60">
+                  {[1,2,3,4,5].map((i) => (
+                    <div key={i} className="bg-muted/20 h-12 rounded-lg flex items-center justify-center">
+                      <span className="text-muted-foreground/60 font-medium">Company {i}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <Card className="text-center p-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 transition-all duration-300 group">
+                  <div className="space-y-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                      <Shield className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold text-primary mb-1">SOC 2</div>
+                      <div className="text-sm text-muted-foreground">Compliant & Secure</div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="text-center p-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 transition-all duration-300 group">
+                  <div className="space-y-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                      <Clock className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold text-primary mb-1">10x</div>
+                      <div className="text-sm text-muted-foreground">Faster Reporting</div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="text-center p-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10 transition-all duration-300 group">
+                  <div className="space-y-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                      <Award className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold text-primary mb-1">4.9/5</div>
+                      <div className="text-sm text-muted-foreground">User Rating</div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>
