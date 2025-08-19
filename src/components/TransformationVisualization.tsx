@@ -47,18 +47,13 @@ const TransformationVisualization = () => {
 
         {/* AI Tech Center */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
-          {/* AI Processing Container */}
-          <div className="relative flex items-center justify-center w-32 h-32 bg-slate-800/60 rounded-2xl border border-slate-600/50">
-            {/* AI Processing Icon with Rotation Animation */}
-            <div className="relative">
-              <img
-                src="/ai-processing.png"
-                alt="AI Processing Icon"
-                className="w-20 h-20 object-contain"
-              />
-            </div>
-
-            {/* Processing Dots Around Icon */}
+          {/* AI Processing Icon */}
+          <div className="relative">
+            <img
+              src="/lovable-uploads/ee35be92-17ee-46c5-9fe7-a9f728427313.png"
+              alt="AI Processing Icon"
+              className="w-40 h-40 object-contain"
+            />
           </div>
           
           {/* Blue Animated Arrow */}
