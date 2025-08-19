@@ -65,7 +65,7 @@ export default function Home() {
               <Badge variant="secondary" className="px-4 py-2 bg-primary/10 text-primary">Perfect For</Badge>
               <h2 className="text-xl md:text-2xl text-muted-foreground">CFOs of Startups with 10–100 Employees</h2>
               <p className="text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-                You need board-ready insights, you haven't built your Finance tech stack yet, you're stuck with useless DATEV outputs and Excel sheets that break every time you breathe on them.
+                You need board-ready insights, BUT you&apos;re stuck with useless DATEV outputs &amp; Excel sheets that break every time you breathe on them and you haven&apos;t built your Finance tech stack yet .
               </p>
             </div>
           </div>
