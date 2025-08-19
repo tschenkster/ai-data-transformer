@@ -52,7 +52,7 @@ const TransformationVisualization = () => {
             {/* AI Processing Icon with Rotation Animation */}
             <div className="relative">
               <img
-                src="/lovable-uploads/2e39a6c8-dd64-4016-bbbd-92a9f7b6bef8.png"
+                src="/ai-processing.png"
                 alt="AI Processing Icon"
                 className="w-20 h-20 object-contain"
               />
