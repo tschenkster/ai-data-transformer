@@ -51,10 +51,12 @@ const TransformationVisualization = () => {
           <div className="relative flex items-center justify-center w-32 h-32 bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-slate-600/50">
             {/* AI Processing Icon with Rotation Animation */}
             <div className="relative">
-              {/* Temporary placeholder - replace with your uploaded AI icon */}
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center animate-spin shadow-lg" style={{ animationDuration: '8s' }}>
-                <div className="text-white font-bold text-lg">AI</div>
-              </div>
+              <img 
+                src="/lovable-uploads/0401f229-a949-4440-8a73-913bf25760d9.png"
+                alt="AI Processing Icon"
+                className="w-20 h-20 animate-spin shadow-lg"
+                style={{ animationDuration: '8s' }}
+              />
             </div>
 
             {/* Processing Dots Around Icon */}
