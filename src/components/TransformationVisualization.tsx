@@ -49,7 +49,11 @@ const TransformationVisualization = () => {
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
           {/* AI Processing Icon */}
           <div className="relative">
-            <Brain className="w-24 h-24 text-primary animate-pulse" />
+            <img
+              src="/lovable-uploads/9d08d6ac-1928-4d05-b708-3189d5ced825.png"
+              alt="AI Processing Icon"
+              className="w-32 h-32 object-contain animate-pulse"
+            />
           </div>
           
           {/* Blue Animated Arrow */}
