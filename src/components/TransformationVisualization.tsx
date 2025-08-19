@@ -52,9 +52,11 @@ const TransformationVisualization = () => {
             {/* AI Processing Icon with Rotation Animation */}
             <div className="relative">
               <img
-                src="/lovable-uploads/3d4f797c-d539-4468-b747-2b7a3ea40ae5.png"
+                src="/lovable-uploads/dc1d4a50-633d-4185-be5f-0ed9b9740b83.png?v=1"
                 alt="AI Processing Icon"
                 className="w-20 h-20 object-contain"
+                onLoad={() => console.info('AI icon loaded')}
+                onError={(e) => { console.error('AI icon failed to load', e); e.currentTarget.style.display = 'none'; }}
               />
             </div>
 
