@@ -49,28 +49,12 @@ const TransformationVisualization = () => {
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
           {/* AI Processing Container */}
           <div className="relative flex items-center justify-center w-32 h-32 bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-slate-600/50">
-            {/* Central AI Brain Icon with Pulse Animation */}
+            {/* AI Processing Icon with Rotation Animation */}
             <div className="relative">
-              <Brain 
-                className="w-16 h-16 text-blue-400 animate-pulse" 
-                style={{ animationDuration: '2s' }}
-              />
-              
-              {/* CPU Circuit Overlay */}
-              <Cpu 
-                className="absolute inset-0 w-16 h-16 text-green-400/60 animate-pulse" 
-                style={{ animationDuration: '3s', animationDelay: '1s' }}
-              />
-            </div>
-            
-            {/* Circuit Pattern Background */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-4 left-4 w-2 h-8 bg-blue-400/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
-              <div className="absolute top-6 left-2 w-8 h-2 bg-blue-400/60 animate-pulse" style={{ animationDelay: '1s' }} />
-              <div className="absolute bottom-4 right-4 w-2 h-8 bg-purple-400/60 animate-pulse" style={{ animationDelay: '1.5s' }} />
-              <div className="absolute bottom-6 right-2 w-8 h-2 bg-purple-400/60 animate-pulse" style={{ animationDelay: '2s' }} />
-              <div className="absolute top-1/2 left-8 w-4 h-0.5 bg-green-400/60 animate-pulse" style={{ animationDelay: '0.7s' }} />
-              <div className="absolute top-1/2 right-8 w-4 h-0.5 bg-green-400/60 animate-pulse" style={{ animationDelay: '1.3s' }} />
+              {/* Temporary placeholder - replace with your uploaded AI icon */}
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center animate-spin shadow-lg" style={{ animationDuration: '8s' }}>
+                <div className="text-white font-bold text-lg">AI</div>
+              </div>
             </div>
 
             {/* Processing Dots Around Icon */}
