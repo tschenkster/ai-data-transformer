@@ -52,16 +52,22 @@ const TransformationVisualization = () => {
             {/* AI Processing Icon with Rotation Animation */}
             <div className="relative">
               <img
-                src="/lovable-uploads/ca7f07d0-da56-4682-9c93-fcacb6db1f25.png?v=1"
+                src="/lovable-uploads/7a99ef42-a25d-41f8-ae6a-f6041e1cb4c5.png?v=2"
                 alt="AI Processing Icon"
                 className="w-20 h-20 object-contain"
-                onLoad={() => console.info('AI icon loaded')}
+                onLoad={(e) => console.info('AI icon loaded', (e.currentTarget as HTMLImageElement).src)}
                 onError={(e) => {
-                  console.error('AI icon failed to load', e);
                   const img = e.currentTarget as HTMLImageElement;
-                  if (!img.dataset.fallback) {
+                  const level = img.dataset.fallbackLevel ?? '0';
+                  console.error('AI icon failed to load', { src: img.src, level });
+                  if (level === '0') {
+                    console.warn('Falling back to previous AI icon');
+                    img.src = '/lovable-uploads/ca7f07d0-da56-4682-9c93-fcacb6db1f25.png?v=1';
+                    img.dataset.fallbackLevel = '1';
+                  } else if (level === '1') {
+                    console.warn('Falling back to placeholder icon');
                     img.src = '/placeholder.svg';
-                    img.dataset.fallback = 'true';
+                    img.dataset.fallbackLevel = '2';
                   }
                 }}
               />
