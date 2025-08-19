@@ -50,9 +50,9 @@ const TransformationVisualization = () => {
           {/* AI Processing Icon */}
           <div className="relative">
             <img
-              src="/lovable-uploads/9d08d6ac-1928-4d05-b708-3189d5ced825.png"
+              src="/lovable-uploads/6910ed20-7bc3-41f6-835f-60d9a3f21686.png"
               alt="AI Processing Icon"
-              className="w-32 h-32 object-contain animate-pulse"
+              className="w-40 h-40 object-contain animate-pulse"
             />
           </div>
           
