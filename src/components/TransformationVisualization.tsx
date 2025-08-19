@@ -48,31 +48,27 @@ const TransformationVisualization = () => {
         {/* AI Tech Center */}
         <div className="relative flex flex-col items-center justify-center space-y-4 lg:space-y-6">
           {/* AI Processing Container */}
-          <div className="relative flex items-center justify-center w-32 h-32 bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-slate-600/50">
+          <div className="relative flex items-center justify-center w-32 h-32 bg-slate-800/60 rounded-2xl border border-slate-600/50">
             {/* AI Processing Icon with Rotation Animation */}
             <div className="relative">
               <img
-                src="/lovable-uploads/c51d6cb6-f3e1-4af5-960a-a604649cea7e.png"
+                src="/lovable-uploads/3d4f797c-d539-4468-b747-2b7a3ea40ae5.png"
                 alt="AI Processing Icon"
                 className="w-20 h-20 object-contain"
               />
             </div>
 
             {/* Processing Dots Around Icon */}
-            <div className="absolute top-2 left-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-            <div className="absolute right-2 top-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-            <div className="absolute bottom-2 left-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.6s' }} />
-            <div className="absolute left-2 top-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.9s' }} />
           </div>
           
           {/* Blue Animated Arrow */}
           <div className="hidden lg:block">
-            <ArrowRight className="w-8 h-8 text-blue-500 animate-pulse" />
+            <ArrowRight className="w-8 h-8 text-blue-500" />
           </div>
           
           {/* Mobile Blue Arrow */}
           <div className="block lg:hidden rotate-90">
-            <ArrowRight className="w-8 h-8 text-blue-500 animate-pulse" />
+            <ArrowRight className="w-8 h-8 text-blue-500" />
           </div>
         </div>
 
