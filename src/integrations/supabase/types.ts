@@ -305,6 +305,13 @@ export type Database = {
             foreignKeyName: "report_line_items_report_structure_uuid_fkey"
             columns: ["report_structure_uuid"]
             isOneToOne: false
+            referencedRelation: "public_report_structures"
+            referencedColumns: ["report_structure_uuid"]
+          },
+          {
+            foreignKeyName: "report_line_items_report_structure_uuid_fkey"
+            columns: ["report_structure_uuid"]
+            isOneToOne: false
             referencedRelation: "report_structures"
             referencedColumns: ["report_structure_uuid"]
           },
@@ -516,7 +523,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_report_structures: {
+        Row: {
+          created_at: string | null
+          is_active: boolean | null
+          report_structure_name: string | null
+          report_structure_uuid: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          is_active?: boolean | null
+          report_structure_name?: string | null
+          report_structure_uuid?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          is_active?: boolean | null
+          report_structure_name?: string | null
+          report_structure_uuid?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize: {
@@ -530,6 +563,15 @@ export type Database = {
           user_first_name: string
           user_last_name: string
           user_uuid: string
+        }[]
+      }
+      get_user_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_users: number
+          pending_users: number
+          total_structures: number
+          user_count: number
         }[]
       }
       halfvec_avg: {
