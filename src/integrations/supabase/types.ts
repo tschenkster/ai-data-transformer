@@ -159,13 +159,6 @@ export type Database = {
             foreignKeyName: "report_line_items_report_structure_uuid_fkey"
             columns: ["report_structure_uuid"]
             isOneToOne: false
-            referencedRelation: "public_report_structures"
-            referencedColumns: ["report_structure_uuid"]
-          },
-          {
-            foreignKeyName: "report_line_items_report_structure_uuid_fkey"
-            columns: ["report_structure_uuid"]
-            isOneToOne: false
             referencedRelation: "report_structures"
             referencedColumns: ["report_structure_uuid"]
           },
@@ -377,33 +370,7 @@ export type Database = {
       }
     }
     Views: {
-      public_report_structures: {
-        Row: {
-          created_at: string | null
-          is_active: boolean | null
-          report_structure_name: string | null
-          report_structure_uuid: string | null
-          updated_at: string | null
-          version: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          is_active?: boolean | null
-          report_structure_name?: string | null
-          report_structure_uuid?: string | null
-          updated_at?: string | null
-          version?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          is_active?: boolean | null
-          report_structure_name?: string | null
-          report_structure_uuid?: string | null
-          updated_at?: string | null
-          version?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       check_rate_limit: {
