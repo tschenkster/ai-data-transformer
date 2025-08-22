@@ -21,7 +21,7 @@ import CoATranslator from "./pages/CoATranslator";
 import CoAMapper from "./pages/CoAMapper";
 import TrialBalanceImport from "./pages/TrialBalanceImport";
 import JournalImport from "./pages/JournalImport";
-import { MemoryUpload } from "./pages/MemoryUpload";
+import MemoryMaintenance from "./pages/MemoryMaintenance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -97,7 +97,7 @@ function AuthenticatedRoutes() {
             } />
             <Route path="/memory" element={
               <ProtectedRoute>
-                <MemoryUpload />
+                <MemoryMaintenance />
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/home" replace />} />

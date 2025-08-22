@@ -7,9 +7,6 @@ schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
-[functions.generate-embeddings]
-verify_jwt = true
-
 [functions.process-report-structure]
 verify_jwt = true
 
