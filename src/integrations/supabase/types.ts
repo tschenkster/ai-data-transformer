@@ -556,6 +556,28 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      check_rate_limit: {
+        Args: {
+          identifier: string
+          max_attempts?: number
+          operation_type: string
+          window_minutes?: number
+        }
+        Returns: boolean
+      }
+      detect_suspicious_activity: {
+        Args: { p_time_window_minutes?: number; p_user_id: string }
+        Returns: boolean
+      }
+      enhanced_log_security_event: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_identifier?: string
+          p_target_user_id?: string
+        }
+        Returns: string
+      }
       get_current_user_details: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -644,6 +666,10 @@ export type Database = {
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
+      }
+      log_failed_auth_attempt: {
+        Args: { p_email: string; p_ip_address?: unknown; p_user_agent?: string }
+        Returns: undefined
       }
       log_security_event: {
         Args: { p_action: string; p_details?: Json; p_target_user_id?: string }
