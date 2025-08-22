@@ -116,46 +116,9 @@ export default function ReportStructureManager() {
   };
 
   const checkStructuresWithMappings = async () => {
-    try {
-      // Get all report line items that have been used in mappings
-      const { data: mappingData, error: mappingError } = await supabase
-        .from('account_mappings')
-        .select('report_line_item_uuid')
-        .not('report_line_item_uuid', 'is', null);
-
-      if (mappingError) throw mappingError;
-
-      if (mappingData && mappingData.length > 0) {
-        const lineItemUuids = mappingData.map(m => m.report_line_item_uuid);
-        
-        // Get the report structure UUIDs for these line items
-        const { data: lineItemData, error: lineItemError } = await supabase
-          .from('report_line_items')
-          .select('report_structure_uuid')
-          .in('report_line_item_uuid', lineItemUuids);
-
-        if (lineItemError) throw lineItemError;
-
-        // Get structure IDs from UUIDs
-        const structureUuids = lineItemData?.map(item => item.report_structure_uuid).filter(Boolean) || [];
-        
-        if (structureUuids.length > 0) {
-          const { data: structureData, error: structureError } = await supabase
-            .from('report_structures')
-            .select('report_structure_id')
-            .in('report_structure_uuid', structureUuids);
-
-          if (structureError) throw structureError;
-
-          const structureIds = new Set(
-            structureData?.map(item => item.report_structure_id).filter(Boolean) || []
-          );
-          setStructuresWithMappings(structureIds);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking structures with mappings:', error);
-    }
+    // Legacy CoA mapping tables have been removed
+    // No structures have mappings anymore since the old mapping system is deprecated
+    setStructuresWithMappings(new Set());
   };
 
   useEffect(() => {
