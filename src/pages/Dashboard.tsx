@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedUserProfile } from '@/components/EnhancedUserProfile';
 import { EnhancedReportStructureCard } from '@/components/EnhancedReportStructureCard';
+import { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, Users, FileText, Activity } from 'lucide-react';
@@ -164,6 +165,14 @@ export default function Dashboard() {
             structureUuid={activeStructureUuid}
             className="max-w-2xl"
           />
+        </div>
+      )}
+
+      {/* Workflow Status Manager Section - New ENUM Features */}
+      {isAdmin && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Workflow Management</h2>
+          <WorkflowStatusManager />
         </div>
       )}
     </div>

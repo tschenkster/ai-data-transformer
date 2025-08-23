@@ -29,9 +29,7 @@ export type Database = {
           session_id: string
           source_language: string | null
           status: string
-          status_enum:
-            | Database["public"]["Enums"]["translation_session_status"]
-            | null
+          status_enum: Database["public"]["Enums"]["translation_session_status"]
           target_language: string
           total_accounts: number
           updated_at: string
@@ -52,9 +50,7 @@ export type Database = {
           session_id?: string
           source_language?: string | null
           status?: string
-          status_enum?:
-            | Database["public"]["Enums"]["translation_session_status"]
-            | null
+          status_enum?: Database["public"]["Enums"]["translation_session_status"]
           target_language: string
           total_accounts: number
           updated_at?: string
@@ -75,9 +71,7 @@ export type Database = {
           session_id?: string
           source_language?: string | null
           status?: string
-          status_enum?:
-            | Database["public"]["Enums"]["translation_session_status"]
-            | null
+          status_enum?: Database["public"]["Enums"]["translation_session_status"]
           target_language?: string
           total_accounts?: number
           updated_at?: string
@@ -311,9 +305,7 @@ export type Database = {
           description: string | null
           imported_structure_id: string | null
           is_active: boolean
-          lifecycle_status:
-            | Database["public"]["Enums"]["report_structure_lifecycle_status"]
-            | null
+          lifecycle_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
           metadata: Json | null
           name_of_import_file: string | null
           report_structure_id: number
@@ -333,9 +325,7 @@ export type Database = {
           description?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
-          lifecycle_status?:
-            | Database["public"]["Enums"]["report_structure_lifecycle_status"]
-            | null
+          lifecycle_status?: Database["public"]["Enums"]["report_structure_lifecycle_status"]
           metadata?: Json | null
           name_of_import_file?: string | null
           report_structure_id?: never
@@ -355,9 +345,7 @@ export type Database = {
           description?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
-          lifecycle_status?:
-            | Database["public"]["Enums"]["report_structure_lifecycle_status"]
-            | null
+          lifecycle_status?: Database["public"]["Enums"]["report_structure_lifecycle_status"]
           metadata?: Json | null
           name_of_import_file?: string | null
           report_structure_id?: never
@@ -446,7 +434,7 @@ export type Database = {
           password_changed_at: string | null
           phone_number: string | null
           status: string
-          status_enum: Database["public"]["Enums"]["user_account_status"] | null
+          status_enum: Database["public"]["Enums"]["user_account_status"]
           supabase_user_uuid: string
           timezone: string | null
           updated_at: string | null
@@ -467,9 +455,7 @@ export type Database = {
           password_changed_at?: string | null
           phone_number?: string | null
           status?: string
-          status_enum?:
-            | Database["public"]["Enums"]["user_account_status"]
-            | null
+          status_enum?: Database["public"]["Enums"]["user_account_status"]
           supabase_user_uuid: string
           timezone?: string | null
           updated_at?: string | null
@@ -490,9 +476,7 @@ export type Database = {
           password_changed_at?: string | null
           phone_number?: string | null
           status?: string
-          status_enum?:
-            | Database["public"]["Enums"]["user_account_status"]
-            | null
+          status_enum?: Database["public"]["Enums"]["user_account_status"]
           supabase_user_uuid?: string
           timezone?: string | null
           updated_at?: string | null
@@ -606,6 +590,35 @@ export type Database = {
           version: number
         }[]
       }
+      get_report_structures_by_lifecycle_status: {
+        Args: {
+          p_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
+        }
+        Returns: {
+          created_at: string
+          is_active: boolean
+          lifecycle_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
+          report_structure_name: string
+          report_structure_uuid: string
+          updated_at: string
+          version: number
+        }[]
+      }
+      get_translation_sessions_by_status: {
+        Args: {
+          p_status: Database["public"]["Enums"]["translation_session_status"]
+        }
+        Returns: {
+          coa_translation_session_uuid: string
+          created_at: string
+          filename: string
+          processed_accounts: number
+          progress_percentage: number
+          status_enum: Database["public"]["Enums"]["translation_session_status"]
+          total_accounts: number
+          updated_at: string
+        }[]
+      }
       get_user_account_by_supabase_uuid: {
         Args: { p_supabase_uuid: string }
         Returns: {
@@ -641,6 +654,24 @@ export type Database = {
           status: string
           user_account_uuid: string
         }[]
+      }
+      get_users_by_status: {
+        Args: { p_status: Database["public"]["Enums"]["user_account_status"] }
+        Returns: {
+          created_at: string
+          email: string
+          first_name: string
+          last_name: string
+          status_enum: Database["public"]["Enums"]["user_account_status"]
+          updated_at: string
+          user_account_uuid: string
+        }[]
+      }
+      get_valid_user_account_status_transitions: {
+        Args: {
+          p_current_status: Database["public"]["Enums"]["user_account_status"]
+        }
+        Returns: Database["public"]["Enums"]["user_account_status"][]
       }
       has_role: {
         Args: {
