@@ -29,6 +29,9 @@ export type Database = {
           session_id: string
           source_language: string | null
           status: string
+          status_enum:
+            | Database["public"]["Enums"]["translation_session_status"]
+            | null
           target_language: string
           total_accounts: number
           updated_at: string
@@ -49,6 +52,9 @@ export type Database = {
           session_id?: string
           source_language?: string | null
           status?: string
+          status_enum?:
+            | Database["public"]["Enums"]["translation_session_status"]
+            | null
           target_language: string
           total_accounts: number
           updated_at?: string
@@ -69,6 +75,9 @@ export type Database = {
           session_id?: string
           source_language?: string | null
           status?: string
+          status_enum?:
+            | Database["public"]["Enums"]["translation_session_status"]
+            | null
           target_language?: string
           total_accounts?: number
           updated_at?: string
@@ -302,6 +311,9 @@ export type Database = {
           description: string | null
           imported_structure_id: string | null
           is_active: boolean
+          lifecycle_status:
+            | Database["public"]["Enums"]["report_structure_lifecycle_status"]
+            | null
           metadata: Json | null
           name_of_import_file: string | null
           report_structure_id: number
@@ -321,6 +333,9 @@ export type Database = {
           description?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
+          lifecycle_status?:
+            | Database["public"]["Enums"]["report_structure_lifecycle_status"]
+            | null
           metadata?: Json | null
           name_of_import_file?: string | null
           report_structure_id?: never
@@ -340,6 +355,9 @@ export type Database = {
           description?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
+          lifecycle_status?:
+            | Database["public"]["Enums"]["report_structure_lifecycle_status"]
+            | null
           metadata?: Json | null
           name_of_import_file?: string | null
           report_structure_id?: never
@@ -428,6 +446,7 @@ export type Database = {
           password_changed_at: string | null
           phone_number: string | null
           status: string
+          status_enum: Database["public"]["Enums"]["user_account_status"] | null
           supabase_user_uuid: string
           timezone: string | null
           updated_at: string | null
@@ -448,6 +467,9 @@ export type Database = {
           password_changed_at?: string | null
           phone_number?: string | null
           status?: string
+          status_enum?:
+            | Database["public"]["Enums"]["user_account_status"]
+            | null
           supabase_user_uuid: string
           timezone?: string | null
           updated_at?: string | null
@@ -468,6 +490,9 @@ export type Database = {
           password_changed_at?: string | null
           phone_number?: string | null
           status?: string
+          status_enum?:
+            | Database["public"]["Enums"]["user_account_status"]
+            | null
           supabase_user_uuid?: string
           timezone?: string | null
           updated_at?: string | null
@@ -681,6 +706,25 @@ export type Database = {
     Enums: {
       app_role: "user" | "admin" | "super_admin"
       change_action_type: "create" | "delete" | "rename" | "move"
+      report_structure_lifecycle_status:
+        | "draft"
+        | "active"
+        | "inactive"
+        | "archived"
+        | "deprecated"
+      translation_session_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "cancelled"
+        | "paused"
+      user_account_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "suspended"
+        | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -810,6 +854,28 @@ export const Constants = {
     Enums: {
       app_role: ["user", "admin", "super_admin"],
       change_action_type: ["create", "delete", "rename", "move"],
+      report_structure_lifecycle_status: [
+        "draft",
+        "active",
+        "inactive",
+        "archived",
+        "deprecated",
+      ],
+      translation_session_status: [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "cancelled",
+        "paused",
+      ],
+      user_account_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "suspended",
+        "archived",
+      ],
     },
   },
 } as const
