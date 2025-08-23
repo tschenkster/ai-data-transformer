@@ -164,49 +164,7 @@ export type Database = {
           },
         ]
       }
-      report_structures: {
-        Row: {
-          created_at: string
-          created_by_supabase_user_uuid: string
-          created_by_user_name: string
-          imported_structure_id: string | null
-          is_active: boolean
-          name_of_import_file: string | null
-          report_structure_id: number
-          report_structure_name: string
-          report_structure_uuid: string
-          updated_at: string
-          version: number
-        }
-        Insert: {
-          created_at?: string
-          created_by_supabase_user_uuid: string
-          created_by_user_name: string
-          imported_structure_id?: string | null
-          is_active?: boolean
-          name_of_import_file?: string | null
-          report_structure_id?: never
-          report_structure_name: string
-          report_structure_uuid?: string
-          updated_at?: string
-          version?: number
-        }
-        Update: {
-          created_at?: string
-          created_by_supabase_user_uuid?: string
-          created_by_user_name?: string
-          imported_structure_id?: string | null
-          is_active?: boolean
-          name_of_import_file?: string | null
-          report_structure_id?: never
-          report_structure_name?: string
-          report_structure_uuid?: string
-          updated_at?: string
-          version?: number
-        }
-        Relationships: []
-      }
-      report_structures_change_log: {
+      report_structure_change_logs: {
         Row: {
           action_type: Database["public"]["Enums"]["change_action_type"]
           change_id: number
@@ -272,7 +230,49 @@ export type Database = {
         }
         Relationships: []
       }
-      security_audit_log: {
+      report_structures: {
+        Row: {
+          created_at: string
+          created_by_supabase_user_uuid: string
+          created_by_user_name: string
+          imported_structure_id: string | null
+          is_active: boolean
+          name_of_import_file: string | null
+          report_structure_id: number
+          report_structure_name: string
+          report_structure_uuid: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by_supabase_user_uuid: string
+          created_by_user_name: string
+          imported_structure_id?: string | null
+          is_active?: boolean
+          name_of_import_file?: string | null
+          report_structure_id?: never
+          report_structure_name: string
+          report_structure_uuid?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by_supabase_user_uuid?: string
+          created_by_user_name?: string
+          imported_structure_id?: string | null
+          is_active?: boolean
+          name_of_import_file?: string | null
+          report_structure_id?: never
+          report_structure_name?: string
+          report_structure_uuid?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      security_audit_logs: {
         Row: {
           action: string
           created_at: string
