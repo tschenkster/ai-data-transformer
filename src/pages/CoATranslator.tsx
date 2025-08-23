@@ -99,17 +99,42 @@ export default function CoATranslator() {
       setDetectedLanguage(result.overallLanguage);
       setSourceLanguage(result.overallLanguage);
       
-      toast({
-        title: "Language detected",
-        description: `Detected source language: ${languages.find(l => l.code === result.overallLanguage)?.name || result.overallLanguage}`,
-      });
+      // Show appropriate toast based on detection method
+      if (result.fallback) {
+        toast({
+          title: "Language detected (local)",
+          description: `Detected source language: ${languages.find(l => l.code === result.overallLanguage)?.name || result.overallLanguage}. AI service unavailable, using pattern matching.`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Language detected",
+          description: `Detected source language: ${languages.find(l => l.code === result.overallLanguage)?.name || result.overallLanguage}`,
+        });
+      }
     } catch (error) {
       console.error('Language detection error:', error);
-      toast({
-        title: "Language detection failed",
-        description: "Please select the source language manually",
-        variant: "destructive",
-      });
+      
+      // Import and use local detection as final fallback
+      try {
+        const { analyzeAccountDescriptions } = await import('@/utils/languageDetection');
+        const localResult = analyzeAccountDescriptions(data.slice(0, 10));
+        
+        setDetectedLanguage(localResult.overallLanguage);
+        setSourceLanguage(localResult.overallLanguage);
+        
+        toast({
+          title: "Language detected (fallback)",
+          description: `Detected source language: ${languages.find(l => l.code === localResult.overallLanguage)?.name || localResult.overallLanguage}. Please verify this is correct.`,
+        });
+      } catch (fallbackError) {
+        console.error('Local detection also failed:', fallbackError);
+        toast({
+          title: "Language detection failed",
+          description: "Please select the source language manually",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsDetectingLanguage(false);
     }
