@@ -557,6 +557,30 @@ export type Database = {
           user_uuid: string
         }[]
       }
+      get_enhanced_user_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_users: number
+          pending_users: number
+          recent_logins: number
+          total_line_items: number
+          total_structures: number
+          user_count: number
+        }[]
+      }
+      get_report_structure_with_creator: {
+        Args: { p_structure_uuid: string }
+        Returns: {
+          created_at: string
+          creator_email: string
+          creator_name: string
+          is_active: boolean
+          line_item_count: number
+          report_structure_name: string
+          report_structure_uuid: string
+          version: number
+        }[]
+      }
       get_user_account_by_supabase_uuid: {
         Args: { p_supabase_uuid: string }
         Returns: {
@@ -578,6 +602,19 @@ export type Database = {
           pending_users: number
           total_structures: number
           user_count: number
+        }[]
+      }
+      get_user_with_roles: {
+        Args: { p_supabase_user_uuid: string }
+        Returns: {
+          email: string
+          first_name: string
+          is_admin: boolean
+          is_super_admin: boolean
+          last_name: string
+          roles: string[]
+          status: string
+          user_account_uuid: string
         }[]
       }
       has_role: {
