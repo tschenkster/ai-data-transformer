@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SecurityAuditEntry {
-  id: string;
+  security_audit_log_uuid: string;
   user_id: string;
   action: string;
   target_user_id?: string | null;
@@ -25,7 +25,7 @@ export function SecurityAuditLog() {
   const fetchAuditLog = async () => {
     try {
       const { data, error } = await supabase
-        .from('security_audit_log')
+        .from('security_audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
@@ -116,7 +116,7 @@ export function SecurityAuditLog() {
                 </TableRow>
               ) : (
                 auditLog.map((entry) => (
-                  <TableRow key={entry.id}>
+                  <TableRow key={entry.security_audit_log_uuid}>
                     <TableCell className="text-sm">
                       {formatDate(entry.created_at)}
                     </TableCell>

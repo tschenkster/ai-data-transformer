@@ -18,7 +18,7 @@ interface UserAccount {
 }
 
 interface UserRole {
-  id: string;
+  user_role_uuid: string;
   user_id: string;
   role: 'user' | 'admin' | 'super_admin';
   assigned_by?: string;

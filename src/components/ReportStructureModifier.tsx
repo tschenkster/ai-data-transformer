@@ -446,7 +446,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     setLoadingChanges(true);
     try {
       const { data, error } = await supabase
-        .from('report_structures_change_log')
+        .from('report_structure_change_logs')
         .select('*')
         .eq('structure_uuid', structureUuid)
         .eq('is_undone', false)
@@ -905,7 +905,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       }
 
       const { error: logError } = await supabase
-        .from('report_structures_change_log')
+        .from('report_structure_change_logs')
         .update({ 
           is_undone: true, 
           undone_at: new Date().toISOString() 
