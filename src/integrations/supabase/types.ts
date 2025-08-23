@@ -16,10 +16,10 @@ export type Database = {
     Tables: {
       coa_translation_sessions: {
         Row: {
+          coa_translation_session_uuid: string
           completed_at: string | null
           created_at: string
           filename: string
-          id: string
           processed_accounts: number | null
           session_data: Json
           session_id: string
@@ -31,10 +31,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          coa_translation_session_uuid?: string
           completed_at?: string | null
           created_at?: string
           filename: string
-          id?: string
           processed_accounts?: number | null
           session_data?: Json
           session_id?: string
@@ -46,10 +46,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          coa_translation_session_uuid?: string
           completed_at?: string | null
           created_at?: string
           filename?: string
-          id?: string
           processed_accounts?: number | null
           session_data?: Json
           session_id?: string
@@ -277,8 +277,8 @@ export type Database = {
           action: string
           created_at: string
           details: Json | null
-          id: string
           ip_address: unknown | null
+          security_audit_log_uuid: string
           target_user_id: string | null
           user_agent: string | null
           user_id: string | null
@@ -287,8 +287,8 @@ export type Database = {
           action: string
           created_at?: string
           details?: Json | null
-          id?: string
           ip_address?: unknown | null
+          security_audit_log_uuid?: string
           target_user_id?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -297,8 +297,8 @@ export type Database = {
           action?: string
           created_at?: string
           details?: Json | null
-          id?: string
           ip_address?: unknown | null
+          security_audit_log_uuid?: string
           target_user_id?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -348,23 +348,23 @@ export type Database = {
         Row: {
           assigned_at: string
           assigned_by: string | null
-          id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
+          user_role_uuid: string
         }
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
-          id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
+          user_role_uuid?: string
         }
         Update: {
           assigned_at?: string
           assigned_by?: string | null
-          id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+          user_role_uuid?: string
         }
         Relationships: []
       }
