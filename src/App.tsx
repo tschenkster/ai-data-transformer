@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import ReportStructures from "./pages/ReportStructures";
 import CoATranslator from "./pages/CoATranslator";
@@ -63,6 +64,11 @@ function AuthenticatedRoutes() {
             <Route path="/home" element={
               <ProtectedRoute>
                 <Home />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
               </ProtectedRoute>
             } />
             <Route path="/admin" element={

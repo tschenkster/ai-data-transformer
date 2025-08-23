@@ -38,6 +38,22 @@ export default function Admin() {
 
   const fetchUserAccounts = async () => {
     try {
+      // Fetch enhanced user summary using new function
+      const { data: summaryData } = await supabase
+        .rpc('get_enhanced_user_summary');
+      
+      if (summaryData && summaryData.length > 0) {
+        const summary = summaryData[0];
+        console.log('Enhanced user summary:', summary);
+        // Update stats with enhanced data
+        setStats({
+          total: Number(summary.user_count || 0),
+          pending: Number(summary.pending_users || 0),
+          approved: Number(summary.active_users || 0),
+          rejected: 0 // We don't track rejected users separately yet
+        });
+      }
+
       const { data, error } = await supabase
         .from('user_accounts')
         .select('*')
@@ -47,17 +63,19 @@ export default function Admin() {
 
       setUserAccounts((data || []) as UserAccount[]);
       
-      // Calculate stats
-      const stats = data?.reduce(
-        (acc, userAccount) => {
-          acc.total++;
-          acc[userAccount.status]++;
-          return acc;
-        },
-        { total: 0, pending: 0, approved: 0, rejected: 0 }
-      ) || { total: 0, pending: 0, approved: 0, rejected: 0 };
-      
-      setStats(stats);
+      // Fallback stats calculation if enhanced function didn't work
+      if (!summaryData || summaryData.length === 0) {
+        const stats = data?.reduce(
+          (acc, userAccount) => {
+            acc.total++;
+            acc[userAccount.status]++;
+            return acc;
+          },
+          { total: 0, pending: 0, approved: 0, rejected: 0 }
+        ) || { total: 0, pending: 0, approved: 0, rejected: 0 };
+        
+        setStats(stats);
+      }
     } catch (error) {
       console.error('Error fetching user accounts:', error);
       toast({
