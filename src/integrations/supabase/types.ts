@@ -719,6 +719,14 @@ export type Database = {
         }
         Returns: Json
       }
+      transition_user_account_status: {
+        Args: {
+          p_new_status: Database["public"]["Enums"]["user_account_status"]
+          p_reason?: string
+          p_user_account_uuid: string
+        }
+        Returns: boolean
+      }
       update_sort_orders_transaction: {
         Args: { p_structure_uuid: string; p_updates: Json }
         Returns: Json
