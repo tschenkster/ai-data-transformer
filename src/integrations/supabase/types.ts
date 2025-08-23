@@ -32,6 +32,7 @@ export type Database = {
           target_language: string
           total_accounts: number
           updated_at: string
+          user_account_uuid: string | null
           user_id: string
         }
         Insert: {
@@ -51,6 +52,7 @@ export type Database = {
           target_language: string
           total_accounts: number
           updated_at?: string
+          user_account_uuid?: string | null
           user_id: string
         }
         Update: {
@@ -70,6 +72,7 @@ export type Database = {
           target_language?: string
           total_accounts?: number
           updated_at?: string
+          user_account_uuid?: string | null
           user_id?: string
         }
         Relationships: []
@@ -79,6 +82,7 @@ export type Database = {
           comment: string | null
           created_at: string | null
           created_by: string | null
+          created_by_user_account_uuid: string | null
           data_source: string | null
           description_of_leaf: string | null
           display: boolean | null
@@ -108,11 +112,13 @@ export type Database = {
           tags: string[] | null
           updated_at: string | null
           updated_by: string | null
+          updated_by_user_account_uuid: string | null
         }
         Insert: {
           comment?: string | null
           created_at?: string | null
           created_by?: string | null
+          created_by_user_account_uuid?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
@@ -142,11 +148,13 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           updated_by?: string | null
+          updated_by_user_account_uuid?: string | null
         }
         Update: {
           comment?: string | null
           created_at?: string | null
           created_by?: string | null
+          created_by_user_account_uuid?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
@@ -176,6 +184,7 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           updated_by?: string | null
+          updated_by_user_account_uuid?: string | null
         }
         Relationships: [
           {
@@ -264,6 +273,7 @@ export type Database = {
         Row: {
           archived_at: string | null
           archived_by: string | null
+          archived_by_user_account_uuid: string | null
           created_at: string
           created_by_supabase_user_uuid: string
           created_by_user_name: string
@@ -282,6 +292,7 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           archived_by?: string | null
+          archived_by_user_account_uuid?: string | null
           created_at?: string
           created_by_supabase_user_uuid: string
           created_by_user_name: string
@@ -300,6 +311,7 @@ export type Database = {
         Update: {
           archived_at?: string | null
           archived_by?: string | null
+          archived_by_user_account_uuid?: string | null
           created_at?: string
           created_by_supabase_user_uuid?: string
           created_by_user_name?: string
@@ -324,7 +336,9 @@ export type Database = {
           details: Json | null
           ip_address: unknown | null
           security_audit_log_uuid: string
+          target_user_account_uuid: string | null
           target_user_id: string | null
+          user_account_uuid: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -334,7 +348,9 @@ export type Database = {
           details?: Json | null
           ip_address?: unknown | null
           security_audit_log_uuid?: string
+          target_user_account_uuid?: string | null
           target_user_id?: string | null
+          user_account_uuid?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -344,7 +360,9 @@ export type Database = {
           details?: Json | null
           ip_address?: unknown | null
           security_audit_log_uuid?: string
+          target_user_account_uuid?: string | null
           target_user_id?: string | null
+          user_account_uuid?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -417,21 +435,27 @@ export type Database = {
         Row: {
           assigned_at: string
           assigned_by: string | null
+          assigned_by_user_account_uuid: string | null
           role: Database["public"]["Enums"]["app_role"]
+          user_account_uuid: string | null
           user_id: string
           user_role_uuid: string
         }
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
+          assigned_by_user_account_uuid?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          user_account_uuid?: string | null
           user_id: string
           user_role_uuid?: string
         }
         Update: {
           assigned_at?: string
           assigned_by?: string | null
+          assigned_by_user_account_uuid?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          user_account_uuid?: string | null
           user_id?: string
           user_role_uuid?: string
         }
