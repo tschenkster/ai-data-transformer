@@ -19,8 +19,12 @@ export type Database = {
           coa_translation_session_uuid: string
           completed_at: string | null
           created_at: string
+          error_details: Json | null
+          estimated_completion_at: string | null
           filename: string
           processed_accounts: number | null
+          progress_percentage: number | null
+          retry_count: number | null
           session_data: Json
           session_id: string
           source_language: string | null
@@ -34,8 +38,12 @@ export type Database = {
           coa_translation_session_uuid?: string
           completed_at?: string | null
           created_at?: string
+          error_details?: Json | null
+          estimated_completion_at?: string | null
           filename: string
           processed_accounts?: number | null
+          progress_percentage?: number | null
+          retry_count?: number | null
           session_data?: Json
           session_id?: string
           source_language?: string | null
@@ -49,8 +57,12 @@ export type Database = {
           coa_translation_session_uuid?: string
           completed_at?: string | null
           created_at?: string
+          error_details?: Json | null
+          estimated_completion_at?: string | null
           filename?: string
           processed_accounts?: number | null
+          progress_percentage?: number | null
+          retry_count?: number | null
           session_data?: Json
           session_id?: string
           source_language?: string | null
@@ -65,6 +77,8 @@ export type Database = {
       report_line_items: {
         Row: {
           comment: string | null
+          created_at: string | null
+          created_by: string | null
           data_source: string | null
           description_of_leaf: string | null
           display: boolean | null
@@ -80,6 +94,7 @@ export type Database = {
           level_6_line_item_description: string | null
           level_7_line_item_description: string | null
           line_item_type: string | null
+          metadata: Json | null
           parent_report_line_item_key: string | null
           parent_report_line_item_uuid: string | null
           report_line_item_description: string | null
@@ -90,9 +105,14 @@ export type Database = {
           report_structure_name: string
           report_structure_uuid: string
           sort_order: number
+          tags: string[] | null
+          updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           comment?: string | null
+          created_at?: string | null
+          created_by?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
@@ -108,6 +128,7 @@ export type Database = {
           level_6_line_item_description?: string | null
           level_7_line_item_description?: string | null
           line_item_type?: string | null
+          metadata?: Json | null
           parent_report_line_item_key?: string | null
           parent_report_line_item_uuid?: string | null
           report_line_item_description?: string | null
@@ -118,9 +139,14 @@ export type Database = {
           report_structure_name: string
           report_structure_uuid: string
           sort_order?: number
+          tags?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           comment?: string | null
+          created_at?: string | null
+          created_by?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
@@ -136,6 +162,7 @@ export type Database = {
           level_6_line_item_description?: string | null
           level_7_line_item_description?: string | null
           line_item_type?: string | null
+          metadata?: Json | null
           parent_report_line_item_key?: string | null
           parent_report_line_item_uuid?: string | null
           report_line_item_description?: string | null
@@ -146,6 +173,9 @@ export type Database = {
           report_structure_name?: string
           report_structure_uuid?: string
           sort_order?: number
+          tags?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -232,41 +262,56 @@ export type Database = {
       }
       report_structures: {
         Row: {
+          archived_at: string | null
+          archived_by: string | null
           created_at: string
           created_by_supabase_user_uuid: string
           created_by_user_name: string
+          description: string | null
           imported_structure_id: string | null
           is_active: boolean
+          metadata: Json | null
           name_of_import_file: string | null
           report_structure_id: number
           report_structure_name: string
           report_structure_uuid: string
+          tags: string[] | null
           updated_at: string
           version: number
         }
         Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
           created_at?: string
           created_by_supabase_user_uuid: string
           created_by_user_name: string
+          description?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
+          metadata?: Json | null
           name_of_import_file?: string | null
           report_structure_id?: never
           report_structure_name: string
           report_structure_uuid?: string
+          tags?: string[] | null
           updated_at?: string
           version?: number
         }
         Update: {
+          archived_at?: string | null
+          archived_by?: string | null
           created_at?: string
           created_by_supabase_user_uuid?: string
           created_by_user_name?: string
+          description?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
+          metadata?: Json | null
           name_of_import_file?: string | null
           report_structure_id?: never
           report_structure_name?: string
           report_structure_uuid?: string
+          tags?: string[] | null
           updated_at?: string
           version?: number
         }
@@ -311,10 +356,18 @@ export type Database = {
           approved_by: string | null
           created_at: string
           email: string
+          failed_login_attempts: number | null
           first_name: string | null
+          last_login_at: string | null
           last_name: string | null
+          locale: string | null
+          locked_until: string | null
+          password_changed_at: string | null
+          phone_number: string | null
           status: string
           supabase_user_uuid: string
+          timezone: string | null
+          updated_at: string | null
           user_account_id: number
           user_account_uuid: string
         }
@@ -323,10 +376,18 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           email: string
+          failed_login_attempts?: number | null
           first_name?: string | null
+          last_login_at?: string | null
           last_name?: string | null
+          locale?: string | null
+          locked_until?: string | null
+          password_changed_at?: string | null
+          phone_number?: string | null
           status?: string
           supabase_user_uuid: string
+          timezone?: string | null
+          updated_at?: string | null
           user_account_id?: number
           user_account_uuid?: string
         }
@@ -335,10 +396,18 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           email?: string
+          failed_login_attempts?: number | null
           first_name?: string | null
+          last_login_at?: string | null
           last_name?: string | null
+          locale?: string | null
+          locked_until?: string | null
+          password_changed_at?: string | null
+          phone_number?: string | null
           status?: string
           supabase_user_uuid?: string
+          timezone?: string | null
+          updated_at?: string | null
           user_account_id?: number
           user_account_uuid?: string
         }
