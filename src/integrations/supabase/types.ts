@@ -557,6 +557,20 @@ export type Database = {
           user_uuid: string
         }[]
       }
+      get_user_account_by_supabase_uuid: {
+        Args: { p_supabase_uuid: string }
+        Returns: {
+          created_at: string
+          email: string
+          failed_login_attempts: number
+          first_name: string
+          last_login_at: string
+          last_name: string
+          status: string
+          user_account_id: number
+          user_account_uuid: string
+        }[]
+      }
       get_user_summary: {
         Args: Record<PropertyKey, never>
         Returns: {
