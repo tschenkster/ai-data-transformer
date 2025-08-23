@@ -661,6 +661,27 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_valid_report_structure_lifecycle_transition: {
+        Args: {
+          p_from_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
+          p_to_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
+        }
+        Returns: boolean
+      }
+      is_valid_translation_session_status_transition: {
+        Args: {
+          p_from_status: Database["public"]["Enums"]["translation_session_status"]
+          p_to_status: Database["public"]["Enums"]["translation_session_status"]
+        }
+        Returns: boolean
+      }
+      is_valid_user_account_status_transition: {
+        Args: {
+          p_from_status: Database["public"]["Enums"]["user_account_status"]
+          p_to_status: Database["public"]["Enums"]["user_account_status"]
+        }
+        Returns: boolean
+      }
       log_failed_auth_attempt: {
         Args: { p_email: string; p_ip_address?: unknown; p_user_agent?: string }
         Returns: undefined
