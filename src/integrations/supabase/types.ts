@@ -75,7 +75,15 @@ export type Database = {
           user_account_uuid?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_coa_translation_sessions_user_account"
+            columns: ["user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+        ]
       }
       report_line_items: {
         Row: {
@@ -187,6 +195,20 @@ export type Database = {
           updated_by_user_account_uuid?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_report_line_items_created_by_user_account"
+            columns: ["created_by_user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+          {
+            foreignKeyName: "fk_report_line_items_updated_by_user_account"
+            columns: ["updated_by_user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
           {
             foreignKeyName: "report_line_items_report_structure_id_fkey"
             columns: ["report_structure_id"]
@@ -327,7 +349,15 @@ export type Database = {
           updated_at?: string
           version?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_report_structures_archived_by_user_account"
+            columns: ["archived_by_user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+        ]
       }
       security_audit_logs: {
         Row: {
@@ -366,7 +396,22 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_security_audit_logs_target_user_account"
+            columns: ["target_user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+          {
+            foreignKeyName: "fk_security_audit_logs_user_account"
+            columns: ["user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+        ]
       }
       user_accounts: {
         Row: {
@@ -459,7 +504,22 @@ export type Database = {
           user_id?: string
           user_role_uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_roles_assigned_by_user_account"
+            columns: ["assigned_by_user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_roles_user_account"
+            columns: ["user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_account_uuid"]
+          },
+        ]
       }
     }
     Views: {
