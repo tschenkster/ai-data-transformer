@@ -957,6 +957,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_entity_admin_for_scope: {
+        Args: {
+          p_entity_group_uuid?: string
+          p_entity_uuid?: string
+          p_user_uuid: string
+        }
+        Returns: boolean
+      }
       is_super_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
