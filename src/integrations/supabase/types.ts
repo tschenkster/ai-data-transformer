@@ -726,7 +726,7 @@ export type Database = {
           assigned_at: string
           assigned_by: string | null
           assigned_by_user_account_uuid: string | null
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["app_role"] | null
           user_id: string
           user_role_id: number
           user_role_uuid: string
@@ -736,7 +736,7 @@ export type Database = {
           assigned_at?: string
           assigned_by?: string | null
           assigned_by_user_account_uuid?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["app_role"] | null
           user_id: string
           user_role_id?: never
           user_role_uuid?: string
@@ -746,7 +746,7 @@ export type Database = {
           assigned_at?: string
           assigned_by?: string | null
           assigned_by_user_account_uuid?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["app_role"] | null
           user_id?: string
           user_role_id?: never
           user_role_uuid?: string
@@ -1109,7 +1109,7 @@ export type Database = {
     }
     Enums: {
       access_level: "viewer" | "entity_admin"
-      app_role: "user" | "admin" | "super_admin" | "viewer" | "entity_admin"
+      app_role: "super_admin" | "entity_admin" | "viewer"
       change_action_type: "create" | "delete" | "rename" | "move"
       report_structure_lifecycle_status:
         | "draft"
@@ -1258,7 +1258,7 @@ export const Constants = {
   public: {
     Enums: {
       access_level: ["viewer", "entity_admin"],
-      app_role: ["user", "admin", "super_admin", "viewer", "entity_admin"],
+      app_role: ["super_admin", "entity_admin", "viewer"],
       change_action_type: ["create", "delete", "rename", "move"],
       report_structure_lifecycle_status: [
         "draft",

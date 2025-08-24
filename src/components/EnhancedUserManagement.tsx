@@ -113,7 +113,7 @@ export function EnhancedUserManagement() {
     email: '',
     firstName: '',
     lastName: '',
-    role: 'user' as 'user' | 'admin' | 'super_admin'
+    role: 'viewer' as 'viewer' | 'entity_admin' | 'super_admin'
   });
   
   const [accessForm, setAccessForm] = useState({
@@ -127,7 +127,7 @@ export function EnhancedUserManagement() {
     userUuid: '',
     firstName: '',
     lastName: '',
-    role: 'user' as 'user' | 'admin' | 'super_admin'
+    role: 'viewer' as 'viewer' | 'entity_admin' | 'super_admin'
   });
   
   // Filter states
@@ -257,7 +257,7 @@ export function EnhancedUserManagement() {
       });
 
       setIsInviteDialogOpen(false);
-      setInviteForm({ email: '', firstName: '', lastName: '', role: 'user' });
+      setInviteForm({ email: '', firstName: '', lastName: '', role: 'viewer' });
       fetchData();
     } catch (error: any) {
       toast({
@@ -449,14 +449,14 @@ export function EnhancedUserManagement() {
   };
 
   const getUserRole = (userUuid: string) => {
-    const role = userRoles.find(r => r.user_uuid === userUuid || r.user_id === userUuid)?.role || 'user';
+    const role = userRoles.find(r => r.user_uuid === userUuid || r.user_id === userUuid)?.role || 'viewer';
     switch (role) {
       case 'super_admin':
         return <Badge variant="outline" className="text-purple-600"><Crown className="w-3 h-3 mr-1" />Super Admin</Badge>;
-      case 'admin':
-        return <Badge variant="outline" className="text-blue-600"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
+      case 'entity_admin':
+        return <Badge variant="outline" className="text-blue-600"><Shield className="w-3 h-3 mr-1" />Entity Admin</Badge>;
       default:
-        return <Badge variant="outline"><Users className="w-3 h-3 mr-1" />User</Badge>;
+        return <Badge variant="outline"><Eye className="w-3 h-3 mr-1" />Viewer</Badge>;
     }
   };
 
@@ -480,7 +480,7 @@ export function EnhancedUserManagement() {
     
     const matchesStatus = filters.status === 'all' || user.status === filters.status;
     
-    const userRole = userRoles.find(r => r.user_uuid === user.user_uuid)?.role || 'user';
+    const userRole = userRoles.find(r => r.user_uuid === user.user_uuid)?.role || 'viewer';
     const matchesRole = filters.role === 'all' || userRole === filters.role;
 
     return matchesSearch && matchesStatus && matchesRole;
@@ -646,8 +646,8 @@ export function EnhancedUserManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="entity_admin">Entity Admin</SelectItem>
                     <SelectItem value="super_admin">Super Admin</SelectItem>
                   </SelectContent>
                 </Select>
@@ -702,13 +702,13 @@ export function EnhancedUserManagement() {
                         </div>
                         <div>
                           <Label htmlFor="invite-role">Initial Role</Label>
-                          <Select value={inviteForm.role} onValueChange={(value: 'user' | 'admin' | 'super_admin') => setInviteForm(prev => ({ ...prev, role: value }))}>
+                          <Select value={inviteForm.role} onValueChange={(value: 'viewer' | 'entity_admin' | 'super_admin') => setInviteForm(prev => ({ ...prev, role: value }))}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="viewer">Viewer</SelectItem>
+                              <SelectItem value="entity_admin">Entity Admin</SelectItem>
                               {isSuperAdmin && <SelectItem value="super_admin">Super Admin</SelectItem>}
                             </SelectContent>
                           </Select>

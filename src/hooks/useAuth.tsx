@@ -415,7 +415,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Compute role flags using the new role system
   const isApproved = userAccount?.status === 'approved';
   const hasRole = (role: string) => userRoles.some(r => r.role === role);
-  const isAdmin = isApproved && (hasRole('admin') || hasRole('super_admin') || hasRole('entity_admin'));
+  const isAdmin = isApproved && (hasRole('entity_admin') || hasRole('super_admin'));
   const isSuperAdmin = isApproved && hasRole('super_admin');
   
   // Entity management functions
