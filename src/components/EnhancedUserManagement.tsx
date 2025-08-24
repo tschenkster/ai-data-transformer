@@ -274,6 +274,16 @@ export function EnhancedUserManagement() {
     try {
       setActionLoading('assign');
       
+      // Validate that at least one entity or entity group is selected
+      if (accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none') {
+        toast({
+          title: "Validation Error",
+          description: "Please select either an Entity or an Entity Group",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const { error } = await supabase.rpc('grant_entity_access', {
         p_user_uuid: accessForm.userUuid,
         p_access_level: accessForm.accessLevel,
@@ -973,9 +983,11 @@ export function EnhancedUserManagement() {
                         </p>
                       </div>
                       <div>
-                        <Label htmlFor="access-entity">Entity (Optional)</Label>
+                        <Label htmlFor="access-entity" className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'text-destructive' : ''}>
+                          Entity {accessForm.entityGroupUuid === 'none' ? '(Required)' : '(Optional)'}
+                        </Label>
                         <Select value={accessForm.entityUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, entityUuid: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'border-destructive' : ''}>
                             <SelectValue placeholder="Select entity" />
                           </SelectTrigger>
                           <SelectContent>
@@ -989,9 +1001,11 @@ export function EnhancedUserManagement() {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="access-group">Entity Group (Optional)</Label>
+                        <Label htmlFor="access-group" className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'text-destructive' : ''}>
+                          Entity Group {accessForm.entityUuid === 'none' ? '(Required)' : '(Optional)'}
+                        </Label>
                         <Select value={accessForm.entityGroupUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, entityGroupUuid: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'border-destructive' : ''}>
                             <SelectValue placeholder="Select entity group" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1004,6 +1018,11 @@ export function EnhancedUserManagement() {
                           </SelectContent>
                         </Select>
                       </div>
+                      {accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' && (
+                        <p className="text-xs text-destructive mt-1">
+                          Please select either an Entity or an Entity Group to continue
+                        </p>
+                      )}
                       <div>
                         <Label htmlFor="access-level">Access Level</Label>
                         <Select value={accessForm.accessLevel} onValueChange={(value: 'viewer' | 'entity_admin') => setAccessForm(prev => ({ ...prev, accessLevel: value }))}>
@@ -1021,7 +1040,14 @@ export function EnhancedUserManagement() {
                       <Button variant="outline" onClick={() => setIsAssignAccessDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={assignAccess} disabled={actionLoading === 'assign'}>
+                      <Button 
+                        onClick={assignAccess} 
+                        disabled={
+                          actionLoading === 'assign' || 
+                          !accessForm.userUuid || 
+                          (accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none')
+                        }
+                      >
                         {actionLoading === 'assign' ? 'Assigning...' : 'Assign Access'}
                       </Button>
                     </DialogFooter>
