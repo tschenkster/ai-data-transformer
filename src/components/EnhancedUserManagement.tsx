@@ -118,8 +118,8 @@ export function EnhancedUserManagement() {
   
   const [accessForm, setAccessForm] = useState({
     userUuid: '',
-    entityUuid: '',
-    entityGroupUuid: '',
+    entityUuid: 'none',
+    entityGroupUuid: 'none',
     accessLevel: 'viewer' as 'viewer' | 'entity_admin'
   });
   
@@ -276,7 +276,7 @@ export function EnhancedUserManagement() {
       
       const { error } = await supabase.rpc('grant_entity_access', {
         p_user_uuid: accessForm.userUuid,
-        p_entity_uuid: accessForm.entityUuid || null,
+        p_entity_uuid: accessForm.entityUuid === 'none' ? null : accessForm.entityUuid,
         p_access_level: accessForm.accessLevel,
         p_granted_by_user_uuid: userAccount?.user_uuid
       });
@@ -289,7 +289,7 @@ export function EnhancedUserManagement() {
       });
 
       setIsAssignAccessDialogOpen(false);
-      setAccessForm({ userUuid: '', entityUuid: '', entityGroupUuid: '', accessLevel: 'viewer' });
+      setAccessForm({ userUuid: '', entityUuid: 'none', entityGroupUuid: 'none', accessLevel: 'viewer' });
       fetchData();
     } catch (error: any) {
       toast({
@@ -978,7 +978,7 @@ export function EnhancedUserManagement() {
                             <SelectValue placeholder="Select entity" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">No specific entity</SelectItem>
+                            <SelectItem value="none">No specific entity</SelectItem>
                             {entities.map((entity) => (
                               <SelectItem key={entity.entity_uuid} value={entity.entity_uuid}>
                                 {entity.entity_name}
@@ -994,7 +994,7 @@ export function EnhancedUserManagement() {
                             <SelectValue placeholder="Select entity group" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">No specific group</SelectItem>
+                            <SelectItem value="none">No specific group</SelectItem>
                             {entityGroups.map((group) => (
                               <SelectItem key={group.entity_group_uuid} value={group.entity_group_uuid}>
                                 {group.entity_group_name}
