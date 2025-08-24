@@ -557,6 +557,10 @@ export type Database = {
         }
         Returns: string
       }
+      extract_structure_id_from_line_item_id: {
+        Args: { p_line_item_id: number }
+        Returns: number
+      }
       get_current_user_details: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -576,6 +580,10 @@ export type Database = {
           total_structures: number
           user_count: number
         }[]
+      }
+      get_next_concatenated_line_item_id: {
+        Args: { p_structure_id: number }
+        Returns: number
       }
       get_report_structure_with_creator: {
         Args: { p_structure_uuid: string }

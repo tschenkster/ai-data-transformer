@@ -277,6 +277,62 @@ serve(async (req) => {
       console.log(`Successfully inserted ${insertedCount}/${lineItems.length} line items`);
     }
 
+    // Convert auto-generated IDs to concatenated format (structure_id * 10000 + local_id)
+    console.log(`Converting ${insertedCount} line item IDs to concatenated format for structure ${structureId}`);
+    
+    // Use the helper function to get concatenated IDs for newly inserted items
+    const { data: maxIdData, error: maxIdError } = await supabase
+      .from('report_line_items')
+      .select('report_line_item_id')
+      .eq('report_structure_id', structureId)
+      .order('report_line_item_id', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (maxIdError) {
+      console.error('Error getting max ID for concatenation:', maxIdError);
+      console.log('Continuing with auto-generated IDs...');
+    } else {
+      // If the max ID is already concatenated, we're good
+      const maxId = maxIdData.report_line_item_id;
+      const expectedConcatenatedStart = structureId * 10000;
+      
+      if (maxId < expectedConcatenatedStart) {
+        console.log(`Converting IDs from auto-generated format to concatenated format starting at ${expectedConcatenatedStart}`);
+        
+        // Get all items for this structure and update them
+        const { data: itemsToUpdate, error: fetchError } = await supabase
+          .from('report_line_items')
+          .select('report_line_item_id, sort_order')
+          .eq('report_structure_id', structureId)
+          .order('sort_order', { ascending: true });
+
+        if (!fetchError && itemsToUpdate) {
+          console.log(`Found ${itemsToUpdate.length} items to convert to concatenated format`);
+          
+          // Update each item with concatenated ID
+          for (let i = 0; i < itemsToUpdate.length; i++) {
+            const item = itemsToUpdate[i];
+            const newConcatenatedId = expectedConcatenatedStart + i + 1;
+            
+            const { error: updateItemError } = await supabase
+              .from('report_line_items')
+              .update({ report_line_item_id: newConcatenatedId })
+              .eq('report_line_item_id', item.report_line_item_id);
+              
+            if (updateItemError) {
+              console.error(`Error updating item ${item.report_line_item_id}:`, updateItemError);
+              break;
+            }
+          }
+          
+          console.log(`Successfully converted ${itemsToUpdate.length} line item IDs to concatenated format`);
+        }
+      } else {
+        console.log(`Line item IDs already in concatenated format (${maxId} >= ${expectedConcatenatedStart})`);
+      }
+    }
+
     console.log(`Successfully processed structure with ${lineItems.length} line items preserving original file order`);
     console.log(`Order mapping confirmed: File rows 2-${lineItems.length + 1} → Database sort_order 0-${lineItems.length - 1}`);
 
