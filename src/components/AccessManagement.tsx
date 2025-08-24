@@ -69,13 +69,14 @@ export function AccessManagement() {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isCreateEntityOpen, setIsCreateEntityOpen] = useState(false);
   const [isEditEntityOpen, setIsEditEntityOpen] = useState(false);
+  const [isEditGroupOpen, setIsEditGroupOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
+  const [editingGroup, setEditingGroup] = useState<EntityGroup | null>(null);
   const [selectedGroupUuid, setSelectedGroupUuid] = useState('');
 
   // Form states
   const [groupForm, setGroupForm] = useState({
     name: '',
-    code: '',
     description: ''
   });
   const [entityForm, setEntityForm] = useState({
@@ -160,11 +161,18 @@ export function AccessManagement() {
 
   const createEntityGroup = async () => {
     try {
+      // Auto-generate code from name
+      const autoCode = groupForm.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '_')
+        .replace(/_{2,}/g, '_')
+        .replace(/^_|_$/g, '') || `GROUP_${Date.now()}`;
+
       const { error } = await supabase
         .from('entity_groups')
         .insert([{
           entity_group_name: groupForm.name,
-          entity_group_code: groupForm.code,
+          entity_group_code: autoCode,
           description: groupForm.description,
           created_by_user_uuid: userAccount?.user_uuid
         }]);
@@ -177,7 +185,7 @@ export function AccessManagement() {
       });
 
       setIsCreateGroupOpen(false);
-      setGroupForm({ name: '', code: '', description: '' });
+      setGroupForm({ name: '', description: '' });
       fetchData();
     } catch (error: any) {
       toast({
@@ -260,6 +268,46 @@ export function AccessManagement() {
     }
   };
 
+  const updateEntityGroup = async () => {
+    try {
+      if (!editingGroup) return;
+
+      // Auto-generate code from name
+      const autoCode = groupForm.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '_')
+        .replace(/_{2,}/g, '_')
+        .replace(/^_|_$/g, '') || `GROUP_${Date.now()}`;
+
+      const { error } = await supabase
+        .from('entity_groups')
+        .update({
+          entity_group_name: groupForm.name,
+          entity_group_code: autoCode,
+          description: groupForm.description
+        })
+        .eq('entity_group_uuid', editingGroup.entity_group_uuid);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Entity group updated successfully",
+      });
+
+      setIsEditGroupOpen(false);
+      setEditingGroup(null);
+      setGroupForm({ name: '', description: '' });
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update entity group",
+        variant: "destructive",
+      });
+    }
+  };
+
   const openEditDialog = (entity: Entity) => {
     setEditingEntity(entity);
     setEntityForm({
@@ -268,6 +316,15 @@ export function AccessManagement() {
       entity_group_uuid: entity.entity_group_uuid
     });
     setIsEditEntityOpen(true);
+  };
+
+  const openEditGroupDialog = (group: EntityGroup) => {
+    setEditingGroup(group);
+    setGroupForm({
+      name: group.entity_group_name,
+      description: group.description || ''
+    });
+    setIsEditGroupOpen(true);
   };
 
   if (!isSuperAdmin && !isEntityAdmin()) {
@@ -509,15 +566,6 @@ export function AccessManagement() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="group-code">Group Code</Label>
-                        <Input
-                          id="group-code"
-                          value={groupForm.code}
-                          onChange={(e) => setGroupForm(prev => ({ ...prev, code: e.target.value }))}
-                          placeholder="e.g., ACME_HOLDINGS"
-                        />
-                      </div>
-                      <div>
                         <Label htmlFor="group-description">Description</Label>
                         <Textarea
                           id="group-description"
@@ -540,11 +588,10 @@ export function AccessManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Code</TableHead>
+                    <TableHead>Group ID</TableHead>
+                    <TableHead>Group Name</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -552,17 +599,62 @@ export function AccessManagement() {
                     <TableRow key={group.entity_group_uuid}>
                       <TableCell className="font-mono text-sm">{group.entity_group_id}</TableCell>
                       <TableCell className="font-medium">{group.entity_group_name}</TableCell>
-                      <TableCell className="font-mono text-sm">{group.entity_group_code}</TableCell>
                       <TableCell>
                         <Badge variant={group.is_active ? "default" : "secondary"}>
                           {group.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
-                      <TableCell>{new Date(group.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditGroupDialog(group)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+
+              {/* Edit Entity Group Dialog */}
+              <Dialog open={isEditGroupOpen} onOpenChange={setIsEditGroupOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Entity Group</DialogTitle>
+                    <DialogDescription>
+                      Update entity group information
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-group-name">Group Name</Label>
+                      <Input
+                        id="edit-group-name"
+                        value={groupForm.name}
+                        onChange={(e) => setGroupForm(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., ACME Holdings"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-group-description">Description</Label>
+                      <Textarea
+                        id="edit-group-description"
+                        value={groupForm.description}
+                        onChange={(e) => setGroupForm(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Optional description"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditGroupOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={updateEntityGroup}>Update Group</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
           )}
 
