@@ -16,9 +16,12 @@ export type Database = {
     Tables: {
       coa_translation_sessions: {
         Row: {
+          coa_translation_session_id: number
           coa_translation_session_uuid: string
           completed_at: string | null
           created_at: string
+          entity_id: number | null
+          entity_uuid: string | null
           error_details: Json | null
           estimated_completion_at: string | null
           filename: string
@@ -37,9 +40,12 @@ export type Database = {
           user_uuid: string | null
         }
         Insert: {
+          coa_translation_session_id?: never
           coa_translation_session_uuid?: string
           completed_at?: string | null
           created_at?: string
+          entity_id?: number | null
+          entity_uuid?: string | null
           error_details?: Json | null
           estimated_completion_at?: string | null
           filename: string
@@ -58,9 +64,12 @@ export type Database = {
           user_uuid?: string | null
         }
         Update: {
+          coa_translation_session_id?: never
           coa_translation_session_uuid?: string
           completed_at?: string | null
           created_at?: string
+          entity_id?: number | null
+          entity_uuid?: string | null
           error_details?: Json | null
           estimated_completion_at?: string | null
           filename?: string
@@ -79,6 +88,13 @@ export type Database = {
           user_uuid?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_coa_translation_sessions_entity"
+            columns: ["entity_uuid"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["entity_uuid"]
+          },
           {
             foreignKeyName: "fk_coa_translation_sessions_user_account"
             columns: ["user_uuid"]
@@ -198,6 +214,8 @@ export type Database = {
           data_source: string | null
           description_of_leaf: string | null
           display: boolean | null
+          entity_id: number | null
+          entity_uuid: string | null
           hierarchy_path: string | null
           is_calculated: boolean | null
           is_leaf: boolean | null
@@ -234,6 +252,8 @@ export type Database = {
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
+          entity_id?: number | null
+          entity_uuid?: string | null
           hierarchy_path?: string | null
           is_calculated?: boolean | null
           is_leaf?: boolean | null
@@ -270,6 +290,8 @@ export type Database = {
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
+          entity_id?: number | null
+          entity_uuid?: string | null
           hierarchy_path?: string | null
           is_calculated?: boolean | null
           is_leaf?: boolean | null
@@ -305,6 +327,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_accounts"
             referencedColumns: ["user_uuid"]
+          },
+          {
+            foreignKeyName: "fk_report_line_items_entity"
+            columns: ["entity_uuid"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["entity_uuid"]
           },
           {
             foreignKeyName: "fk_report_line_items_updated_by_user_account"
@@ -404,6 +433,8 @@ export type Database = {
           created_by_supabase_user_uuid: string
           created_by_user_name: string
           description: string | null
+          entity_id: number | null
+          entity_uuid: string | null
           imported_structure_id: string | null
           is_active: boolean
           lifecycle_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
@@ -424,6 +455,8 @@ export type Database = {
           created_by_supabase_user_uuid: string
           created_by_user_name: string
           description?: string | null
+          entity_id?: number | null
+          entity_uuid?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
           lifecycle_status?: Database["public"]["Enums"]["report_structure_lifecycle_status"]
@@ -444,6 +477,8 @@ export type Database = {
           created_by_supabase_user_uuid?: string
           created_by_user_name?: string
           description?: string | null
+          entity_id?: number | null
+          entity_uuid?: string | null
           imported_structure_id?: string | null
           is_active?: boolean
           lifecycle_status?: Database["public"]["Enums"]["report_structure_lifecycle_status"]
@@ -464,6 +499,13 @@ export type Database = {
             referencedRelation: "user_accounts"
             referencedColumns: ["user_uuid"]
           },
+          {
+            foreignKeyName: "fk_report_structures_entity"
+            columns: ["entity_uuid"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["entity_uuid"]
+          },
         ]
       }
       security_audit_logs: {
@@ -471,7 +513,10 @@ export type Database = {
           action: string
           created_at: string
           details: Json | null
+          entity_id: number | null
+          entity_uuid: string | null
           ip_address: unknown | null
+          security_audit_log_id: number
           security_audit_log_uuid: string
           target_user_id: string | null
           target_user_uuid: string | null
@@ -483,7 +528,10 @@ export type Database = {
           action: string
           created_at?: string
           details?: Json | null
+          entity_id?: number | null
+          entity_uuid?: string | null
           ip_address?: unknown | null
+          security_audit_log_id?: never
           security_audit_log_uuid?: string
           target_user_id?: string | null
           target_user_uuid?: string | null
@@ -495,7 +543,10 @@ export type Database = {
           action?: string
           created_at?: string
           details?: Json | null
+          entity_id?: number | null
+          entity_uuid?: string | null
           ip_address?: unknown | null
+          security_audit_log_id?: never
           security_audit_log_uuid?: string
           target_user_id?: string | null
           target_user_uuid?: string | null
@@ -504,6 +555,13 @@ export type Database = {
           user_uuid?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_security_audit_logs_entity"
+            columns: ["entity_uuid"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["entity_uuid"]
+          },
           {
             foreignKeyName: "fk_security_audit_logs_target_user_account"
             columns: ["target_user_uuid"]
@@ -812,6 +870,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_user_accessible_entities: {
+        Args: { p_user_uuid: string }
+        Returns: {
+          access_level: string
+          entity_code: string
+          entity_name: string
+          entity_uuid: string
+        }[]
+      }
       get_user_account_by_supabase_uuid: {
         Args: { p_supabase_uuid: string }
         Returns: {
@@ -865,6 +932,15 @@ export type Database = {
           p_current_status: Database["public"]["Enums"]["user_account_status"]
         }
         Returns: Database["public"]["Enums"]["user_account_status"][]
+      }
+      grant_entity_access: {
+        Args: {
+          p_access_level: Database["public"]["Enums"]["access_level"]
+          p_entity_uuid: string
+          p_granted_by_user_uuid: string
+          p_user_uuid: string
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -954,6 +1030,10 @@ export type Database = {
       update_sort_orders_transaction: {
         Args: { p_structure_uuid: string; p_updates: Json }
         Returns: Json
+      }
+      user_has_entity_access: {
+        Args: { p_entity_uuid: string; p_user_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {

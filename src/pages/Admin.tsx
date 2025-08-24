@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Clock, UserCheck, Shield, Crown, CheckCircle, XCircle } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
+import { EntityManagement } from '@/components/EntityManagement';
 import { ActionButtons, createApproveAction, createRejectAction, createAdminDeleteAction, ActionButtonConfig } from '@/components/ui/action-buttons';
 
 interface UserAccount {
@@ -25,7 +26,7 @@ interface UserAccount {
 }
 
 export default function Admin() {
-  const { user, userAccount, signOut, isSuperAdmin, logSecurityEvent } = useAuth();
+  const { user, userAccount, signOut, isSuperAdmin, isAdmin, logSecurityEvent } = useAuth();
   const { toast } = useToast();
   const [userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -272,6 +273,9 @@ export default function Admin() {
             <TabsTrigger value="pending">
               Pending Users ({stats.pending})
             </TabsTrigger>
+            {(isSuperAdmin || isAdmin) && (
+              <TabsTrigger value="entities">Entity Management</TabsTrigger>
+            )}
             <TabsTrigger value="audit">Security Audit</TabsTrigger>
           </TabsList>
 
@@ -363,6 +367,12 @@ export default function Admin() {
           <TabsContent value="audit" className="space-y-4">
             <SecurityAuditLog />
           </TabsContent>
+
+          {(isSuperAdmin || isAdmin) && (
+            <TabsContent value="entities" className="space-y-4">
+              <EntityManagement />
+            </TabsContent>
+          )}
 
         </Tabs>
         </div>

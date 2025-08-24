@@ -20,9 +20,16 @@ interface UserAccount {
 interface UserRole {
   user_role_uuid: string;
   user_id: string;
-  role: 'user' | 'admin' | 'super_admin';
+  role: 'user' | 'admin' | 'super_admin' | 'viewer' | 'entity_admin';
   assigned_by?: string;
   assigned_at: string;
+}
+
+interface Entity {
+  entity_uuid: string;
+  entity_name: string;
+  entity_code: string;
+  access_level: string;
 }
 
 interface AuthContextType {
@@ -41,6 +48,12 @@ interface AuthContextType {
   authTimeoutCount: number;
   forceLogout: () => Promise<void>;
   logSecurityEvent: (action: string, targetUserId?: string, details?: any) => Promise<void>;
+  // Entity management
+  availableEntities: Entity[];
+  currentEntity: Entity | null;
+  setCurrentEntity: (entity: Entity | null) => void;
+  hasEntityAccess: (entityUuid: string) => boolean;
+  isEntityAdmin: (entityUuid?: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authTimeoutCount, setAuthTimeoutCount] = useState(0);
+  const [availableEntities, setAvailableEntities] = useState<Entity[]>([]);
+  const [currentEntity, setCurrentEntity] = useState<Entity | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -257,6 +272,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUserRoles((rolesData || []) as UserRole[]);
           }
           
+          // Fetch accessible entities if user account exists
+          const { data: entitiesData, error: entitiesError } = await supabase
+            .rpc('get_user_accessible_entities', { 
+              p_user_uuid: userAccountData.user_uuid 
+            });
+
+          if (entitiesError) {
+            console.error('👤 AuthProvider: Error fetching accessible entities:', entitiesError);
+          } else {
+            console.log('👤 AuthProvider: Accessible entities fetched:', entitiesData);
+            setAvailableEntities(entitiesData || []);
+            
+            // Set current entity from localStorage or first available
+            const savedEntityUuid = localStorage.getItem('currentEntityUuid');
+            const savedEntity = entitiesData?.find((e: Entity) => e.entity_uuid === savedEntityUuid);
+            
+            if (savedEntity) {
+              setCurrentEntity(savedEntity);
+            } else if (entitiesData && entitiesData.length > 0) {
+              setCurrentEntity(entitiesData[0]);
+              localStorage.setItem('currentEntityUuid', entitiesData[0].entity_uuid);
+            }
+          }
+          
           setAuthError(null);
         }
         
@@ -360,6 +399,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      setAvailableEntities([]);
+      setCurrentEntity(null);
+      localStorage.removeItem('currentEntityUuid');
       navigate('/auth');
       toast({
         title: "Logged Out",
@@ -373,8 +415,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Compute role flags using the new role system
   const isApproved = userAccount?.status === 'approved';
   const hasRole = (role: string) => userRoles.some(r => r.role === role);
-  const isAdmin = isApproved && (hasRole('admin') || hasRole('super_admin'));
+  const isAdmin = isApproved && (hasRole('admin') || hasRole('super_admin') || hasRole('entity_admin'));
   const isSuperAdmin = isApproved && hasRole('super_admin');
+  
+  // Entity management functions
+  const handleSetCurrentEntity = (entity: Entity | null) => {
+    setCurrentEntity(entity);
+    if (entity) {
+      localStorage.setItem('currentEntityUuid', entity.entity_uuid);
+    } else {
+      localStorage.removeItem('currentEntityUuid');
+    }
+  };
+
+  const hasEntityAccess = (entityUuid: string) => {
+    if (isSuperAdmin) return true;
+    return availableEntities.some(entity => entity.entity_uuid === entityUuid);
+  };
+
+  const isEntityAdmin = (entityUuid?: string) => {
+    if (isSuperAdmin) return true;
+    
+    const targetEntityUuid = entityUuid || currentEntity?.entity_uuid;
+    if (!targetEntityUuid) return false;
+    
+    const entity = availableEntities.find(e => e.entity_uuid === targetEntityUuid);
+    return entity?.access_level === 'entity_admin';
+  };
 
   // Security audit logging function
   const logSecurityEvent = async (action: string, targetUserId?: string, details?: any) => {
@@ -407,6 +474,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authTimeoutCount,
     forceLogout,
     logSecurityEvent,
+    availableEntities,
+    currentEntity,
+    setCurrentEntity: handleSetCurrentEntity,
+    hasEntityAccess,
+    isEntityAdmin,
   };
 
   return (

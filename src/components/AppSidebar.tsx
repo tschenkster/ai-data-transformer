@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Brain, Settings, LogOut, User, Database, Languages, Map, FileSpreadsheet, BookOpen, BarChart3, Table } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { EntitySelector } from "@/components/EntitySelector";
 import {
   Sidebar,
   SidebarContent,
@@ -118,7 +119,7 @@ export function AppSidebar() {
                         <Settings className={`h-4 w-4 flex-shrink-0 transition-colors ${
                           isActive ? "text-primary" : ""
                         }`} />
-                        <span className="truncate">User Management</span>
+                        <span className="truncate">Entity Management</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -256,6 +257,12 @@ export function AppSidebar() {
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Entity Selector */}
+              <SidebarMenuItem>
+                <div className="px-2 py-2">
+                  <EntitySelector />
+                </div>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton disabled>
                   <User className="h-4 w-4" />
