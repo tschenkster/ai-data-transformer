@@ -774,6 +774,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bulk_update_user_status: {
+        Args: {
+          p_new_status: Database["public"]["Enums"]["user_account_status"]
+          p_reason?: string
+          p_user_uuids: string[]
+        }
+        Returns: Json
+      }
+      check_permission_conflicts: {
+        Args: { p_user_uuid: string }
+        Returns: {
+          access_levels: string[]
+          conflict_type: string
+          description: string
+          entity_name: string
+        }[]
+      }
       check_rate_limit: {
         Args: {
           identifier: string
@@ -811,6 +828,18 @@ export type Database = {
           user_first_name: string
           user_last_name: string
           user_uuid: string
+        }[]
+      }
+      get_enhanced_user_management_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_users: number
+          entity_admins: number
+          pending_users: number
+          recent_invitations: number
+          suspended_users: number
+          total_access_grants: number
+          total_users: number
         }[]
       }
       get_enhanced_user_summary: {
@@ -893,6 +922,18 @@ export type Database = {
           user_uuid: string
         }[]
       }
+      get_user_effective_permissions: {
+        Args: { p_user_uuid: string }
+        Returns: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          entity_group_name: string
+          entity_group_uuid: string
+          entity_name: string
+          entity_uuid: string
+          granted_at: string
+          granted_by_name: string
+        }[]
+      }
       get_user_summary: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -948,6 +989,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      invite_user_with_role: {
+        Args: {
+          p_email: string
+          p_first_name?: string
+          p_invited_by_uuid?: string
+          p_last_name?: string
+          p_role?: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: Json
       }
       is_admin_user: {
         Args: Record<PropertyKey, never>
@@ -1025,6 +1076,10 @@ export type Database = {
           p_target_position?: number
           p_target_sibling_uuid?: string
         }
+        Returns: Json
+      }
+      revoke_all_user_access: {
+        Args: { p_reason?: string; p_user_uuid: string }
         Returns: Json
       }
       transition_user_account_status: {
