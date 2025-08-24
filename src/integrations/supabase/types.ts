@@ -544,6 +544,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      convert_line_items_to_concatenated_format: {
+        Args: { p_structure_id: number }
+        Returns: Json
+      }
       detect_suspicious_activity: {
         Args: { p_time_window_minutes?: number; p_user_id: string }
         Returns: boolean
