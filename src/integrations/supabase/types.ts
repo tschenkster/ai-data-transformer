@@ -88,6 +88,107 @@ export type Database = {
           },
         ]
       }
+      entities: {
+        Row: {
+          created_at: string
+          created_by_user_uuid: string | null
+          description: string | null
+          entity_code: string
+          entity_group_id: number
+          entity_group_uuid: string
+          entity_id: number
+          entity_name: string
+          entity_uuid: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_uuid?: string | null
+          description?: string | null
+          entity_code: string
+          entity_group_id: number
+          entity_group_uuid: string
+          entity_id?: never
+          entity_name: string
+          entity_uuid?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_user_uuid?: string | null
+          description?: string | null
+          entity_code?: string
+          entity_group_id?: number
+          entity_group_uuid?: string
+          entity_id?: never
+          entity_name?: string
+          entity_uuid?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_entities_created_by"
+            columns: ["created_by_user_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_uuid"]
+          },
+          {
+            foreignKeyName: "fk_entities_entity_group"
+            columns: ["entity_group_uuid"]
+            isOneToOne: false
+            referencedRelation: "entity_groups"
+            referencedColumns: ["entity_group_uuid"]
+          },
+        ]
+      }
+      entity_groups: {
+        Row: {
+          created_at: string
+          created_by_user_uuid: string | null
+          description: string | null
+          entity_group_code: string
+          entity_group_id: number
+          entity_group_name: string
+          entity_group_uuid: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_uuid?: string | null
+          description?: string | null
+          entity_group_code: string
+          entity_group_id?: never
+          entity_group_name: string
+          entity_group_uuid?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_user_uuid?: string | null
+          description?: string | null
+          entity_group_code?: string
+          entity_group_id?: never
+          entity_group_name?: string
+          entity_group_uuid?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_entity_groups_created_by"
+            columns: ["created_by_user_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_uuid"]
+          },
+        ]
+      }
       report_line_items: {
         Row: {
           comment: string | null
@@ -485,6 +586,83 @@ export type Database = {
         }
         Relationships: []
       }
+      user_entity_access: {
+        Row: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          entity_group_id: number | null
+          entity_group_uuid: string | null
+          entity_id: number | null
+          entity_uuid: string | null
+          granted_at: string
+          granted_by_user_uuid: string | null
+          is_active: boolean
+          revoked_at: string | null
+          user_account_id: number
+          user_account_uuid: string
+          user_entity_access_id: number
+          user_entity_access_uuid: string
+        }
+        Insert: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          entity_group_id?: number | null
+          entity_group_uuid?: string | null
+          entity_id?: number | null
+          entity_uuid?: string | null
+          granted_at?: string
+          granted_by_user_uuid?: string | null
+          is_active?: boolean
+          revoked_at?: string | null
+          user_account_id: number
+          user_account_uuid: string
+          user_entity_access_id?: never
+          user_entity_access_uuid?: string
+        }
+        Update: {
+          access_level?: Database["public"]["Enums"]["access_level"]
+          entity_group_id?: number | null
+          entity_group_uuid?: string | null
+          entity_id?: number | null
+          entity_uuid?: string | null
+          granted_at?: string
+          granted_by_user_uuid?: string | null
+          is_active?: boolean
+          revoked_at?: string | null
+          user_account_id?: number
+          user_account_uuid?: string
+          user_entity_access_id?: never
+          user_entity_access_uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_entity_access_entity"
+            columns: ["entity_uuid"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["entity_uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_entity_access_entity_group"
+            columns: ["entity_group_uuid"]
+            isOneToOne: false
+            referencedRelation: "entity_groups"
+            referencedColumns: ["entity_group_uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_entity_access_granted_by"
+            columns: ["granted_by_user_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_entity_access_user"
+            columns: ["user_account_uuid"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["user_uuid"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -492,6 +670,7 @@ export type Database = {
           assigned_by_user_account_uuid: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
+          user_role_id: number
           user_role_uuid: string
           user_uuid: string | null
         }
@@ -501,6 +680,7 @@ export type Database = {
           assigned_by_user_account_uuid?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
+          user_role_id?: never
           user_role_uuid?: string
           user_uuid?: string | null
         }
@@ -510,6 +690,7 @@ export type Database = {
           assigned_by_user_account_uuid?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+          user_role_id?: never
           user_role_uuid?: string
           user_uuid?: string | null
         }
@@ -776,7 +957,8 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "user" | "admin" | "super_admin"
+      access_level: "viewer" | "entity_admin"
+      app_role: "user" | "admin" | "super_admin" | "viewer" | "entity_admin"
       change_action_type: "create" | "delete" | "rename" | "move"
       report_structure_lifecycle_status:
         | "draft"
@@ -924,7 +1106,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["user", "admin", "super_admin"],
+      access_level: ["viewer", "entity_admin"],
+      app_role: ["user", "admin", "super_admin", "viewer", "entity_admin"],
       change_action_type: ["create", "delete", "rename", "move"],
       report_structure_lifecycle_status: [
         "draft",
