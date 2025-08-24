@@ -468,9 +468,6 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>File Preview & Configuration</DialogTitle>
-            <DialogDescription>
-              Review your data and configure column mappings before import
-            </DialogDescription>
           </DialogHeader>
 
           {previewData && (
