@@ -10,6 +10,7 @@ import { Users, Clock, UserCheck, Shield, Crown, CheckCircle, XCircle } from 'lu
 import Footer from '@/components/Footer';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 import { AccessManagement } from '@/components/AccessManagement';
+import { EnhancedUserManagement } from '@/components/EnhancedUserManagement';
 import { ActionButtons, createApproveAction, createRejectAction, createAdminDeleteAction, ActionButtonConfig } from '@/components/ui/action-buttons';
 
 interface UserAccount {
@@ -274,7 +275,10 @@ export default function Admin() {
               Pending Users ({stats.pending})
             </TabsTrigger>
             {(isSuperAdmin || isAdmin) && (
-              <TabsTrigger value="entities">Access Management</TabsTrigger>
+              <TabsTrigger value="user-management">User Management</TabsTrigger>
+            )}
+            {(isSuperAdmin || isAdmin) && (
+              <TabsTrigger value="entities">Entity Management</TabsTrigger>
             )}
             <TabsTrigger value="audit">Security Audit</TabsTrigger>
           </TabsList>
@@ -367,6 +371,12 @@ export default function Admin() {
           <TabsContent value="audit" className="space-y-4">
             <SecurityAuditLog />
           </TabsContent>
+
+          {(isSuperAdmin || isAdmin) && (
+            <TabsContent value="user-management" className="space-y-4">
+              <EnhancedUserManagement />
+            </TabsContent>
+          )}
 
           {(isSuperAdmin || isAdmin) && (
             <TabsContent value="entities" className="space-y-4">
