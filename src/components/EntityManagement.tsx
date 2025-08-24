@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Users, Plus, Settings, Trash2 } from 'lucide-react';
+import { Building2, Users, Plus, Settings, Trash2, Edit } from 'lucide-react';
 
 interface EntityGroup {
   entity_group_uuid: string;
@@ -28,9 +28,9 @@ interface Entity {
   entity_uuid: string;
   entity_id: number;
   entity_name: string;
-  entity_code: string;
   entity_group_uuid: string;
   entity_group_id: number;
+  entity_group_name?: string;
   description?: string;
   is_active: boolean;
   created_at: string;
@@ -68,6 +68,8 @@ export function EntityManagement() {
   const [loading, setLoading] = useState(true);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isCreateEntityOpen, setIsCreateEntityOpen] = useState(false);
+  const [isEditEntityOpen, setIsEditEntityOpen] = useState(false);
+  const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
   const [selectedGroupUuid, setSelectedGroupUuid] = useState('');
 
   // Form states
@@ -78,7 +80,6 @@ export function EntityManagement() {
   });
   const [entityForm, setEntityForm] = useState({
     name: '',
-    code: '',
     description: '',
     entity_group_uuid: ''
   });
@@ -95,7 +96,10 @@ export function EntityManagement() {
         // Super admins can see all entity groups and entities
         const [groupsResponse, entitiesResponse, accessResponse] = await Promise.all([
           supabase.from('entity_groups').select('*').order('entity_group_name'),
-          supabase.from('entities').select('*').order('entity_name'),
+          supabase.from('entities').select(`
+            *,
+            entity_groups!inner(entity_group_name)
+          `).order('entity_id'),
           supabase.from('user_entity_access')
             .select(`
               *,
@@ -111,7 +115,12 @@ export function EntityManagement() {
         if (accessResponse.error) throw accessResponse.error;
 
         setEntityGroups(groupsResponse.data || []);
-        setEntities(entitiesResponse.data || []);
+        // Flatten the joined data
+        const flattenedEntities = (entitiesResponse.data || []).map(entity => ({
+          ...entity,
+          entity_group_name: entity.entity_groups?.entity_group_name
+        }));
+        setEntities(flattenedEntities);
         setUserAccess(accessResponse.data || []);
       } else if (isEntityAdmin()) {
         // Entity admins can see their entities and manage access within their scope
@@ -188,7 +197,7 @@ export function EntityManagement() {
         .from('entities')
         .insert([{
           entity_name: entityForm.name,
-          entity_code: entityForm.code,
+          entity_code: `ENT_${Date.now()}`, // Auto-generate code since it's still required by DB
           entity_group_uuid: entityForm.entity_group_uuid,
           entity_group_id: selectedGroup.entity_group_id,
           description: entityForm.description,
@@ -203,7 +212,7 @@ export function EntityManagement() {
       });
 
       setIsCreateEntityOpen(false);
-      setEntityForm({ name: '', code: '', description: '', entity_group_uuid: '' });
+      setEntityForm({ name: '', description: '', entity_group_uuid: '' });
       fetchData();
     } catch (error: any) {
       toast({
@@ -212,6 +221,53 @@ export function EntityManagement() {
         variant: "destructive",
       });
     }
+  };
+
+  const updateEntity = async () => {
+    try {
+      if (!editingEntity) return;
+
+      const selectedGroup = entityGroups.find(g => g.entity_group_uuid === entityForm.entity_group_uuid);
+      if (!selectedGroup) throw new Error("Please select an entity group");
+
+      const { error } = await supabase
+        .from('entities')
+        .update({
+          entity_name: entityForm.name,
+          entity_group_uuid: entityForm.entity_group_uuid,
+          entity_group_id: selectedGroup.entity_group_id,
+          description: entityForm.description
+        })
+        .eq('entity_uuid', editingEntity.entity_uuid);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Entity updated successfully",
+      });
+
+      setIsEditEntityOpen(false);
+      setEditingEntity(null);
+      setEntityForm({ name: '', description: '', entity_group_uuid: '' });
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update entity",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openEditDialog = (entity: Entity) => {
+    setEditingEntity(entity);
+    setEntityForm({
+      name: entity.entity_name,
+      description: entity.description || '',
+      entity_group_uuid: entity.entity_group_uuid
+    });
+    setIsEditEntityOpen(true);
   };
 
   if (!isSuperAdmin && !isEntityAdmin()) {
@@ -288,18 +344,9 @@ export function EntityManagement() {
                           onChange={(e) => setEntityForm(prev => ({ ...prev, name: e.target.value }))}
                           placeholder="e.g., ACME Corporation"
                         />
-                      </div>
-                      <div>
-                        <Label htmlFor="entity-code">Entity Code</Label>
-                        <Input
-                          id="entity-code"
-                          value={entityForm.code}
-                          onChange={(e) => setEntityForm(prev => ({ ...prev, code: e.target.value }))}
-                          placeholder="e.g., ACME_CORP"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="entity-group">Entity Group</Label>
+                       </div>
+                       <div>
+                         <Label htmlFor="entity-group">Entity Group</Label>
                         <Select 
                           value={entityForm.entity_group_uuid} 
                           onValueChange={(value) => setEntityForm(prev => ({ ...prev, entity_group_uuid: value }))}
@@ -340,11 +387,12 @@ export function EntityManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Code</TableHead>
+                  <TableHead>Entity ID</TableHead>
+                  <TableHead>Legal Entity</TableHead>
+                  <TableHead>Group ID</TableHead>
+                  <TableHead>Group Name</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -352,17 +400,84 @@ export function EntityManagement() {
                   <TableRow key={entity.entity_uuid}>
                     <TableCell className="font-mono text-sm">{entity.entity_id}</TableCell>
                     <TableCell className="font-medium">{entity.entity_name}</TableCell>
-                    <TableCell className="font-mono text-sm">{entity.entity_code}</TableCell>
+                    <TableCell className="font-mono text-sm">{entity.entity_group_id}</TableCell>
+                    <TableCell>{entity.entity_group_name || 'Unknown'}</TableCell>
                     <TableCell>
                       <Badge variant={entity.is_active ? "default" : "secondary"}>
                         {entity.is_active ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(entity.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {isSuperAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(entity)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+
+            {/* Edit Entity Dialog */}
+            <Dialog open={isEditEntityOpen} onOpenChange={setIsEditEntityOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Entity</DialogTitle>
+                  <DialogDescription>
+                    Update entity information
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-entity-name">Entity Name</Label>
+                    <Input
+                      id="edit-entity-name"
+                      value={entityForm.name}
+                      onChange={(e) => setEntityForm(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., ACME Corporation"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-entity-group">Entity Group</Label>
+                    <Select 
+                      value={entityForm.entity_group_uuid} 
+                      onValueChange={(value) => setEntityForm(prev => ({ ...prev, entity_group_uuid: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select entity group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {entityGroups.map((group) => (
+                          <SelectItem key={group.entity_group_uuid} value={group.entity_group_uuid}>
+                            {group.entity_group_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-entity-description">Description</Label>
+                    <Textarea
+                      id="edit-entity-description"
+                      value={entityForm.description}
+                      onChange={(e) => setEntityForm(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Optional description"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsEditEntityOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={updateEntity}>Update Entity</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {isSuperAdmin && (
