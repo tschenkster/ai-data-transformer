@@ -457,6 +457,15 @@ export function EnhancedUserManagement() {
     );
   }
 
+  // Calculate status counts
+  const statusCounts = {
+    total: users.length,
+    pending: users.filter(u => u.status === 'pending').length,
+    approved: users.filter(u => u.status === 'approved').length,
+    suspended: users.filter(u => u.status === 'suspended').length,
+    rejected: users.filter(u => u.status === 'rejected').length
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -478,6 +487,55 @@ export function EnhancedUserManagement() {
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4">
+            {/* User Statistics Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <div className="text-2xl font-bold">{statusCounts.total}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Total Users</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-yellow-600" />
+                    <div className="text-2xl font-bold">{statusCounts.pending}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <div className="text-2xl font-bold">{statusCounts.approved}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Approved</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <XCircle className="h-4 w-4 text-orange-600" />
+                    <div className="text-2xl font-bold">{statusCounts.suspended}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Suspended</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-2">
+                    <XCircle className="h-4 w-4 text-red-600" />
+                    <div className="text-2xl font-bold">{statusCounts.rejected}</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Rejected</p>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Actions Bar */}
             <div className="flex justify-between items-center gap-4">
               <div className="flex items-center gap-2 flex-1">
