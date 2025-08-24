@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { supabase } from '@/integrations/supabase/client';
 import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/lib/lineItemUtils';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { slugifyToKey } from '@/lib/utils';
 
 interface CreateLineItemDialogProps {
@@ -17,6 +18,7 @@ interface CreateLineItemDialogProps {
 
 export default function CreateLineItemDialog({ open, onOpenChange, structureUuid, onItemCreated }: CreateLineItemDialogProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -68,6 +70,7 @@ export default function CreateLineItemDialog({ open, onOpenChange, structureUuid
 
       const sortOrder = await getNextAvailableSortOrder();
 
+      const userName = user?.email || 'unknown user';
       const newItem = {
         report_structure_id: (structure as any).report_structure_id,
         report_structure_uuid: structureUuid,
@@ -82,6 +85,7 @@ export default function CreateLineItemDialog({ open, onOpenChange, structureUuid
         is_calculated: false,
         display: true,
         line_item_type: 'standard',
+        data_source: `added by ${userName} on ${new Date().toISOString().split('T')[0]}`,
       };
 
       const { data: createdItem, error } = await supabase

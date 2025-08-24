@@ -210,7 +210,7 @@ serve(async (req) => {
         is_leaf: item.is_leaf || false,
         is_calculated: item.is_calculated || false,
         display: item.display !== false, // Default to true
-        data_source: item.data_source || null,
+        data_source: `uploaded by ${userEmail} on ${new Date().toISOString().split('T')[0]}`,
         comment: additionalData ? JSON.stringify(additionalData) : (item.comment?.toString() || null)
       };
     });
