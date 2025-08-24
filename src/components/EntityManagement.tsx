@@ -39,9 +39,17 @@ interface Entity {
 interface UserEntityAccess {
   user_entity_access_uuid: string;
   user_account_uuid: string;
-  user_email?: string;
-  user_first_name?: string;
-  user_last_name?: string;
+  user_accounts?: {
+    email: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  entities?: {
+    entity_name: string;
+  };
+  entity_groups?: {
+    entity_group_name: string;
+  };
   entity_uuid?: string;
   entity_name?: string;
   entity_group_uuid?: string;
@@ -91,7 +99,7 @@ export function EntityManagement() {
           supabase.from('user_entity_access')
             .select(`
               *,
-              user_accounts!inner(email, first_name, last_name),
+              user_accounts!fk_user_entity_access_user(email, first_name, last_name),
               entities(entity_name),
               entity_groups(entity_group_name)
             `)
@@ -116,7 +124,7 @@ export function EntityManagement() {
             supabase.from('user_entity_access')
               .select(`
                 *,
-                user_accounts!inner(email, first_name, last_name),
+                user_accounts!fk_user_entity_access_user(email, first_name, last_name),
                 entities!inner(entity_name)
               `)
               .eq('entity_uuid', currentEntity.entity_uuid)
@@ -462,14 +470,14 @@ export function EntityManagement() {
                 {userAccess.map((access) => (
                   <TableRow key={access.user_entity_access_uuid}>
                     <TableCell>
-                      {access.user_first_name && access.user_last_name 
-                        ? `${access.user_first_name} ${access.user_last_name}`
+                      {access.user_accounts?.first_name && access.user_accounts?.last_name 
+                        ? `${access.user_accounts.first_name} ${access.user_accounts.last_name}`
                         : 'Unknown User'
                       }
                     </TableCell>
-                    <TableCell>{access.user_email || 'Unknown'}</TableCell>
+                    <TableCell>{access.user_accounts?.email || 'Unknown'}</TableCell>
                     <TableCell>
-                      {access.entity_name || access.entity_group_name || 'Unknown'}
+                      {access.entities?.entity_name || access.entity_groups?.entity_group_name || 'Unknown'}
                     </TableCell>
                     <TableCell>
                       <Badge variant={access.access_level === 'entity_admin' ? "default" : "secondary"}>
