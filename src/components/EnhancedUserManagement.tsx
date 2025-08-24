@@ -276,9 +276,10 @@ export function EnhancedUserManagement() {
       
       const { error } = await supabase.rpc('grant_entity_access', {
         p_user_uuid: accessForm.userUuid,
-        p_entity_uuid: accessForm.entityUuid === 'none' ? null : accessForm.entityUuid,
         p_access_level: accessForm.accessLevel,
-        p_granted_by_user_uuid: userAccount?.user_uuid
+        p_granted_by_user_uuid: userAccount?.user_uuid,
+        p_entity_uuid: accessForm.entityUuid === 'none' ? null : accessForm.entityUuid,
+        p_entity_group_uuid: accessForm.entityGroupUuid === 'none' ? null : accessForm.entityGroupUuid
       });
 
       if (error) throw error;
