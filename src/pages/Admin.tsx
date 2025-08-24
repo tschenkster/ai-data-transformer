@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Clock, UserCheck, Shield, Crown, CheckCircle, XCircle } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
-import { EntityManagement } from '@/components/EntityManagement';
+import { AccessManagement } from '@/components/AccessManagement';
 import { ActionButtons, createApproveAction, createRejectAction, createAdminDeleteAction, ActionButtonConfig } from '@/components/ui/action-buttons';
 
 interface UserAccount {
@@ -370,7 +370,7 @@ export default function Admin() {
 
           {(isSuperAdmin || isAdmin) && (
             <TabsContent value="entities" className="space-y-4">
-              <EntityManagement />
+              <AccessManagement />
             </TabsContent>
           )}
 

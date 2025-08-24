@@ -59,7 +59,7 @@ interface UserEntityAccess {
   is_active: boolean;
 }
 
-export function EntityManagement() {
+export function AccessManagement() {
   const { isSuperAdmin, userAccount, currentEntity, isEntityAdmin } = useAuth();
   const { toast } = useToast();
   const [entityGroups, setEntityGroups] = useState<EntityGroup[]>([]);
@@ -274,7 +274,7 @@ export function EntityManagement() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Entity Management</CardTitle>
+          <CardTitle>Access Management</CardTitle>
           <CardDescription>
             You don't have permission to manage entities. Contact your administrator for access.
           </CardDescription>
@@ -287,7 +287,7 @@ export function EntityManagement() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Entity Management</CardTitle>
+          <CardTitle>Access Management</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
@@ -303,7 +303,7 @@ export function EntityManagement() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />
-          Entity Management
+          Access Management
         </CardTitle>
         <CardDescription>
           Manage entities, entity groups, and user access permissions
