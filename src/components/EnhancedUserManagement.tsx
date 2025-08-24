@@ -456,6 +456,12 @@ export function EnhancedUserManagement() {
     return user.email;
   };
 
+  // Helper function to check if a user is Super Admin
+  const isUserSuperAdmin = (userUuid: string) => {
+    const role = userRoles.find(r => r.user_uuid === userUuid || r.user_id === userUuid)?.role;
+    return role === 'super_admin';
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = filters.search === '' || 
       user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -469,8 +475,12 @@ export function EnhancedUserManagement() {
     return matchesSearch && matchesStatus && matchesRole;
   });
 
-  // Filter user access based on access filters
+  // Filter user access based on access filters - exclude Super Admins as they have global access
   const filteredUserAccess = userAccess.filter(access => {
+    // Exclude Super Admins from entity-specific access management
+    const isAccessUserSuperAdmin = isUserSuperAdmin(access.user_account_uuid);
+    if (isAccessUserSuperAdmin) return false;
+
     const matchesSearch = accessFilters.search === '' || 
       access.user_accounts?.email?.toLowerCase().includes(accessFilters.search.toLowerCase()) ||
       access.user_accounts?.first_name?.toLowerCase().includes(accessFilters.search.toLowerCase()) ||
@@ -484,6 +494,10 @@ export function EnhancedUserManagement() {
 
     return matchesSearch && matchesEntity && matchesAccessLevel;
   });
+
+  // Get Super Admins count for informational display
+  const superAdmins = users.filter(user => isUserSuperAdmin(user.user_uuid));
+  const regularUsersWithAccess = userAccess.filter(access => !isUserSuperAdmin(access.user_account_uuid));
 
   if (!isSuperAdmin && !isEntityAdmin()) {
     return (
@@ -802,9 +816,32 @@ export function EnhancedUserManagement() {
 
           {/* Access Tab */}
           <TabsContent value="access" className="space-y-4">
+            {/* Super Admin Info Banner */}
+            {superAdmins.length > 0 && (
+              <Card className="bg-muted/50 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <Crown className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-sm">Super Admin Global Access</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {superAdmins.length} Super Admin{superAdmins.length > 1 ? 's' : ''} ({superAdmins.map(sa => getUserName(sa)).join(', ')}) 
+                        {superAdmins.length === 1 ? ' has' : ' have'} global access to all entities and are not shown in entity-specific access management.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Access Management Header */}
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">User Access Permissions</h3>
+              <div>
+                <h3 className="text-lg font-medium">User Access Permissions</h3>
+                <p className="text-sm text-muted-foreground">
+                  Managing entity-specific access for {regularUsersWithAccess.length} access grant{regularUsersWithAccess.length !== 1 ? 's' : ''}
+                </p>
+              </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -828,57 +865,75 @@ export function EnhancedUserManagement() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <Select value={selectedUserForPermissions} onValueChange={setSelectedUserForPermissions}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select user to view permissions" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.filter(u => u.status === 'approved').map((user) => (
-                            <SelectItem key={user.user_uuid} value={user.user_uuid}>
-                              {getUserName(user)} ({user.email})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {selectedUserForPermissions && (
-                        <div className="border rounded-lg p-4">
-                          <h4 className="font-medium mb-3">Effective Permissions</h4>
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Entity/Group</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Access Level</TableHead>
-                                <TableHead>Granted</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {userAccess
-                                .filter(access => access.user_account_uuid === selectedUserForPermissions)
-                                .map((access) => (
-                                <TableRow key={access.user_entity_access_uuid}>
-                                  <TableCell>
-                                    {access.entities?.entity_name || access.entity_groups?.entity_group_name || 'Unknown'}
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline">
-                                      {access.entity_uuid ? 'Entity' : 'Entity Group'}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant={access.access_level === 'entity_admin' ? 'default' : 'secondary'}>
-                                      {access.access_level === 'entity_admin' ? 'Entity Admin' : 'Viewer'}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    {new Date(access.granted_at).toLocaleDateString()}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      )}
+                        <Select value={selectedUserForPermissions} onValueChange={setSelectedUserForPermissions}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select user to view permissions" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.filter(u => u.status === 'approved').map((user) => (
+                              <SelectItem key={user.user_uuid} value={user.user_uuid}>
+                                {getUserName(user)} ({user.email}) {isUserSuperAdmin(user.user_uuid) && <Badge variant="outline" className="ml-1 text-xs">Super Admin</Badge>}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {selectedUserForPermissions && (
+                          <div className="border rounded-lg p-4">
+                            {isUserSuperAdmin(selectedUserForPermissions) ? (
+                              <div className="text-center py-8">
+                                <Crown className="h-12 w-12 text-primary mx-auto mb-4" />
+                                <h4 className="font-medium text-lg mb-2">Super Admin Global Access</h4>
+                                <p className="text-muted-foreground">
+                                  This user has Super Admin privileges and global access to all entities, 
+                                  entity groups, and system functions. No entity-specific permissions are needed.
+                                </p>
+                              </div>
+                            ) : (
+                              <>
+                                <h4 className="font-medium mb-3">Effective Permissions</h4>
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>Entity/Group</TableHead>
+                                      <TableHead>Type</TableHead>
+                                      <TableHead>Access Level</TableHead>
+                                      <TableHead>Granted</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {userAccess
+                                      .filter(access => access.user_account_uuid === selectedUserForPermissions)
+                                      .map((access) => (
+                                      <TableRow key={access.user_entity_access_uuid}>
+                                        <TableCell>
+                                          {access.entities?.entity_name || access.entity_groups?.entity_group_name || 'Unknown'}
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge variant="outline">
+                                            {access.entity_uuid ? 'Entity' : 'Entity Group'}
+                                          </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge variant={access.access_level === 'entity_admin' ? 'default' : 'secondary'}>
+                                            {access.access_level === 'entity_admin' ? 'Entity Admin' : 'Viewer'}
+                                          </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                          {new Date(access.granted_at).toLocaleDateString()}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                                {userAccess.filter(access => access.user_account_uuid === selectedUserForPermissions).length === 0 && (
+                                  <div className="text-center py-4 text-muted-foreground">
+                                    No entity-specific permissions assigned
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -901,16 +956,21 @@ export function EnhancedUserManagement() {
                         <Label htmlFor="access-user">User</Label>
                         <Select value={accessForm.userUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, userUuid: value }))}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select user" />
+                            <SelectValue placeholder="Select user (excluding Super Admins)" />
                           </SelectTrigger>
                           <SelectContent>
-                            {users.filter(u => u.status === 'approved').map((user) => (
+                            {users
+                              .filter(u => u.status === 'approved' && !isUserSuperAdmin(u.user_uuid))
+                              .map((user) => (
                               <SelectItem key={user.user_uuid} value={user.user_uuid}>
                                 {getUserName(user)} ({user.email})
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Super Admins have global access and don't need entity-specific permissions
+                        </p>
                       </div>
                       <div>
                         <Label htmlFor="access-entity">Entity (Optional)</Label>
