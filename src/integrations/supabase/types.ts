@@ -664,7 +664,7 @@ export type Database = {
           last_name: string
           status_enum: Database["public"]["Enums"]["user_account_status"]
           updated_at: string
-          user_account_uuid: string
+          user_uuid: string
         }[]
       }
       get_valid_user_account_status_transitions: {
