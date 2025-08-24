@@ -18,8 +18,8 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
 interface ColumnMapping {
-  fileColumn: string;
   dbColumn: string;
+  fileColumn: string;
   mapped: boolean;
 }
 
@@ -81,7 +81,6 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
-  const [showMapping, setShowMapping] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [overwriteMode, setOverwriteMode] = useState(false);
@@ -210,36 +209,43 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
       setPreviewData(preview);
       setUploadProgress(50);
       
-      // Initialize column mappings with enhanced auto-detection
-      const mappings: ColumnMapping[] = preview.headers.map(header => {
-        const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      // Initialize reversed column mappings - one entry per required database field
+      const mappings: ColumnMapping[] = REQUIRED_COLUMNS.map(dbColumn => {
+        // Auto-detect the best matching file column for each database field
+        let bestMatch = '';
         
-        // Enhanced pattern matching for the 3 required fields
-        let dbMatch = '';
-        
-        // Match report_line_item_key
-        if (normalizedHeader.includes('key') || normalizedHeader.includes('id') || 
-            normalizedHeader === 'report_line_item_key' || normalizedHeader === 'line_item_key' ||
-            normalizedHeader === 'item_key') {
-          dbMatch = 'report_line_item_key';
-        }
-        // Match report_line_item_description
-        else if (normalizedHeader.includes('description') || normalizedHeader.includes('desc') || 
+        for (const header of preview.headers) {
+          const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          
+          // Enhanced pattern matching for each specific field
+          if (dbColumn === 'report_line_item_key') {
+            if (normalizedHeader.includes('key') || normalizedHeader.includes('id') || 
+                normalizedHeader === 'report_line_item_key' || normalizedHeader === 'line_item_key' ||
+                normalizedHeader === 'item_key' || normalizedHeader === 'code') {
+              bestMatch = header;
+              break;
+            }
+          } else if (dbColumn === 'report_line_item_description') {
+            if (normalizedHeader.includes('description') || normalizedHeader.includes('desc') || 
                 normalizedHeader === 'report_line_item_description' || normalizedHeader === 'line_item_description' ||
-                normalizedHeader === 'item_description' || normalizedHeader === 'name') {
-          dbMatch = 'report_line_item_description';
-        }
-        // Match parent_report_line_item_key
-        else if (normalizedHeader.includes('parent') || normalizedHeader.includes('parent_key') ||
+                normalizedHeader === 'item_description' || normalizedHeader === 'name' || normalizedHeader === 'title') {
+              bestMatch = header;
+              break;
+            }
+          } else if (dbColumn === 'parent_report_line_item_key') {
+            if (normalizedHeader.includes('parent') || normalizedHeader.includes('parent_key') ||
                 normalizedHeader === 'parent_report_line_item_key' || normalizedHeader === 'parent_line_item_key' ||
-                normalizedHeader === 'parent_id') {
-          dbMatch = 'parent_report_line_item_key';
+                normalizedHeader === 'parent_id' || normalizedHeader === 'parent_code') {
+              bestMatch = header;
+              break;
+            }
+          }
         }
         
         return {
-          fileColumn: header,
-          dbColumn: dbMatch || 'unmapped',
-          mapped: !!dbMatch
+          dbColumn,
+          fileColumn: bestMatch,
+          mapped: !!bestMatch
         };
       });
 
@@ -267,20 +273,24 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
     disabled: isProcessing
   });
 
-  const updateColumnMapping = (fileColumn: string, dbColumn: string) => {
+  const updateColumnMapping = (dbColumn: string, fileColumn: string) => {
     setColumnMappings(prev => prev.map(mapping => 
-      mapping.fileColumn === fileColumn 
-        ? { ...mapping, dbColumn, mapped: !!dbColumn && dbColumn !== 'unmapped' }
+      mapping.dbColumn === dbColumn 
+        ? { ...mapping, fileColumn, mapped: !!fileColumn && fileColumn !== 'unmapped' }
         : mapping
     ));
   };
 
-  const validateMappings = () => {
-    const mappedRequiredColumns = REQUIRED_COLUMNS.filter(col => 
-      columnMappings.some(mapping => mapping.dbColumn === col && mapping.mapped)
-    );
+  const getAvailableFileColumns = (currentDbColumn: string) => {
+    const usedColumns = columnMappings
+      .filter(m => m.dbColumn !== currentDbColumn && m.mapped && m.fileColumn)
+      .map(m => m.fileColumn);
     
-    return mappedRequiredColumns.length === REQUIRED_COLUMNS.length;
+    return previewData?.headers.filter(header => !usedColumns.includes(header)) || [];
+  };
+
+  const validateMappings = () => {
+    return columnMappings.every(mapping => mapping.mapped && mapping.fileColumn);
   };
 
   const processFile = async () => {
@@ -291,9 +301,9 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
 
     try {
       if (!validateMappings()) {
-        const unmappedRequired = REQUIRED_COLUMNS.filter(col => 
-          !columnMappings.some(mapping => mapping.dbColumn === col && mapping.mapped)
-        );
+        const unmappedRequired = columnMappings
+          .filter(mapping => !mapping.mapped || !mapping.fileColumn)
+          .map(mapping => mapping.dbColumn);
         throw new Error(`The following required fields must be mapped: ${unmappedRequired.join(', ')}`);
       }
 
@@ -313,22 +323,31 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
       const mappedData: any[] = [];
       const unmappedData: Record<string, any>[] = [];
 
+      // Get all mapped file columns
+      const mappedFileColumns = columnMappings
+        .filter(m => m.mapped && m.fileColumn)
+        .map(m => m.fileColumn);
+
       fullData.forEach((row, index) => {
         const mappedRow: any = {};
         const unmappedRow: Record<string, any> = {};
 
+        // Map the required fields
         columnMappings.forEach(mapping => {
-          if (mapping.mapped && mapping.dbColumn && mapping.dbColumn !== 'unmapped') {
+          if (mapping.mapped && mapping.fileColumn) {
             mappedRow[mapping.dbColumn] = row[mapping.fileColumn];
-          } else if (mapping.fileColumn in row) {
-            unmappedRow[mapping.fileColumn] = row[mapping.fileColumn];
           }
         });
 
-        // Add sort_order if not mapped
-        if (!mappedRow.sort_order) {
-          mappedRow.sort_order = index;
-        }
+        // Collect unmapped columns
+        Object.keys(row).forEach(fileColumn => {
+          if (!mappedFileColumns.includes(fileColumn)) {
+            unmappedRow[fileColumn] = row[fileColumn];
+          }
+        });
+
+        // Add sort_order
+        mappedRow.sort_order = index;
 
         mappedData.push(mappedRow);
         if (Object.keys(unmappedRow).length > 0) {
@@ -357,7 +376,6 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
       setSelectedFile(null);
       setPreviewData(null);
       setShowPreview(false);
-      setShowMapping(false);
       setColumnMappings([]);
       setOverwriteMode(false);
       setNewStructureName('');
@@ -504,58 +522,106 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
               </TabsContent>
 
               <TabsContent value="mapping" className="overflow-y-auto max-h-[60vh]">
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Column Mapping</h3>
                     <p className="text-sm text-muted-foreground">
-                      Map your file columns to the 3 required database fields. All fields marked with * are required for import.
+                      Select which file column contains the data for each required database field.
                     </p>
                   </div>
 
-                  <div className="grid gap-4">
-                    {columnMappings.map((mapping, index) => (
-                      <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <Label className="text-sm font-medium">{mapping.fileColumn}</Label>
-                          <p className="text-xs text-muted-foreground">File column</p>
+                  <div className="space-y-4">
+                    {columnMappings.map((mapping, index) => {
+                      const availableColumns = getAvailableFileColumns(mapping.dbColumn);
+                      const currentSelection = mapping.fileColumn || '';
+                      const allOptions = currentSelection && !availableColumns.includes(currentSelection) 
+                        ? [currentSelection, ...availableColumns] 
+                        : availableColumns;
+
+                      // Get preview data for the selected column
+                      const previewValues = previewData && mapping.fileColumn 
+                        ? previewData.rows.slice(0, 3).map(row => {
+                            const colIndex = previewData.headers.indexOf(mapping.fileColumn);
+                            return colIndex >= 0 ? row[colIndex] : '';
+                          }).filter(val => val !== undefined && val !== '')
+                        : [];
+
+                      return (
+                        <div key={mapping.dbColumn} className="space-y-3 p-4 border rounded-lg">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <Label className="text-sm font-medium text-primary">
+                                {mapping.dbColumn.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} 
+                                <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {mapping.dbColumn === 'report_line_item_key' && 'Unique identifier for each line item'}
+                                {mapping.dbColumn === 'report_line_item_description' && 'Description or name of the line item'}
+                                {mapping.dbColumn === 'parent_report_line_item_key' && 'Key of the parent item (for hierarchical data)'}
+                              </p>
+                            </div>
+                            <div className="w-8 flex justify-center">
+                              {mapping.mapped && mapping.fileColumn ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <X className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                              <Select
+                                value={mapping.fileColumn || 'unmapped'}
+                                onValueChange={(value) => updateColumnMapping(mapping.dbColumn, value === 'unmapped' ? '' : value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select file column" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unmapped">
+                                    <span className="text-muted-foreground">Select a column...</span>
+                                  </SelectItem>
+                                  {allOptions.map(col => (
+                                    <SelectItem key={col} value={col}>
+                                      {col}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            {previewValues.length > 0 && (
+                              <div className="flex-1">
+                                <div className="text-xs text-muted-foreground mb-1">Preview:</div>
+                                <div className="text-xs bg-muted p-2 rounded text-muted-foreground">
+                                  {previewValues.slice(0, 2).map((val, i) => (
+                                    <div key={i} className="truncate">{val?.toString() || '(empty)'}</div>
+                                  ))}
+                                  {previewValues.length > 2 && <div>...</div>}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                        <div className="flex-1">
-                          <Select
-                            value={mapping.dbColumn}
-                            onValueChange={(value) => updateColumnMapping(mapping.fileColumn, value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select database field" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="unmapped">Not mapped</SelectItem>
-                              {REQUIRED_COLUMNS.map(col => (
-                                <SelectItem key={col} value={col}>
-                                  {col} <span className="text-red-500">*</span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="w-8">
-                          {mapping.mapped ? (
-                            <Check className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <X className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
-                  <div className="p-4 bg-muted rounded-lg">
-                    <h4 className="font-medium mb-2">Mapping Status</h4>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium mb-2 flex items-center gap-2">
+                      Mapping Status
+                      {validateMappings() ? (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">Complete</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Incomplete</Badge>
+                      )}
+                    </h4>
                     <div className="space-y-1 text-sm">
-                      <p>Required fields mapped: {columnMappings.filter(m => m.mapped && REQUIRED_COLUMNS.includes(m.dbColumn)).length}/{REQUIRED_COLUMNS.length}</p>
-                      <p>Unmapped columns: {columnMappings.filter(m => !m.mapped).length}</p>
-                      {columnMappings.filter(m => m.mapped && REQUIRED_COLUMNS.includes(m.dbColumn)).length < REQUIRED_COLUMNS.length && (
-                        <p className="text-red-600 font-medium">⚠️ Please map all required fields to proceed</p>
+                      <p>Required fields mapped: {columnMappings.filter(m => m.mapped).length}/{REQUIRED_COLUMNS.length}</p>
+                      <p>Available file columns: {previewData?.headers.length || 0}</p>
+                      <p>Unmapped file columns: {(previewData?.headers.length || 0) - columnMappings.filter(m => m.mapped).length}</p>
+                      {!validateMappings() && (
+                        <p className="text-amber-700 font-medium mt-2">⚠️ Please map all required fields to proceed</p>
                       )}
                     </div>
                   </div>
@@ -643,7 +709,13 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                     </p>
                     <div className="p-4 bg-muted rounded-lg">
                       <p className="text-sm">
-                        <strong>Unmapped columns:</strong> {columnMappings.filter(m => !m.mapped).map(m => m.fileColumn).join(', ') || 'None'}
+                        <strong>Unmapped columns:</strong> {
+                          previewData 
+                            ? previewData.headers
+                                .filter(header => !columnMappings.some(m => m.fileColumn === header && m.mapped))
+                                .join(', ') || 'None'
+                            : 'None'
+                        }
                       </p>
                     </div>
                   </div>
