@@ -22,7 +22,7 @@ export default function Admin() {
             {(isSuperAdmin || isAdmin) && (
               <TabsTrigger value="entities">Entity Management</TabsTrigger>
             )}
-            <TabsTrigger value="audit">Security Audit</TabsTrigger>
+            <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
           <TabsContent value="audit" className="space-y-4">

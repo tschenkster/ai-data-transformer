@@ -552,7 +552,6 @@ export function EnhancedUserManagement() {
           <TabsList>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="access">Access</TabsTrigger>
-            <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -1159,10 +1158,6 @@ export function EnhancedUserManagement() {
             </Table>
           </TabsContent>
 
-          {/* Audit Log Tab */}
-          <TabsContent value="audit" className="space-y-4">
-            <SecurityAuditLog />
-          </TabsContent>
         </Tabs>
       </CardContent>
 
