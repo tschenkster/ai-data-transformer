@@ -127,7 +127,10 @@ export function EnhancedUserManagement() {
     userUuid: '',
     firstName: '',
     lastName: '',
-    role: 'viewer' as 'viewer' | 'entity_admin' | 'super_admin'
+    role: 'viewer' as 'viewer' | 'entity_admin' | 'super_admin',
+    phoneNumber: '',
+    timezone: 'UTC',
+    locale: 'en-US'
   });
   
   // Filter states
@@ -423,6 +426,97 @@ export function EnhancedUserManagement() {
       toast({
         title: "Error",
         description: error.message || "Failed to update access level",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const openEditUserDialog = (user: UserAccount) => {
+    const userRole = userRoles.find(r => r.user_uuid === user.user_uuid || r.user_id === user.user_uuid)?.role || 'viewer';
+    setEditUserForm({
+      userUuid: user.user_uuid,
+      firstName: user.first_name || '',
+      lastName: user.last_name || '',
+      role: userRole as 'viewer' | 'entity_admin' | 'super_admin',
+      phoneNumber: '', // Note: phone_number not available in current interface
+      timezone: 'UTC', // Note: timezone not available in current interface  
+      locale: 'en-US' // Note: locale not available in current interface
+    });
+    setIsEditUserDialogOpen(true);
+  };
+
+  const updateUser = async () => {
+    try {
+      setActionLoading('edit');
+      
+      // Update user account information
+      const { error: accountError } = await supabase
+        .from('user_accounts')
+        .update({
+          first_name: editUserForm.firstName || null,
+          last_name: editUserForm.lastName || null,
+        })
+        .eq('user_uuid', editUserForm.userUuid);
+
+      if (accountError) throw accountError;
+
+      // Update user role if Super Admin is making the change
+      if (isSuperAdmin) {
+        // First delete existing roles for this user
+        const { error: deleteRoleError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_uuid', editUserForm.userUuid);
+
+        if (deleteRoleError) throw deleteRoleError;
+
+        // Insert new role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_uuid: editUserForm.userUuid,
+            user_id: editUserForm.userUuid, // Use the same UUID for both fields
+            role: editUserForm.role,
+            assigned_by_user_account_uuid: userAccount?.user_uuid
+          });
+
+        if (roleError) throw roleError;
+      }
+
+      // Log security event
+      if (logSecurityEvent) {
+        await logSecurityEvent('user_updated', editUserForm.userUuid, {
+          updated_by: user?.email,
+          changes: {
+            firstName: editUserForm.firstName,
+            lastName: editUserForm.lastName,
+            ...(isSuperAdmin && { role: editUserForm.role })
+          }
+        });
+      }
+
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+
+      setIsEditUserDialogOpen(false);
+      setEditUserForm({ 
+        userUuid: '', 
+        firstName: '', 
+        lastName: '', 
+        role: 'viewer',
+        phoneNumber: '',
+        timezone: 'UTC',
+        locale: 'en-US'
+      });
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to update user",
         variant: "destructive",
       });
     } finally {
@@ -760,64 +854,79 @@ export function EnhancedUserManagement() {
                     <TableCell>
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        {user.status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateUserStatus(user.user_uuid, 'approved')}
-                              disabled={actionLoading === `status-${user.user_uuid}`}
-                            >
-                              <CheckCircle className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateUserStatus(user.user_uuid, 'rejected')}
-                              disabled={actionLoading === `status-${user.user_uuid}`}
-                            >
-                              <XCircle className="h-3 w-3" />
-                            </Button>
-                          </>
-                        )}
-                        {user.status === 'approved' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateUserStatus(user.user_uuid, 'suspended')}
-                            disabled={actionLoading === `status-${user.user_uuid}`}
-                          >
-                            <XCircle className="h-3 w-3" />
-                          </Button>
-                        )}
-                        {user.status === 'suspended' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateUserStatus(user.user_uuid, 'approved')}
-                            disabled={actionLoading === `status-${user.user_uuid}`}
-                          >
-                            <RotateCcw className="h-3 w-3" />
-                          </Button>
-                        )}
-                        {isSuperAdmin && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setDeleteConfirm({ 
-                              open: true, 
-                              userUuid: user.user_uuid, 
-                              userEmail: user.email 
-                            })}
-                            disabled={actionLoading === `delete-${user.user_uuid}`}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex gap-1">
+                         {/* Edit User Button - Available to Super Admins and Entity Admins */}
+                         {(isSuperAdmin || isEntityAdmin()) && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => openEditUserDialog(user)}
+                             disabled={actionLoading === 'edit'}
+                           >
+                             <Edit className="h-3 w-3" />
+                           </Button>
+                         )}
+                         
+                         {/* Status Change Buttons */}
+                         {user.status === 'pending' && (
+                           <>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => updateUserStatus(user.user_uuid, 'approved')}
+                               disabled={actionLoading === `status-${user.user_uuid}`}
+                             >
+                               <CheckCircle className="h-3 w-3" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => updateUserStatus(user.user_uuid, 'rejected')}
+                               disabled={actionLoading === `status-${user.user_uuid}`}
+                             >
+                               <XCircle className="h-3 w-3" />
+                             </Button>
+                           </>
+                         )}
+                         {user.status === 'approved' && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => updateUserStatus(user.user_uuid, 'suspended')}
+                             disabled={actionLoading === `status-${user.user_uuid}`}
+                           >
+                             <XCircle className="h-3 w-3" />
+                           </Button>
+                         )}
+                         {user.status === 'suspended' && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => updateUserStatus(user.user_uuid, 'approved')}
+                             disabled={actionLoading === `status-${user.user_uuid}`}
+                           >
+                             <RotateCcw className="h-3 w-3" />
+                           </Button>
+                         )}
+                         
+                         {/* Delete Button - Super Admin Only */}
+                         {isSuperAdmin && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => setDeleteConfirm({ 
+                               open: true, 
+                               userUuid: user.user_uuid, 
+                               userEmail: user.email 
+                             })}
+                             disabled={actionLoading === `delete-${user.user_uuid}`}
+                           >
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                         )}
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -1187,6 +1296,103 @@ export function EnhancedUserManagement() {
 
         </Tabs>
       </CardContent>
+      
+      {/* Edit User Dialog */}
+      <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and role assignments
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-first-name">First Name</Label>
+                <Input
+                  id="edit-first-name"
+                  value={editUserForm.firstName}
+                  onChange={(e) => setEditUserForm(prev => ({ ...prev, firstName: e.target.value }))}
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-last-name">Last Name</Label>
+                <Input
+                  id="edit-last-name"
+                  value={editUserForm.lastName}
+                  onChange={(e) => setEditUserForm(prev => ({ ...prev, lastName: e.target.value }))}
+                  placeholder="Doe"
+                />
+              </div>
+            </div>
+            
+            {/* Role can only be changed by Super Admins */}
+            {isSuperAdmin && (
+              <div>
+                <Label htmlFor="edit-role">Role</Label>
+                <Select 
+                  value={editUserForm.role} 
+                  onValueChange={(value: 'viewer' | 'entity_admin' | 'super_admin') => 
+                    setEditUserForm(prev => ({ ...prev, role: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="entity_admin">Entity Admin</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {/* Show current role for Entity Admins (read-only) */}
+            {!isSuperAdmin && (
+              <div>
+                <Label>Current Role</Label>
+                <div className="mt-2">
+                  {editUserForm.role === 'super_admin' && (
+                    <Badge variant="outline" className="text-purple-600">
+                      <Crown className="w-3 h-3 mr-1" />Super Admin
+                    </Badge>
+                  )}
+                  {editUserForm.role === 'entity_admin' && (
+                    <Badge variant="outline" className="text-blue-600">
+                      <Shield className="w-3 h-3 mr-1" />Entity Admin
+                    </Badge>
+                  )}
+                  {editUserForm.role === 'viewer' && (
+                    <Badge variant="outline">
+                      <Eye className="w-3 h-3 mr-1" />Viewer
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Only Super Admins can change user roles
+                </p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditUserDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={updateUser} 
+              disabled={actionLoading === 'edit'}
+            >
+              {actionLoading === 'edit' ? 'Updating...' : 'Update User'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteConfirm.open} onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, open }))}>
