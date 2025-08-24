@@ -33,8 +33,8 @@ export type Database = {
           target_language: string
           total_accounts: number
           updated_at: string
-          user_account_uuid: string | null
           user_id: string
+          user_uuid: string | null
         }
         Insert: {
           coa_translation_session_uuid?: string
@@ -54,8 +54,8 @@ export type Database = {
           target_language: string
           total_accounts: number
           updated_at?: string
-          user_account_uuid?: string | null
           user_id: string
+          user_uuid?: string | null
         }
         Update: {
           coa_translation_session_uuid?: string
@@ -75,16 +75,16 @@ export type Database = {
           target_language?: string
           total_accounts?: number
           updated_at?: string
-          user_account_uuid?: string | null
           user_id?: string
+          user_uuid?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "fk_coa_translation_sessions_user_account"
-            columns: ["user_account_uuid"]
+            columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
         ]
       }
@@ -93,7 +93,7 @@ export type Database = {
           comment: string | null
           created_at: string | null
           created_by: string | null
-          created_by_user_account_uuid: string | null
+          created_by_user_uuid: string | null
           data_source: string | null
           description_of_leaf: string | null
           display: boolean | null
@@ -123,13 +123,13 @@ export type Database = {
           tags: string[] | null
           updated_at: string | null
           updated_by: string | null
-          updated_by_user_account_uuid: string | null
+          updated_by_user_uuid: string | null
         }
         Insert: {
           comment?: string | null
           created_at?: string | null
           created_by?: string | null
-          created_by_user_account_uuid?: string | null
+          created_by_user_uuid?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
@@ -159,13 +159,13 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           updated_by?: string | null
-          updated_by_user_account_uuid?: string | null
+          updated_by_user_uuid?: string | null
         }
         Update: {
           comment?: string | null
           created_at?: string | null
           created_by?: string | null
-          created_by_user_account_uuid?: string | null
+          created_by_user_uuid?: string | null
           data_source?: string | null
           description_of_leaf?: string | null
           display?: boolean | null
@@ -195,22 +195,22 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           updated_by?: string | null
-          updated_by_user_account_uuid?: string | null
+          updated_by_user_uuid?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "fk_report_line_items_created_by_user_account"
-            columns: ["created_by_user_account_uuid"]
+            columns: ["created_by_user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
           {
             foreignKeyName: "fk_report_line_items_updated_by_user_account"
-            columns: ["updated_by_user_account_uuid"]
+            columns: ["updated_by_user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
           {
             foreignKeyName: "report_line_items_report_structure_id_fkey"
@@ -298,7 +298,7 @@ export type Database = {
         Row: {
           archived_at: string | null
           archived_by: string | null
-          archived_by_user_account_uuid: string | null
+          archived_by_user_uuid: string | null
           created_at: string
           created_by_supabase_user_uuid: string
           created_by_user_name: string
@@ -318,7 +318,7 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           archived_by?: string | null
-          archived_by_user_account_uuid?: string | null
+          archived_by_user_uuid?: string | null
           created_at?: string
           created_by_supabase_user_uuid: string
           created_by_user_name: string
@@ -338,7 +338,7 @@ export type Database = {
         Update: {
           archived_at?: string | null
           archived_by?: string | null
-          archived_by_user_account_uuid?: string | null
+          archived_by_user_uuid?: string | null
           created_at?: string
           created_by_supabase_user_uuid?: string
           created_by_user_name?: string
@@ -358,10 +358,10 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_report_structures_archived_by_user_account"
-            columns: ["archived_by_user_account_uuid"]
+            columns: ["archived_by_user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
         ]
       }
@@ -372,11 +372,11 @@ export type Database = {
           details: Json | null
           ip_address: unknown | null
           security_audit_log_uuid: string
-          target_user_account_uuid: string | null
           target_user_id: string | null
-          user_account_uuid: string | null
+          target_user_uuid: string | null
           user_agent: string | null
           user_id: string | null
+          user_uuid: string | null
         }
         Insert: {
           action: string
@@ -384,11 +384,11 @@ export type Database = {
           details?: Json | null
           ip_address?: unknown | null
           security_audit_log_uuid?: string
-          target_user_account_uuid?: string | null
           target_user_id?: string | null
-          user_account_uuid?: string | null
+          target_user_uuid?: string | null
           user_agent?: string | null
           user_id?: string | null
+          user_uuid?: string | null
         }
         Update: {
           action?: string
@@ -396,26 +396,26 @@ export type Database = {
           details?: Json | null
           ip_address?: unknown | null
           security_audit_log_uuid?: string
-          target_user_account_uuid?: string | null
           target_user_id?: string | null
-          user_account_uuid?: string | null
+          target_user_uuid?: string | null
           user_agent?: string | null
           user_id?: string | null
+          user_uuid?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "fk_security_audit_logs_target_user_account"
-            columns: ["target_user_account_uuid"]
+            columns: ["target_user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
           {
             foreignKeyName: "fk_security_audit_logs_user_account"
-            columns: ["user_account_uuid"]
+            columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
         ]
       }
@@ -438,8 +438,8 @@ export type Database = {
           supabase_user_uuid: string
           timezone: string | null
           updated_at: string | null
-          user_account_id: number
-          user_account_uuid: string
+          user_id: number
+          user_uuid: string
         }
         Insert: {
           approved_at?: string | null
@@ -459,8 +459,8 @@ export type Database = {
           supabase_user_uuid: string
           timezone?: string | null
           updated_at?: string | null
-          user_account_id?: number
-          user_account_uuid?: string
+          user_id?: number
+          user_uuid?: string
         }
         Update: {
           approved_at?: string | null
@@ -480,8 +480,8 @@ export type Database = {
           supabase_user_uuid?: string
           timezone?: string | null
           updated_at?: string | null
-          user_account_id?: number
-          user_account_uuid?: string
+          user_id?: number
+          user_uuid?: string
         }
         Relationships: []
       }
@@ -491,27 +491,27 @@ export type Database = {
           assigned_by: string | null
           assigned_by_user_account_uuid: string | null
           role: Database["public"]["Enums"]["app_role"]
-          user_account_uuid: string | null
           user_id: string
           user_role_uuid: string
+          user_uuid: string | null
         }
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
           assigned_by_user_account_uuid?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          user_account_uuid?: string | null
           user_id: string
           user_role_uuid?: string
+          user_uuid?: string | null
         }
         Update: {
           assigned_at?: string
           assigned_by?: string | null
           assigned_by_user_account_uuid?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          user_account_uuid?: string | null
           user_id?: string
           user_role_uuid?: string
+          user_uuid?: string | null
         }
         Relationships: [
           {
@@ -519,14 +519,14 @@ export type Database = {
             columns: ["assigned_by_user_account_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
           {
             foreignKeyName: "fk_user_roles_user_account"
-            columns: ["user_account_uuid"]
+            columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_account_uuid"]
+            referencedColumns: ["user_uuid"]
           },
         ]
       }
@@ -629,8 +629,8 @@ export type Database = {
           last_login_at: string
           last_name: string
           status: string
-          user_account_id: number
-          user_account_uuid: string
+          user_id: number
+          user_uuid: string
         }[]
       }
       get_user_summary: {
@@ -652,7 +652,7 @@ export type Database = {
           last_name: string
           roles: string[]
           status: string
-          user_account_uuid: string
+          user_uuid: string
         }[]
       }
       get_users_by_status: {
@@ -754,7 +754,7 @@ export type Database = {
         Args: {
           p_new_status: Database["public"]["Enums"]["user_account_status"]
           p_reason?: string
-          p_user_account_uuid: string
+          p_user_uuid: string
         }
         Returns: boolean
       }

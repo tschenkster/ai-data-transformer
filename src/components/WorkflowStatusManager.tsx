@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 interface UserAccountWithStatus {
-  user_account_uuid: string;
+  user_uuid: string;
   email: string;
   first_name: string;
   last_name: string;
@@ -110,7 +110,7 @@ export function WorkflowStatusManager() {
     try {
       const { error } = await supabase
         .rpc('transition_user_account_status', {
-          p_user_account_uuid: userUuid,
+          p_user_uuid: userUuid,
           p_new_status: newStatus,
           p_reason: reason
         });
@@ -221,7 +221,7 @@ export function WorkflowStatusManager() {
           ) : (
             <div className="space-y-4">
               {pendingUsers.map((user) => (
-                <div key={user.user_account_uuid} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={user.user_uuid} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     {getStatusIcon(user.status_enum)}
                     <div>
@@ -242,7 +242,7 @@ export function WorkflowStatusManager() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        setSelectedUser(user.user_account_uuid);
+                        setSelectedUser(user.user_uuid);
                         fetchValidTransitions(user.status_enum);
                       }}
                     >
@@ -250,7 +250,7 @@ export function WorkflowStatusManager() {
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => transitionUserStatus(user.user_account_uuid, 'approved' as const, 'Manual approval by admin')}
+                      onClick={() => transitionUserStatus(user.user_uuid, 'approved' as const, 'Manual approval by admin')}
                       disabled={loading}
                     >
                       Approve
@@ -258,7 +258,7 @@ export function WorkflowStatusManager() {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => transitionUserStatus(user.user_account_uuid, 'rejected' as const, 'Manual rejection by admin')}
+                      onClick={() => transitionUserStatus(user.user_uuid, 'rejected' as const, 'Manual rejection by admin')}
                       disabled={loading}
                     >
                       Reject

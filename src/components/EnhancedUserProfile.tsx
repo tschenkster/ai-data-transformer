@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { User, Shield, Clock, MapPin } from 'lucide-react';
 
 interface EnhancedUserData {
-  user_account_uuid: string;
+  user_uuid: string;
   email: string;
   first_name: string;
   last_name: string;
