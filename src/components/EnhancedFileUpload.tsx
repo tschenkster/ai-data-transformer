@@ -55,27 +55,25 @@ interface ReportStructure {
   version: number;
 }
 
-const REQUIRED_COLUMNS = ['report_line_item_key'];
-const OPTIONAL_COLUMNS = [
-  'report_line_item_description',
-  'parent_report_line_item_key',
-  'hierarchy_path',
-  'level_1_line_item_description',
-  'level_2_line_item_description',
-  'level_3_line_item_description',
-  'level_4_line_item_description',
-  'level_5_line_item_description',
-  'level_6_line_item_description',
-  'level_7_line_item_description',
-  'line_item_type',
-  'description_of_leaf',
-  'is_leaf',
-  'is_calculated',
-  'display',
+const REQUIRED_COLUMNS = [
+  'report_line_item_key',
+  'report_line_item_description', 
+  'parent_report_line_item_key'
+];
+
+// System-generated fields that should not be mapped by users
+const SYSTEM_GENERATED_COLUMNS = [
+  'report_line_item_id',
+  'report_line_item_uuid',
+  'report_structure_id',
+  'report_structure_uuid', 
+  'report_structure_name',
+  'created_at',
+  'updated_at',
+  'created_by',
+  'updated_by',
   'data_source',
-  'sort_order',
-  'comment',
-  'imported_structure_id'
+  'sort_order'
 ];
 
 export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
@@ -212,13 +210,31 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
       setPreviewData(preview);
       setUploadProgress(50);
       
-      // Initialize column mappings
+      // Initialize column mappings with enhanced auto-detection
       const mappings: ColumnMapping[] = preview.headers.map(header => {
         const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
-        const dbMatch = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS].find(col => 
-          col.toLowerCase().includes(normalizedHeader) || 
-          normalizedHeader.includes(col.toLowerCase().replace(/_/g, ''))
-        );
+        
+        // Enhanced pattern matching for the 3 required fields
+        let dbMatch = '';
+        
+        // Match report_line_item_key
+        if (normalizedHeader.includes('key') || normalizedHeader.includes('id') || 
+            normalizedHeader === 'report_line_item_key' || normalizedHeader === 'line_item_key' ||
+            normalizedHeader === 'item_key') {
+          dbMatch = 'report_line_item_key';
+        }
+        // Match report_line_item_description
+        else if (normalizedHeader.includes('description') || normalizedHeader.includes('desc') || 
+                normalizedHeader === 'report_line_item_description' || normalizedHeader === 'line_item_description' ||
+                normalizedHeader === 'item_description' || normalizedHeader === 'name') {
+          dbMatch = 'report_line_item_description';
+        }
+        // Match parent_report_line_item_key
+        else if (normalizedHeader.includes('parent') || normalizedHeader.includes('parent_key') ||
+                normalizedHeader === 'parent_report_line_item_key' || normalizedHeader === 'parent_line_item_key' ||
+                normalizedHeader === 'parent_id') {
+          dbMatch = 'parent_report_line_item_key';
+        }
         
         return {
           fileColumn: header,
@@ -275,7 +291,10 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
 
     try {
       if (!validateMappings()) {
-        throw new Error('Required columns must be mapped');
+        const unmappedRequired = REQUIRED_COLUMNS.filter(col => 
+          !columnMappings.some(mapping => mapping.dbColumn === col && mapping.mapped)
+        );
+        throw new Error(`The following required fields must be mapped: ${unmappedRequired.join(', ')}`);
       }
 
       if (!overwriteMode && !newStructureName.trim()) {
@@ -489,7 +508,7 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Column Mapping</h3>
                     <p className="text-sm text-muted-foreground">
-                      Map your file columns to database fields. Required fields are marked with a red asterisk.
+                      Map your file columns to the 3 required database fields. All fields marked with * are required for import.
                     </p>
                   </div>
 
@@ -516,11 +535,6 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                                   {col} <span className="text-red-500">*</span>
                                 </SelectItem>
                               ))}
-                              {OPTIONAL_COLUMNS.map(col => (
-                                <SelectItem key={col} value={col}>
-                                  {col}
-                                </SelectItem>
-                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -539,8 +553,10 @@ export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
                     <h4 className="font-medium mb-2">Mapping Status</h4>
                     <div className="space-y-1 text-sm">
                       <p>Required fields mapped: {columnMappings.filter(m => m.mapped && REQUIRED_COLUMNS.includes(m.dbColumn)).length}/{REQUIRED_COLUMNS.length}</p>
-                      <p>Optional fields mapped: {columnMappings.filter(m => m.mapped && OPTIONAL_COLUMNS.includes(m.dbColumn)).length}/{OPTIONAL_COLUMNS.length}</p>
                       <p>Unmapped columns: {columnMappings.filter(m => !m.mapped).length}</p>
+                      {columnMappings.filter(m => m.mapped && REQUIRED_COLUMNS.includes(m.dbColumn)).length < REQUIRED_COLUMNS.length && (
+                        <p className="text-red-600 font-medium">⚠️ Please map all required fields to proceed</p>
+                      )}
                     </div>
                   </div>
                 </div>
