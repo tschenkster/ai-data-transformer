@@ -119,7 +119,7 @@ export function AppSidebar() {
                         <Settings className={`h-4 w-4 flex-shrink-0 transition-colors ${
                           isActive ? "text-primary" : ""
                         }`} />
-                        <span className="truncate">Entity Management</span>
+                        <span className="truncate">Access Management</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

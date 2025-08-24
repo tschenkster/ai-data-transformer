@@ -274,7 +274,7 @@ export default function Admin() {
               Pending Users ({stats.pending})
             </TabsTrigger>
             {(isSuperAdmin || isAdmin) && (
-              <TabsTrigger value="entities">Entity Management</TabsTrigger>
+              <TabsTrigger value="entities">Access Management</TabsTrigger>
             )}
             <TabsTrigger value="audit">Security Audit</TabsTrigger>
           </TabsList>
