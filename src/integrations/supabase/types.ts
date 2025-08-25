@@ -991,6 +991,15 @@ export type Database = {
             }
         Returns: boolean
       }
+      grant_entity_group_access: {
+        Args: {
+          p_access_level: Database["public"]["Enums"]["access_level"]
+          p_entity_group_uuid: string
+          p_granted_by_user_uuid: string
+          p_user_uuid: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
