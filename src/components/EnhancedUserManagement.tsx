@@ -58,7 +58,7 @@ interface UserRole {
 
 interface UserEntityAccess {
   user_entity_access_uuid: string;
-  user_account_uuid: string;
+  user_uuid: string;
   entity_uuid?: string;
   entity_group_uuid?: string;
   access_level: 'viewer' | 'entity_admin';
@@ -584,7 +584,7 @@ export function EnhancedUserManagement() {
   // Filter user access based on access filters - exclude Super Admins as they have global access
   const filteredUserAccess = userAccess.filter(access => {
     // Exclude Super Admins from entity-specific access management
-    const isAccessUserSuperAdmin = isUserSuperAdmin(access.user_account_uuid);
+    const isAccessUserSuperAdmin = isUserSuperAdmin(access.user_uuid);
     if (isAccessUserSuperAdmin) return false;
 
     const matchesSearch = accessFilters.search === '' || 
@@ -603,7 +603,7 @@ export function EnhancedUserManagement() {
 
   // Get Super Admins count for informational display
   const superAdmins = users.filter(user => isUserSuperAdmin(user.user_uuid));
-  const regularUsersWithAccess = userAccess.filter(access => !isUserSuperAdmin(access.user_account_uuid));
+  const regularUsersWithAccess = userAccess.filter(access => !isUserSuperAdmin(access.user_uuid));
 
   if (!isSuperAdmin && !isEntityAdmin()) {
     return (
@@ -1022,7 +1022,7 @@ export function EnhancedUserManagement() {
                                   </TableHeader>
                                   <TableBody>
                                     {userAccess
-                                      .filter(access => access.user_account_uuid === selectedUserForPermissions)
+                                      .filter(access => access.user_uuid === selectedUserForPermissions)
                                       .map((access) => (
                                       <TableRow key={access.user_entity_access_uuid}>
                                         <TableCell>
@@ -1045,7 +1045,7 @@ export function EnhancedUserManagement() {
                                     ))}
                                   </TableBody>
                                 </Table>
-                                {userAccess.filter(access => access.user_account_uuid === selectedUserForPermissions).length === 0 && (
+                                {userAccess.filter(access => access.user_uuid === selectedUserForPermissions).length === 0 && (
                                   <div className="text-center py-4 text-muted-foreground">
                                     No entity-specific permissions assigned
                                   </div>
@@ -1271,7 +1271,7 @@ export function EnhancedUserManagement() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setSelectedUserForPermissions(access.user_account_uuid);
+                            setSelectedUserForPermissions(access.user_uuid);
                             setIsUserPermissionsDialogOpen(true);
                           }}
                           title="View all permissions"

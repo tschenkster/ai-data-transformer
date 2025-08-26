@@ -38,7 +38,7 @@ interface Entity {
 
 interface UserEntityAccess {
   user_entity_access_uuid: string;
-  user_account_uuid: string;
+  user_uuid: string;
   user_accounts?: {
     email: string;
     first_name?: string;

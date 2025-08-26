@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     const { data: userAccountData, error: fetchError } = await supabaseAdmin
       .from('user_accounts')
       .select('supabase_user_uuid')
-      .eq('user_account_uuid', userIdToDelete)
+      .eq('user_uuid', userIdToDelete)
       .single();
 
     if (fetchError || !userAccountData) {
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
       const { error: accountDeleteError } = await supabaseAdmin
         .from('user_accounts')
         .delete()
-        .eq('user_account_uuid', userIdToDelete);
+        .eq('user_uuid', userIdToDelete);
 
       if (accountDeleteError) {
         console.error('Error deleting from user_accounts:', accountDeleteError);
