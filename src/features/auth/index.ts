@@ -1,0 +1,1 @@
+export { AuthRoute } from './components/AuthRoute';

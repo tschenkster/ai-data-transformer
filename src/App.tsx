@@ -7,27 +7,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AdminRoute } from "@/components/AdminRoute";
-import { SuperAdminRoute } from "@/components/SuperAdminRoute";
-import { AppSidebar } from "@/components/AppSidebar";
+import { AppRoutes } from "@/app";
+import { AppSidebar } from "@/shared/components";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Admin from "./pages/Admin";
-import UserEntityManagement from "./pages/UserEntityManagement";
-import ReportStructures from "./pages/ReportStructures";
-import CoATranslator from "./pages/CoATranslator";
-import CoAMapper from "./pages/CoAMapper";
-import TrialBalanceImport from "./pages/TrialBalanceImport";
-import JournalImport from "./pages/JournalImport";
-import FinancialReports from "./pages/FinancialReports";
-import SqlTables from "./pages/SqlTables";
-import AccountProfile from "./pages/AccountProfile";
-import MemoryMaintenance from "./pages/MemoryMaintenance";
-import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -69,81 +53,8 @@ function AuthenticatedRoutes() {
         <div className="flex flex-1 w-full">
           <AppSidebar />
           <main className="flex-1 overflow-auto">
-            <Routes>
-            <Route path="/auth" element={<Navigate to="/home" replace />} />
-            <Route path="/auth/callback" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={<Navigate to="/admin/user-entity-management" replace />} />
-            <Route path="/admin/user-entity-management/*" element={
-              <AdminRoute>
-                <UserEntityManagement />
-              </AdminRoute>
-            } />
-            <Route path="/admin/report-configuration" element={
-              <SuperAdminRoute>
-                <ReportStructures />
-              </SuperAdminRoute>
-            } />
-            <Route path="/admin/memory-maintenance" element={
-              <ProtectedRoute>
-                <MemoryMaintenance />
-              </ProtectedRoute>
-            } />
-            <Route path="/data/coa-translator" element={
-              <AdminRoute>
-                <CoATranslator />
-              </AdminRoute>
-            } />
-            <Route path="/data/coa-mapper" element={
-              <ProtectedRoute>
-                <CoAMapper />
-              </ProtectedRoute>
-            } />
-            <Route path="/data/trial-balance-import" element={
-              <ProtectedRoute>
-                <TrialBalanceImport />
-              </ProtectedRoute>
-            } />
-            <Route path="/data/journal-import" element={
-              <ProtectedRoute>
-                <JournalImport />
-              </ProtectedRoute>
-            } />
-            <Route path="/reports/financial-reports" element={
-              <ProtectedRoute>
-                <FinancialReports />
-              </ProtectedRoute>
-            } />
-            <Route path="/reports/sql-tables" element={
-              <AdminRoute>
-                <SqlTables />
-              </AdminRoute>
-            } />
-            <Route path="/account/profile" element={
-              <ProtectedRoute>
-                <AccountProfile />
-              </ProtectedRoute>
-            } />
-            {/* Legacy redirects for old routes */}
-            <Route path="/report-structures" element={<Navigate to="/admin/report-configuration" replace />} />
-            <Route path="/coa-translator" element={<Navigate to="/data/coa-translator" replace />} />
-            <Route path="/coa-mapper" element={<Navigate to="/data/coa-mapper" replace />} />
-            <Route path="/trial-balance-import" element={<Navigate to="/data/trial-balance-import" replace />} />
-            <Route path="/journal-import" element={<Navigate to="/data/journal-import" replace />} />
-            <Route path="/memory" element={<Navigate to="/admin/memory-maintenance" replace />} />
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
+            <AppRoutes />
+          </main>
         </div>
       </div>
     </SidebarProvider>
