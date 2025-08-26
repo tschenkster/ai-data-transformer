@@ -7,12 +7,12 @@ import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 import Footer from '@/components/Footer';
 
 // Placeholder components for new tabs
-function RolesPermissions() {
+function EntitiesManagement() {
   return (
     <div className="space-y-6">
       <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold mb-2">Roles & Permissions</h2>
-        <p className="text-muted-foreground">Manage user roles and permission settings</p>
+        <h2 className="text-2xl font-semibold mb-2">Entities</h2>
+        <p className="text-muted-foreground">Manage entity configurations and settings</p>
         <p className="text-sm text-muted-foreground mt-4">Coming soon...</p>
       </div>
     </div>
@@ -85,12 +85,12 @@ export default function UserEntityManagement() {
             } />
             <Route path="/roles-permissions" element={
               <TabsContent value="roles-permissions" className="space-y-4">
-                <RolesPermissions />
+                <AccessManagement />
               </TabsContent>
             } />
             <Route path="/entities" element={
               <TabsContent value="entities" className="space-y-4">
-                <AccessManagement />
+                <EntitiesManagement />
               </TabsContent>
             } />
             <Route path="/activity-log" element={
