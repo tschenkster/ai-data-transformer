@@ -28,7 +28,8 @@ import {
   Clock,
   Trash2,
   Edit,
-  RotateCcw
+  RotateCcw,
+  Pause
 } from 'lucide-react';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 
@@ -534,7 +535,7 @@ export function EnhancedUserManagement() {
       case 'rejected':
         return <Badge variant="outline" className="text-red-600"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
       case 'suspended':
-        return <Badge variant="outline" className="text-orange-600"><XCircle className="w-3 h-3 mr-1" />Suspended</Badge>;
+        return <Badge variant="outline" className="text-orange-600"><Pause className="w-3 h-3 mr-1" />Suspended</Badge>;
       case 'archived':
         return <Badge variant="outline" className="text-gray-600"><XCircle className="w-3 h-3 mr-1" />Archived</Badge>;
       default:
@@ -693,7 +694,7 @@ export function EnhancedUserManagement() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center space-x-2">
-                    <XCircle className="h-4 w-4 text-orange-600" />
+                    <Pause className="h-4 w-4 text-orange-600" />
                     <div className="text-2xl font-bold">{statusCounts.suspended}</div>
                   </div>
                   <p className="text-xs text-muted-foreground">Suspended</p>
@@ -890,14 +891,14 @@ export function EnhancedUserManagement() {
                            </>
                          )}
                          {user.status === 'approved' && (
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => updateUserStatus(user.user_uuid, 'suspended')}
-                             disabled={actionLoading === `status-${user.user_uuid}`}
-                           >
-                             <XCircle className="h-3 w-3" />
-                           </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateUserStatus(user.user_uuid, 'suspended')}
+                              disabled={actionLoading === `status-${user.user_uuid}`}
+                            >
+                              <Pause className="h-3 w-3" />
+                            </Button>
                          )}
                          {user.status === 'suspended' && (
                            <Button
