@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 import { AccessManagement } from '@/components/AccessManagement';
-import { EnhancedUserManagement } from '@/components/EnhancedUserManagement';
+import { UserManagementPanel } from '@/components/UserManagementPanel';
 import Footer from '@/components/Footer';
 
 export default function Admin() {
@@ -31,7 +31,7 @@ export default function Admin() {
 
           {(isSuperAdmin || isAdmin) && (
             <TabsContent value="users" className="space-y-4">
-              <EnhancedUserManagement />
+              <UserManagementPanel />
             </TabsContent>
           )}
 

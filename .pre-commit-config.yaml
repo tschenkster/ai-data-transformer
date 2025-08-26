@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: ESLint
+        entry: npm run lint
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        
+      - id: typecheck
+        name: TypeScript Check
+        entry: npx tsc --noEmit
+        language: system
+        files: \.(ts|tsx)$
+        pass_filenames: false
+        
+      - id: max-file-size
+        name: Check file size limits
+        entry: |
+          bash -c '
+          for file in "$@"; do
+            lines=$(wc -l < "$file")
+            if [ "$lines" -gt 200 ]; then
+              echo "File $file has $lines lines (max 200 allowed)"
+              exit 1
+            fi
+          done
+          '
+        language: system
+        files: \.(tsx|ts)$

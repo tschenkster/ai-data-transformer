@@ -1,4 +1,4 @@
-import { EnhancedUserProfile } from '@/components/EnhancedUserProfile';
+import { UserProfileDisplay } from '@/components/UserProfileDisplay';
 import Footer from '@/components/Footer';
 
 export default function AccountProfile() {
@@ -10,7 +10,7 @@ export default function AccountProfile() {
           <p className="text-muted-foreground">Manage your account settings and preferences</p>
         </div>
 
-        <EnhancedUserProfile />
+        <UserProfileDisplay />
         
         <Footer />
       </div>

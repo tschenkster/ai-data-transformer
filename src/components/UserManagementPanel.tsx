@@ -50,7 +50,7 @@ interface UserRole {
 }
 
 
-export function EnhancedUserManagement() {
+export function UserManagementPanel() {
   const { user, userAccount, isSuperAdmin, isEntityAdmin, logSecurityEvent } = useAuth();
   const { toast } = useToast();
   

@@ -75,7 +75,7 @@ interface EntityGroup {
   is_active: boolean;
 }
 
-export function EnhancedUserAccessManagement() {
+export function UserAccessManagementPanel() {
   const { user, userAccount, isSuperAdmin, isEntityAdmin, logSecurityEvent } = useAuth();
   const { toast } = useToast();
   

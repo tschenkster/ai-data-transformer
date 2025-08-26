@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X } from 'lucide-react';
-import { EnhancedFileUpload } from '@/components/EnhancedFileUpload';
+import { AdvancedFileUpload } from '@/components/AdvancedFileUpload';
 import ReportStructureViewer from '@/components/ReportStructureViewer';
 import ReportStructureModifier from '@/components/ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
@@ -403,7 +403,7 @@ export default function ReportStructureManager() {
       <TabsContent value="upload" className="space-y-4">
         <Card>
           <CardContent className="pt-6">
-            <EnhancedFileUpload onFileProcessed={handleFileProcessed} />
+            <AdvancedFileUpload onFileProcessed={handleFileProcessed} />
           </CardContent>
         </Card>
       </TabsContent>

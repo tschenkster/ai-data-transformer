@@ -76,7 +76,7 @@ const SYSTEM_GENERATED_COLUMNS = [
   'sort_order'
 ];
 
-export function EnhancedFileUpload({ onFileProcessed }: FileUploadProps) {
+export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [showPreview, setShowPreview] = useState(false);

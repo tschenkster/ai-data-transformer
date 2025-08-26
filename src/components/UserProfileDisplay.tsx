@@ -17,7 +17,7 @@ interface EnhancedUserData {
   is_super_admin: boolean;
 }
 
-export function EnhancedUserProfile() {
+export function UserProfileDisplay() {
   const { user } = useAuth();
   const [userData, setUserData] = useState<EnhancedUserData | null>(null);
   const [loading, setLoading] = useState(false);

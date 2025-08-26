@@ -37,6 +37,30 @@ export default tseslint.config(
           "index.html"
         ]
       }],
+      // Component size limits (R34)
+      "max-lines-per-file": ["warn", { "max": 200, "skipBlankLines": true, "skipComments": true }],
+      // Explicit return types (R43)
+      "@typescript-eslint/explicit-module-boundary-types": ["warn"],
+      // Import organization (R39)
+      "import/order": ["error", {
+        "groups": [
+          "builtin",
+          "external", 
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "@/**",
+            "group": "internal"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"]
+      }],
+      // No circular dependencies (R40)
+      "import/no-cycle": ["error"],
     },
   }
 );

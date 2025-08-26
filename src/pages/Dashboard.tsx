@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { EnhancedUserProfile } from '@/components/EnhancedUserProfile';
-import { EnhancedReportStructureCard } from '@/components/EnhancedReportStructureCard';
+import { UserProfileDisplay } from '@/components/UserProfileDisplay';
+import { ReportStructureCard } from '@/components/ReportStructureCard';
 import { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,7 +80,7 @@ export default function Dashboard() {
       {/* User Profile Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <EnhancedUserProfile />
+          <UserProfileDisplay />
         </div>
 
         {/* Admin Stats Section */}
@@ -161,7 +161,7 @@ export default function Dashboard() {
       {activeStructureUuid && (
         <div>
           <h2 className="text-2xl font-semibold mb-4">Active Report Structure</h2>
-          <EnhancedReportStructureCard 
+          <ReportStructureCard 
             structureUuid={activeStructureUuid}
             className="max-w-2xl"
           />

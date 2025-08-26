@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { EnhancedUserManagement } from '@/features/user-management';
-import { EntityManagement } from '@/features/entity-management';
-import { EnhancedUserAccessManagement } from '@/features/user-management';
+import { UserManagementPanel, UserAccessManagementPanel } from '@/features/user-management';
 import { SecurityAuditLog } from '@/features/security-audit';
 import { Footer } from '@/shared/components';
 
@@ -81,17 +79,17 @@ export default function UserEntityManagement() {
             <Route path="/" element={<Navigate to="users" replace />} />
             <Route path="/users" element={
               <TabsContent value="users" className="space-y-4">
-                <EnhancedUserManagement />
+                <UserManagementPanel />
               </TabsContent>
             } />
             <Route path="/roles-permissions" element={
               <TabsContent value="roles-permissions" className="space-y-4">
-                <EnhancedUserAccessManagement />
+                <UserAccessManagementPanel />
               </TabsContent>
             } />
             <Route path="/entities" element={
               <TabsContent value="entities" className="space-y-4">
-                <EntityManagement />
+                <EntitiesManagement />
               </TabsContent>
             } />
             <Route path="/activity-log" element={

@@ -17,15 +17,15 @@ interface EnhancedReportStructureData {
   line_item_count: number;
 }
 
-interface EnhancedReportStructureCardProps {
+interface ReportStructureCardProps {
   structureUuid: string;
   className?: string;
 }
 
-export function EnhancedReportStructureCard({ 
+export function ReportStructureCard({ 
   structureUuid, 
   className = "" 
-}: EnhancedReportStructureCardProps) {
+}: ReportStructureCardProps) {
   const [structureData, setStructureData] = useState<EnhancedReportStructureData | null>(null);
   const [loading, setLoading] = useState(false);
 

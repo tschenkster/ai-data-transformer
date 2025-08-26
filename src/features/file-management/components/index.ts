@@ -1,2 +1,2 @@
 export { FileUpload } from '@/components/FileUpload';
-export { EnhancedFileUpload } from '@/components/EnhancedFileUpload';
+export { AdvancedFileUpload } from '@/components/AdvancedFileUpload';
