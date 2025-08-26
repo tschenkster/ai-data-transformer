@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { EnhancedUserManagement } from '@/components/EnhancedUserManagement';
 import { EntityManagement } from '@/components/EntityManagement';
-import { UserAccessManagement } from '@/components/UserAccessManagement';
+import { EnhancedUserAccessManagement } from '@/components/EnhancedUserAccessManagement';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 import Footer from '@/components/Footer';
 
@@ -86,7 +86,7 @@ export default function UserEntityManagement() {
             } />
             <Route path="/roles-permissions" element={
               <TabsContent value="roles-permissions" className="space-y-4">
-                <UserAccessManagement />
+                <EnhancedUserAccessManagement />
               </TabsContent>
             } />
             <Route path="/entities" element={
