@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { EnhancedUserManagement } from '@/components/EnhancedUserManagement';
-import { AccessManagement } from '@/components/AccessManagement';
+import { EntityManagement } from '@/components/EntityManagement';
+import { UserAccessManagement } from '@/components/UserAccessManagement';
 import { SecurityAuditLog } from '@/components/SecurityAuditLog';
 import Footer from '@/components/Footer';
 
@@ -85,12 +86,12 @@ export default function UserEntityManagement() {
             } />
             <Route path="/roles-permissions" element={
               <TabsContent value="roles-permissions" className="space-y-4">
-                <AccessManagement />
+                <UserAccessManagement />
               </TabsContent>
             } />
             <Route path="/entities" element={
               <TabsContent value="entities" className="space-y-4">
-                <EntitiesManagement />
+                <EntityManagement />
               </TabsContent>
             } />
             <Route path="/activity-log" element={
