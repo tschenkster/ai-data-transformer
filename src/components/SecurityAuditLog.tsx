@@ -21,9 +21,13 @@ export function SecurityAuditLog() {
   const { isAdmin, loading: authLoading } = useAuth();
   const [auditLog, setAuditLog] = useState<SecurityAuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchAuditLog = async () => {
     try {
+      setError(null);
+      console.log('Fetching audit log... isAdmin:', isAdmin);
+      
       const { data, error } = await supabase
         .from('security_audit_logs')
         .select('*')
@@ -31,13 +35,16 @@ export function SecurityAuditLog() {
         .limit(100);
 
       if (error) {
-        console.error('Error fetching audit log:', error);
+        console.error('Supabase error fetching audit log:', error);
+        setError(`Database error: ${error.message}`);
         return;
       }
 
+      console.log('Audit log data received:', data?.length || 0, 'entries');
       setAuditLog((data || []) as SecurityAuditEntry[]);
     } catch (error) {
       console.error('Error in fetchAuditLog:', error);
+      setError(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -46,6 +53,9 @@ export function SecurityAuditLog() {
   useEffect(() => {
     if (isAdmin && !authLoading) {
       fetchAuditLog();
+    } else if (!authLoading) {
+      // If user is not admin, stop loading
+      setLoading(false);
     }
   }, [isAdmin, authLoading]);
 
@@ -83,6 +93,30 @@ export function SecurityAuditLog() {
           <CardTitle>Access Denied</CardTitle>
           <CardDescription>You need admin privileges to view the security audit log.</CardDescription>
         </CardHeader>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Security Audit Log</CardTitle>
+          <CardDescription className="text-red-600">
+            Error loading audit entries: {error}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground">
+            <p>Unable to load security audit log.</p>
+            <button 
+              onClick={fetchAuditLog}
+              className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            >
+              Retry
+            </button>
+          </div>
+        </CardContent>
       </Card>
     );
   }
