@@ -655,10 +655,10 @@ export type Database = {
           granted_by_user_uuid: string | null
           is_active: boolean
           revoked_at: string | null
-          user_account_id: number
-          user_account_uuid: string
           user_entity_access_id: number
           user_entity_access_uuid: string
+          user_id: number
+          user_uuid: string
         }
         Insert: {
           access_level: Database["public"]["Enums"]["access_level"]
@@ -670,10 +670,10 @@ export type Database = {
           granted_by_user_uuid?: string | null
           is_active?: boolean
           revoked_at?: string | null
-          user_account_id: number
-          user_account_uuid: string
           user_entity_access_id?: never
           user_entity_access_uuid?: string
+          user_id: number
+          user_uuid: string
         }
         Update: {
           access_level?: Database["public"]["Enums"]["access_level"]
@@ -685,10 +685,10 @@ export type Database = {
           granted_by_user_uuid?: string | null
           is_active?: boolean
           revoked_at?: string | null
-          user_account_id?: number
-          user_account_uuid?: string
           user_entity_access_id?: never
           user_entity_access_uuid?: string
+          user_id?: number
+          user_uuid?: string
         }
         Relationships: [
           {
@@ -714,7 +714,7 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_user_entity_access_user"
-            columns: ["user_account_uuid"]
+            columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
             referencedColumns: ["user_uuid"]
