@@ -11,7 +11,7 @@ interface UserAccount {
   email: string;
   first_name?: string;
   last_name?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  user_status: 'pending' | 'approved' | 'rejected' | 'suspended' | 'archived';
   created_at: string;
   approved_at?: string;
   approved_by?: string;
@@ -413,7 +413,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Compute role flags using the new role system
-  const isApproved = userAccount?.status === 'approved';
+  const isApproved = userAccount?.user_status === 'approved';
   const hasRole = (role: string) => userRoles.some(r => r.role === role);
   const isAdmin = isApproved && (hasRole('entity_admin') || hasRole('super_admin'));
   const isSuperAdmin = isApproved && hasRole('super_admin');

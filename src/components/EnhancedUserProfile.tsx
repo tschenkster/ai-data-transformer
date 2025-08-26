@@ -11,7 +11,7 @@ interface EnhancedUserData {
   email: string;
   first_name: string;
   last_name: string;
-  status: string;
+  user_status: string;
   roles: string[];
   is_admin: boolean;
   is_super_admin: boolean;
@@ -123,8 +123,8 @@ export function EnhancedUserProfile() {
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Status:</span>
-          <Badge className={getStatusColor(userData.status)}>
-            {userData.status}
+          <Badge className={getStatusColor(userData.user_status)}>
+            {userData.user_status}
           </Badge>
         </div>
         

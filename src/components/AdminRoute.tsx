@@ -14,7 +14,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
     hasUser: !!user,
     userEmail: user?.email,
     hasUserAccount: !!userAccount,
-    userAccountStatus: userAccount?.status,
+    userAccountStatus: userAccount?.user_status,
     isAdmin,
     isApproved
   });

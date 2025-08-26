@@ -23,7 +23,7 @@ interface UserAccountWithStatus {
   email: string;
   first_name: string;
   last_name: string;
-  status_enum: string;
+  user_status: string;
   created_at: string;
   updated_at: string;
 }
@@ -223,7 +223,7 @@ export function WorkflowStatusManager() {
               {pendingUsers.map((user) => (
                 <div key={user.user_uuid} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
-                    {getStatusIcon(user.status_enum)}
+                    {getStatusIcon(user.user_status)}
                     <div>
                       <p className="font-medium">
                         {user.first_name && user.last_name 
@@ -233,8 +233,8 @@ export function WorkflowStatusManager() {
                       </p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                     </div>
-                    <Badge className={getStatusColor(user.status_enum)}>
-                      {user.status_enum}
+                    <Badge className={getStatusColor(user.user_status)}>
+                      {user.user_status}
                     </Badge>
                   </div>
                   <div className="flex gap-2">
@@ -243,7 +243,7 @@ export function WorkflowStatusManager() {
                       variant="outline"
                       onClick={() => {
                         setSelectedUser(user.user_uuid);
-                        fetchValidTransitions(user.status_enum);
+                        fetchValidTransitions(user.user_status);
                       }}
                     >
                       Manage Status

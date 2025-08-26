@@ -40,8 +40,7 @@ interface UserAccount {
   email: string;
   first_name?: string;
   last_name?: string;
-  status: string; // Allow any string status from database
-  status_enum: 'pending' | 'approved' | 'rejected' | 'suspended' | 'archived';
+  user_status: 'pending' | 'approved' | 'rejected' | 'suspended' | 'archived';
   created_at: string;
   approved_at?: string;
   approved_by?: string;
@@ -573,7 +572,7 @@ export function EnhancedUserManagement() {
       user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
       getUserName(user).toLowerCase().includes(filters.search.toLowerCase());
     
-    const matchesStatus = filters.status === 'all' || user.status === filters.status;
+    const matchesStatus = filters.status === 'all' || user.user_status === filters.status;
     
     const userRole = userRoles.find(r => r.user_uuid === user.user_uuid)?.role || 'viewer';
     const matchesRole = filters.role === 'all' || userRole === filters.role;
@@ -636,10 +635,10 @@ export function EnhancedUserManagement() {
   // Calculate status counts
   const statusCounts = {
     total: users.length,
-    pending: users.filter(u => u.status === 'pending').length,
-    approved: users.filter(u => u.status === 'approved').length,
-    suspended: users.filter(u => u.status === 'suspended').length,
-    rejected: users.filter(u => u.status === 'rejected').length
+    pending: users.filter(u => u.user_status === 'pending').length,
+    approved: users.filter(u => u.user_status === 'approved').length,
+    suspended: users.filter(u => u.user_status === 'suspended').length,
+    rejected: users.filter(u => u.user_status === 'rejected').length
   };
 
   return (
@@ -845,7 +844,7 @@ export function EnhancedUserManagement() {
                       </div>
                     </TableCell>
                     <TableCell>{getUserRole(user.user_uuid)}</TableCell>
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
+                    <TableCell>{getStatusBadge(user.user_status)}</TableCell>
                     <TableCell>
                       {user.last_login_at 
                         ? new Date(user.last_login_at).toLocaleDateString() 
@@ -869,8 +868,8 @@ export function EnhancedUserManagement() {
                            </Button>
                          )}
                          
-                         {/* Status Change Buttons */}
-                         {user.status === 'pending' && (
+                          {/* Status Change Buttons */}
+                          {user.user_status === 'pending' && (
                            <>
                              <Button
                                size="sm"
@@ -890,7 +889,7 @@ export function EnhancedUserManagement() {
                              </Button>
                            </>
                          )}
-                         {user.status === 'approved' && (
+                         {user.user_status === 'approved' && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -900,7 +899,7 @@ export function EnhancedUserManagement() {
                               <Pause className="h-3 w-3" />
                             </Button>
                          )}
-                         {user.status === 'suspended' && (
+                         {user.user_status === 'suspended' && (
                            <Button
                              size="sm"
                              variant="outline"
@@ -990,7 +989,7 @@ export function EnhancedUserManagement() {
                             <SelectValue placeholder="Select user to view permissions" />
                           </SelectTrigger>
                           <SelectContent>
-                            {users.filter(u => u.status === 'approved').map((user) => (
+                            {users.filter(u => u.user_status === 'approved').map((user) => (
                               <SelectItem key={user.user_uuid} value={user.user_uuid}>
                                 {getUserName(user)} ({user.email}) {isUserSuperAdmin(user.user_uuid) && <Badge variant="outline" className="ml-1 text-xs">Super Admin</Badge>}
                               </SelectItem>
@@ -1080,7 +1079,7 @@ export function EnhancedUserManagement() {
                           </SelectTrigger>
                           <SelectContent>
                             {users
-                              .filter(u => u.status === 'approved' && !isUserSuperAdmin(u.user_uuid))
+                              .filter(u => u.user_status === 'approved' && !isUserSuperAdmin(u.user_uuid))
                               .map((user) => (
                               <SelectItem key={user.user_uuid} value={user.user_uuid}>
                                 {getUserName(user)} ({user.email})

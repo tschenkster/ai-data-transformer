@@ -592,12 +592,11 @@ export type Database = {
           locked_until: string | null
           password_changed_at: string | null
           phone_number: string | null
-          status: string
-          status_enum: Database["public"]["Enums"]["user_account_status"]
           supabase_user_uuid: string
           timezone: string | null
           updated_at: string | null
           user_id: number
+          user_status: Database["public"]["Enums"]["user_account_status"]
           user_uuid: string
         }
         Insert: {
@@ -613,12 +612,11 @@ export type Database = {
           locked_until?: string | null
           password_changed_at?: string | null
           phone_number?: string | null
-          status?: string
-          status_enum?: Database["public"]["Enums"]["user_account_status"]
           supabase_user_uuid: string
           timezone?: string | null
           updated_at?: string | null
           user_id?: number
+          user_status?: Database["public"]["Enums"]["user_account_status"]
           user_uuid?: string
         }
         Update: {
@@ -634,12 +632,11 @@ export type Database = {
           locked_until?: string | null
           password_changed_at?: string | null
           phone_number?: string | null
-          status?: string
-          status_enum?: Database["public"]["Enums"]["user_account_status"]
           supabase_user_uuid?: string
           timezone?: string | null
           updated_at?: string | null
           user_id?: number
+          user_status?: Database["public"]["Enums"]["user_account_status"]
           user_uuid?: string
         }
         Relationships: []
@@ -917,8 +914,8 @@ export type Database = {
           first_name: string
           last_login_at: string
           last_name: string
-          status: string
           user_id: number
+          user_status: string
           user_uuid: string
         }[]
       }
@@ -952,7 +949,7 @@ export type Database = {
           is_super_admin: boolean
           last_name: string
           roles: string[]
-          status: string
+          user_status: string
           user_uuid: string
         }[]
       }
@@ -963,8 +960,8 @@ export type Database = {
           email: string
           first_name: string
           last_name: string
-          status_enum: Database["public"]["Enums"]["user_account_status"]
           updated_at: string
+          user_status: Database["public"]["Enums"]["user_account_status"]
           user_uuid: string
         }[]
       }
