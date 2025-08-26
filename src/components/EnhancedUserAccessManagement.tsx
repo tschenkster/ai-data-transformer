@@ -16,9 +16,7 @@ import {
   Shield, 
   Crown, 
   Eye, 
-  Settings,
   Search,
-  Filter,
   Trash2
 } from 'lucide-react';
 
@@ -49,7 +47,7 @@ interface UserEntityAccess {
   user_uuid: string;
   entity_uuid?: string;
   entity_group_uuid?: string;
-  access_level: 'viewer' | 'entity_admin';
+  access_level: 'viewer' | 'entity_admin' | 'super_admin';
   granted_at: string;
   is_active: boolean;
   user_accounts?: {
@@ -94,7 +92,6 @@ export function EnhancedUserAccessManagement() {
   
   // Dialog states
   const [isAssignAccessDialogOpen, setIsAssignAccessDialogOpen] = useState(false);
-  const [isUserPermissionsDialogOpen, setIsUserPermissionsDialogOpen] = useState(false);
   
   // Form states
   const [accessForm, setAccessForm] = useState({
@@ -106,14 +103,8 @@ export function EnhancedUserAccessManagement() {
   
   // Filter states
   const [accessFilters, setAccessFilters] = useState({
-    search: '',
-    entity: 'all',
-    accessLevel: 'all',
-    viewBy: 'user' as 'user' | 'entity'
+    search: ''
   });
-  
-  // Permission management states
-  const [selectedUserForPermissions, setSelectedUserForPermissions] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -292,9 +283,29 @@ export function EnhancedUserAccessManagement() {
     return role === 'super_admin';
   };
 
-  // Filter user access based on access filters - exclude Super Admins as they have global access
-  const filteredUserAccess = userAccess.filter(access => {
-    // Exclude Super Admins from entity-specific access management
+  // Get Super Admins for display in table
+  const superAdmins = users.filter(user => isUserSuperAdmin(user.user_uuid));
+  
+  // Create super admin entries for the table
+  const superAdminEntries: UserEntityAccess[] = superAdmins.map(admin => ({
+    user_entity_access_uuid: `super-admin-${admin.user_uuid}`,
+    user_uuid: admin.user_uuid,
+    entity_uuid: undefined,
+    entity_group_uuid: undefined,
+    access_level: 'super_admin' as any,
+    granted_at: admin.created_at,
+    is_active: true,
+    user_accounts: {
+      email: admin.email,
+      first_name: admin.first_name,
+      last_name: admin.last_name
+    },
+    entities: undefined,
+    entity_groups: undefined
+  }));
+
+  // Filter user access based on search only (simplified filtering)
+  const filteredRegularAccess = userAccess.filter(access => {
     const isAccessUserSuperAdmin = isUserSuperAdmin(access.user_uuid);
     if (isAccessUserSuperAdmin) return false;
 
@@ -304,17 +315,20 @@ export function EnhancedUserAccessManagement() {
       access.user_accounts?.last_name?.toLowerCase().includes(accessFilters.search.toLowerCase()) ||
       access.entities?.entity_name?.toLowerCase().includes(accessFilters.search.toLowerCase()) ||
       access.entity_groups?.entity_group_name?.toLowerCase().includes(accessFilters.search.toLowerCase());
-    
-    const matchesEntity = accessFilters.entity === 'all' || access.entity_uuid === accessFilters.entity;
-    
-    const matchesAccessLevel = accessFilters.accessLevel === 'all' || access.access_level === accessFilters.accessLevel;
 
-    return matchesSearch && matchesEntity && matchesAccessLevel;
+    return matchesSearch;
   });
 
-  // Get Super Admins count for informational display
-  const superAdmins = users.filter(user => isUserSuperAdmin(user.user_uuid));
-  const regularUsersWithAccess = userAccess.filter(access => !isUserSuperAdmin(access.user_uuid));
+  // Filter super admin entries based on search
+  const filteredSuperAdminEntries = superAdminEntries.filter(entry => {
+    return accessFilters.search === '' ||
+      entry.user_accounts?.email?.toLowerCase().includes(accessFilters.search.toLowerCase()) ||
+      entry.user_accounts?.first_name?.toLowerCase().includes(accessFilters.search.toLowerCase()) ||
+      entry.user_accounts?.last_name?.toLowerCase().includes(accessFilters.search.toLowerCase());
+  });
+
+  // Combine all entries for display
+  const allFilteredAccess = [...filteredSuperAdminEntries, ...filteredRegularAccess];
 
   if (!isSuperAdmin && !isEntityAdmin()) {
     return (
@@ -355,349 +369,212 @@ export function EnhancedUserAccessManagement() {
           Manage user permissions and access levels across entities and groups
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Super Admin Info Banner */}
-        {superAdmins.length > 0 && (
-          <Card className="bg-muted/50 border-primary/20">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <Crown className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-sm">Super Admin Global Access</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {superAdmins.length} Super Admin{superAdmins.length > 1 ? 's' : ''} ({superAdmins.map(sa => getUserName(sa)).join(', ')}) 
-                    {superAdmins.length === 1 ? ' has' : ' have'} global access to all entities and are not shown in entity-specific access management.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Access Management Header */}
+      <CardContent className="space-y-6">
+        {/* Simplified Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-medium">User Access Permissions</h3>
+            <h3 className="text-lg font-medium">User Access Management</h3>
             <p className="text-sm text-muted-foreground">
-              Managing entity-specific access for {regularUsersWithAccess.length} access grant{regularUsersWithAccess.length !== 1 ? 's' : ''}
+              Managing access for {allFilteredAccess.length} user{allFilteredAccess.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setAccessFilters(prev => ({ ...prev, viewBy: prev.viewBy === 'user' ? 'entity' : 'user' }))}
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              View by {accessFilters.viewBy === 'user' ? 'Entity' : 'User'}
-            </Button>
-            <Dialog open={isUserPermissionsDialogOpen} onOpenChange={setIsUserPermissionsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Eye className="h-4 w-4 mr-2" />
-                  View User Permissions
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl">
-                <DialogHeader>
-                  <DialogTitle>User Permissions Overview</DialogTitle>
-                  <DialogDescription>
-                    Select a user to view their effective permissions
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                    <Select value={selectedUserForPermissions} onValueChange={setSelectedUserForPermissions}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select user to view permissions" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.filter(u => u.user_status === 'approved').map((user) => (
-                          <SelectItem key={user.user_uuid} value={user.user_uuid}>
-                            {getUserName(user)} ({user.email}) {isUserSuperAdmin(user.user_uuid) && <Badge variant="outline" className="ml-1 text-xs">Super Admin</Badge>}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedUserForPermissions && (
-                      <div className="border rounded-lg p-4">
-                        {isUserSuperAdmin(selectedUserForPermissions) ? (
-                          <div className="text-center py-8">
-                            <Crown className="h-12 w-12 text-primary mx-auto mb-4" />
-                            <h4 className="font-medium text-lg mb-2">Super Admin Global Access</h4>
-                            <p className="text-muted-foreground">
-                              This user has Super Admin privileges and global access to all entities, 
-                              entity groups, and system functions. No entity-specific permissions are needed.
-                            </p>
-                          </div>
-                        ) : (
-                          <>
-                            <h4 className="font-medium mb-3">Effective Permissions</h4>
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Entity/Group</TableHead>
-                                  <TableHead>Type</TableHead>
-                                  <TableHead>Access Level</TableHead>
-                                  <TableHead>Granted</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {userAccess
-                                  .filter(access => access.user_uuid === selectedUserForPermissions)
-                                  .map((access) => (
-                                  <TableRow key={access.user_entity_access_uuid}>
-                                    <TableCell>
-                                      {access.entities?.entity_name || access.entity_groups?.entity_group_name || 'Unknown'}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge variant="outline">
-                                        {access.entity_uuid ? 'Entity' : 'Entity Group'}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge variant={access.access_level === 'entity_admin' ? 'default' : 'secondary'}>
-                                        {access.access_level === 'entity_admin' ? 'Entity Admin' : 'Viewer'}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      {new Date(access.granted_at).toLocaleDateString()}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                            {userAccess.filter(access => access.user_uuid === selectedUserForPermissions).length === 0 && (
-                              <div className="text-center py-4 text-muted-foreground">
-                                No entity-specific permissions assigned
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
+          <Dialog open={isAssignAccessDialogOpen} onOpenChange={setIsAssignAccessDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Assign Access
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Entity Access</DialogTitle>
+                <DialogDescription>
+                  Grant user access to entities or entity groups
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="access-user">User</Label>
+                  <Select value={accessForm.userUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, userUuid: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select user (excluding Super Admins)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users
+                        .filter(u => u.user_status === 'approved' && !isUserSuperAdmin(u.user_uuid))
+                        .map((user) => (
+                        <SelectItem key={user.user_uuid} value={user.user_uuid}>
+                          {getUserName(user)} ({user.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Super Admins have global access and don't need entity-specific permissions
+                  </p>
                 </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog open={isAssignAccessDialogOpen} onOpenChange={setIsAssignAccessDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Assign Access
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Assign Entity Access</DialogTitle>
-                  <DialogDescription>
-                    Grant user access to entities or entity groups
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="access-user">User</Label>
-                    <Select value={accessForm.userUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, userUuid: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select user (excluding Super Admins)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users
-                          .filter(u => u.user_status === 'approved' && !isUserSuperAdmin(u.user_uuid))
-                          .map((user) => (
-                          <SelectItem key={user.user_uuid} value={user.user_uuid}>
-                            {getUserName(user)} ({user.email})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Super Admins have global access and don't need entity-specific permissions
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="access-entity" className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'text-destructive' : ''}>
-                      Entity {accessForm.entityGroupUuid === 'none' ? '(Required)' : '(Optional)'}
-                    </Label>
-                    <Select value={accessForm.entityUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, entityUuid: value }))}>
-                      <SelectTrigger className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'border-destructive' : ''}>
-                        <SelectValue placeholder="Select entity" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No specific entity</SelectItem>
-                        {entities.map((entity) => (
-                          <SelectItem key={entity.entity_uuid} value={entity.entity_uuid}>
-                            {entity.entity_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="access-group" className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'text-destructive' : ''}>
-                      Entity Group {accessForm.entityUuid === 'none' ? '(Required)' : '(Optional)'}
-                    </Label>
-                    <Select value={accessForm.entityGroupUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, entityGroupUuid: value }))}>
-                      <SelectTrigger className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'border-destructive' : ''}>
-                        <SelectValue placeholder="Select entity group" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No specific group</SelectItem>
-                        {entityGroups.map((group) => (
-                          <SelectItem key={group.entity_group_uuid} value={group.entity_group_uuid}>
-                            {group.entity_group_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' && (
-                    <p className="text-xs text-destructive mt-1">
-                      Please select either an Entity or an Entity Group to continue
-                    </p>
-                  )}
-                  <div>
-                    <Label htmlFor="access-level">Access Level</Label>
-                    <Select value={accessForm.accessLevel} onValueChange={(value: 'viewer' | 'entity_admin') => setAccessForm(prev => ({ ...prev, accessLevel: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select access level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="viewer">Viewer</SelectItem>
-                        <SelectItem value="entity_admin">Entity Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <Label htmlFor="access-entity" className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'text-destructive' : ''}>
+                    Entity {accessForm.entityGroupUuid === 'none' ? '(Required)' : '(Optional)'}
+                  </Label>
+                  <Select value={accessForm.entityUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, entityUuid: value }))}>
+                    <SelectTrigger className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'border-destructive' : ''}>
+                      <SelectValue placeholder="Select entity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No specific entity</SelectItem>
+                      {entities.map((entity) => (
+                        <SelectItem key={entity.entity_uuid} value={entity.entity_uuid}>
+                          {entity.entity_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAssignAccessDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={assignAccess} 
-                    disabled={
-                      actionLoading === 'assign' || 
-                      !accessForm.userUuid || 
-                      (accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none')
-                    }
-                  >
-                    {actionLoading === 'assign' ? 'Assigning...' : 'Assign Access'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <div>
+                  <Label htmlFor="access-group" className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'text-destructive' : ''}>
+                    Entity Group {accessForm.entityUuid === 'none' ? '(Required)' : '(Optional)'}
+                  </Label>
+                  <Select value={accessForm.entityGroupUuid} onValueChange={(value) => setAccessForm(prev => ({ ...prev, entityGroupUuid: value }))}>
+                    <SelectTrigger className={accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' ? 'border-destructive' : ''}>
+                      <SelectValue placeholder="Select entity group" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No specific group</SelectItem>
+                      {entityGroups.map((group) => (
+                        <SelectItem key={group.entity_group_uuid} value={group.entity_group_uuid}>
+                          {group.entity_group_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none' && (
+                  <p className="text-xs text-destructive mt-1">
+                    Please select either an Entity or an Entity Group to continue
+                  </p>
+                )}
+                <div>
+                  <Label htmlFor="access-level">Access Level</Label>
+                  <Select value={accessForm.accessLevel} onValueChange={(value: 'viewer' | 'entity_admin') => setAccessForm(prev => ({ ...prev, accessLevel: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select access level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="entity_admin">Entity Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAssignAccessDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={assignAccess} 
+                  disabled={
+                    actionLoading === 'assign' || 
+                    !accessForm.userUuid || 
+                    (accessForm.entityUuid === 'none' && accessForm.entityGroupUuid === 'none')
+                  }
+                >
+                  {actionLoading === 'assign' ? 'Assigning...' : 'Assign Access'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Access Filters */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder={`Search ${accessFilters.viewBy === 'user' ? 'users' : 'entities'}...`}
-              value={accessFilters.search}
-              onChange={(e) => setAccessFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="pl-10"
-            />
-          </div>
-          <Select value={accessFilters.entity} onValueChange={(value) => setAccessFilters(prev => ({ ...prev, entity: value }))}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by entity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Entities</SelectItem>
-              {entities.map((entity) => (
-                <SelectItem key={entity.entity_uuid} value={entity.entity_uuid}>
-                  {entity.entity_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={accessFilters.accessLevel} onValueChange={(value) => setAccessFilters(prev => ({ ...prev, accessLevel: value }))}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Access level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Levels</SelectItem>
-              <SelectItem value="viewer">Viewer</SelectItem>
-              <SelectItem value="entity_admin">Entity Admin</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Simplified Search */}
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search users..."
+            value={accessFilters.search}
+            onChange={(e) => setAccessFilters(prev => ({ ...prev, search: e.target.value }))}
+            className="pl-10"
+          />
         </div>
 
-        {/* Access Table with Inline Editing */}
+        {/* Simplified Access Table */}
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
-              <TableHead>Entity</TableHead>
-              <TableHead>Entity Group</TableHead>
-              <TableHead>Access Level</TableHead>
+              <TableHead>Access</TableHead>
+              <TableHead>Level</TableHead>
               <TableHead>Granted</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUserAccess.map((access) => (
+            {allFilteredAccess.map((access) => (
               <TableRow key={access.user_entity_access_uuid}>
                 <TableCell>
-                  <div>
-                    <div className="font-medium">
-                      {access.user_accounts?.first_name || access.user_accounts?.last_name 
-                        ? `${access.user_accounts.first_name} ${access.user_accounts.last_name}`.trim()
-                        : access.user_accounts?.email
-                      }
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {access.user_accounts?.email}
+                  <div className="flex items-center gap-2">
+                    {access.access_level === 'super_admin' && <Crown className="h-4 w-4 text-primary" />}
+                    <div>
+                      <div className="font-medium">
+                        {access.user_accounts?.first_name || access.user_accounts?.last_name 
+                          ? `${access.user_accounts.first_name || ''} ${access.user_accounts.last_name || ''}`.trim()
+                          : access.user_accounts?.email
+                        }
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {access.user_accounts?.email}
+                      </div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  {access.entities?.entity_name || '-'}
+                  {access.access_level === 'super_admin' ? (
+                    <Badge variant="default" className="bg-primary">Global Access</Badge>
+                  ) : (
+                    <div className="text-sm">
+                      <div>{access.entities?.entity_name || access.entity_groups?.entity_group_name || 'Unknown'}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {access.entity_uuid ? 'Entity' : 'Entity Group'}
+                      </div>
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell>
-                  {access.entity_groups?.entity_group_name || '-'}
+                  {access.access_level === 'super_admin' ? (
+                    <Badge variant="default" className="bg-primary">
+                      <Crown className="w-3 h-3 mr-1" />Super Admin
+                    </Badge>
+                  ) : (
+                    <Select 
+                      value={access.access_level} 
+                      onValueChange={(value: 'viewer' | 'entity_admin') => updateAccessLevel(access.user_entity_access_uuid, value)}
+                      disabled={actionLoading === `update-${access.user_entity_access_uuid}`}
+                    >
+                      <SelectTrigger className="w-28">
+                        <SelectValue>
+                          {access.access_level === 'entity_admin' ? (
+                            <><Shield className="w-3 h-3 mr-1" />Admin</>
+                          ) : (
+                            <><Eye className="w-3 h-3 mr-1" />Viewer</>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="viewer">
+                          <Eye className="w-3 h-3 mr-2" />Viewer
+                        </SelectItem>
+                        <SelectItem value="entity_admin">
+                          <Shield className="w-3 h-3 mr-2" />Admin
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </TableCell>
-                <TableCell>
-                  {/* Inline Access Level Editor */}
-                  <Select 
-                    value={access.access_level} 
-                    onValueChange={(value: 'viewer' | 'entity_admin') => updateAccessLevel(access.user_entity_access_uuid, value)}
-                    disabled={actionLoading === `update-${access.user_entity_access_uuid}`}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue>
-                        {access.access_level === 'entity_admin' ? (
-                          <><Settings className="w-3 h-3 mr-1" />Admin</>
-                        ) : (
-                          <><Eye className="w-3 h-3 mr-1" />Viewer</>
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="viewer">
-                        <Eye className="w-3 h-3 mr-2" />Viewer
-                      </SelectItem>
-                      <SelectItem value="entity_admin">
-                        <Settings className="w-3 h-3 mr-2" />Entity Admin
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
+                <TableCell className="text-sm">
                   {new Date(access.granted_at).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedUserForPermissions(access.user_uuid);
-                        setIsUserPermissionsDialogOpen(true);
-                      }}
-                      title="View all permissions"
-                    >
-                      <Eye className="h-3 w-3" />
-                    </Button>
+                  {access.access_level !== 'super_admin' && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -707,7 +584,7 @@ export function EnhancedUserAccessManagement() {
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
-                  </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
