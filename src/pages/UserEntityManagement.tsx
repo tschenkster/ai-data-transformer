@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { UserManagementPanel, UserAccessManagementPanel } from '@/features/user-management';
-import { SecurityAuditLog } from '@/features/security-audit';
-import { Footer } from '@/shared/components';
+import { SecurityAuditLog } from '@/components/SecurityAuditLog';
+import Footer from '@/components/Footer';
 
 // Placeholder components for new tabs
 function EntitiesManagement() {

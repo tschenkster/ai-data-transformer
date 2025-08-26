@@ -37,6 +37,14 @@ export default tseslint.config(
           "index.html"
         ]
       }],
+      // Prevent barrel exports (R38)
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "ExportAllDeclaration[source.value=/^\\.\//]",
+          "message": "Barrel exports (export * from './...') are not allowed. Use direct imports instead."
+        }
+      ],
       // Component size limits (R34)
       "max-lines-per-file": ["warn", { "max": 200, "skipBlankLines": true, "skipComments": true }],
       // Explicit return types (R43)

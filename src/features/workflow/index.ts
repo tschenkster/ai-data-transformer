@@ -1,1 +1,1 @@
-export * from './components';
+export { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
