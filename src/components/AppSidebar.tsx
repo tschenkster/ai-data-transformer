@@ -18,8 +18,8 @@ import {
   ChevronDown,
   ChevronRight
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useSidebarState } from "@/hooks/useSidebarState";
+import { useAuth } from "@/hooks/use-auth";
+import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EntitySelector } from "@/components/EntitySelector";
 import {
