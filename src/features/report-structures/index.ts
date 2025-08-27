@@ -10,5 +10,9 @@ export * from './services/lineItemService';
 // Hooks
 export * from './hooks/useReportStructures';
 
+// Utils
+export * from './utils/lineItemUtils';
+export * from './utils/sortOrderUtils';
+
 // Types
 export * from './types';

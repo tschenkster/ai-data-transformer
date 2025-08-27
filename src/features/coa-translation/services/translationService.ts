@@ -15,7 +15,7 @@ export class TranslationService {
       return result;
     } catch (error) {
       // Fallback to local detection
-      const { analyzeAccountDescriptions } = await import('@/utils/languageDetection');
+      const { analyzeAccountDescriptions } = await import('@/features/coa-translation/utils/languageDetection');
       return analyzeAccountDescriptions(accounts.slice(0, 10));
     }
   }

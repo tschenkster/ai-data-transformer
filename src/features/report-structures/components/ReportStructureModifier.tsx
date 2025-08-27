@@ -46,9 +46,9 @@ import {
   Home,
   Settings
 } from 'lucide-react';
-import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/lib/sortOrderUtils';
-import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/lib/lineItemUtils';
-import debugUtils from '@/utils/debugUtils';
+import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/features/report-structures/utils/sortOrderUtils';
+import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structures/utils/lineItemUtils';
+import debugUtils from '@/shared/utils/debugUtils';
 
 interface ReportLineItem {
   report_line_item_id: number;
