@@ -1,15 +1,18 @@
 import { PasswordValidator, PasswordValidationResult } from '../utils/passwordValidation';
 import { Progress } from '@/components/ui/progress';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Shield, Info } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface PasswordStrengthIndicatorProps {
   password: string;
   showRequirements?: boolean;
+  showSecurityTips?: boolean;
 }
 
 export function PasswordStrengthIndicator({ 
   password, 
-  showRequirements = false 
+  showRequirements = false,
+  showSecurityTips = false 
 }: PasswordStrengthIndicatorProps) {
   const validation = PasswordValidator.validatePassword(password);
   
@@ -86,6 +89,16 @@ export function PasswordStrengthIndicator({
             </div>
           ))}
         </div>
+      )}
+
+      {showSecurityTips && validation.strength !== 'very-strong' && (
+        <Alert className="mt-2">
+          <Shield className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            <strong>Security Tip:</strong> Use a unique password that you haven't used elsewhere. 
+            Consider using a password manager to generate and store strong passwords.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );

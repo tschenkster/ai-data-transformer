@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SecurityAuditLog, AccessManagement } from '@/features/data-security';
+import { SecurityAuditDashboard } from '@/features/auth';
 import { UserManagementPanel } from '@/features/user-management';
 import Footer from '@/components/Footer';
 
@@ -22,10 +23,15 @@ export default function Admin() {
               <TabsTrigger value="entities">Entity Management</TabsTrigger>
             )}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
+            <TabsTrigger value="security">Security Dashboard</TabsTrigger>
           </TabsList>
 
           <TabsContent value="audit" className="space-y-4">
             <SecurityAuditLog />
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-4">
+            <SecurityAuditDashboard />
           </TabsContent>
 
           {(isSuperAdmin || isAdmin) && (

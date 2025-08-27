@@ -3,12 +3,11 @@
 // Components
 export { AuthRoute } from './components/AuthRoute';
 export { PasswordStrengthIndicator } from './components/PasswordStrengthIndicator';
-export { EnhancedPasswordStrengthIndicator } from './components/EnhancedPasswordStrengthIndicator';
+export { SecurityAuditDashboard } from './components/SecurityAuditDashboard';
 export { ForgotPasswordForm } from './components/ForgotPasswordForm';
 export { ResetPasswordForm } from './components/ResetPasswordForm';
 
-// Hooks
-export { useEnhancedAuth } from './hooks/useEnhancedAuth';
+// Hooks - Enhanced features now integrated into main useAuth hook
 
 // Services
 export { default as SecurityService } from './services/securityService';

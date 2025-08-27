@@ -41,6 +41,9 @@ interface AuthContextType {
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  // Security features
+  validatePasswordStrength: (password: string) => { isValid: boolean; violations: string[] };
+  getSecurityStatus: () => any;
   isApproved: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
@@ -372,16 +375,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Enhanced security: Rate limiting check
+      const ipAddress = 'client-detected'; // Simplified for client-side
+      const userAgent = navigator.userAgent;
+
+      // Check rate limiting before attempting login
+      const { data: isAllowed } = await supabase.rpc('enhanced_check_rate_limit', {
+        p_operation_type: 'login_attempt',
+        p_identifier: email,
+        p_max_attempts: 5,
+        p_window_minutes: 15
+      });
+
+      if (!isAllowed) {
+        toast({
+          title: "Rate Limited",
+          description: "Too many login attempts. Please wait before trying again.",
+          variant: "destructive"
+        });
+        return { error: { message: 'Rate limited' } };
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        // Log failed login attempt
+        await supabase.rpc('enhanced_log_security_event', {
+          p_action: 'failed_login_attempt',
+          p_details: {
+            email,
+            ip_address: ipAddress,
+            user_agent: userAgent,
+            timestamp: new Date().toISOString()
+          },
+          p_identifier: email
+        });
+
         toast({
           title: "Login Error",
           description: error.message,
           variant: "destructive",
+        });
+      } else {
+        // Log successful login
+        await supabase.rpc('enhanced_log_security_event', {
+          p_action: 'login_success',
+          p_target_user_id: user?.id || null,
+          p_details: {
+            ip_address: ipAddress,
+            user_agent: userAgent,
+            timestamp: new Date().toISOString()
+          }
         });
       }
 
@@ -448,7 +495,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     
     try {
-      await supabase.rpc('log_security_event', {
+      await supabase.rpc('enhanced_log_security_event', {
         p_action: action,
         p_target_user_id: targetUserId || null,
         p_details: details || null
@@ -456,6 +503,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to log security event:', error);
     }
+  };
+
+  // Password strength validation
+  const validatePasswordStrength = (password: string) => {
+    const violations: string[] = [];
+
+    if (password.length < 12) {
+      violations.push('Password must be at least 12 characters long');
+    }
+    if (!/[A-Z]/.test(password)) {
+      violations.push('Password must contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      violations.push('Password must contain at least one lowercase letter');
+    }
+    if (!/\d/.test(password)) {
+      violations.push('Password must contain at least one number');
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      violations.push('Password must contain at least one special character');
+    }
+
+    return {
+      isValid: violations.length === 0,
+      violations
+    };
+  };
+
+  // Get security status
+  const getSecurityStatus = () => {
+    return {
+      sessionActive: !!session,
+      sessionExpiry: session?.expires_at,
+      timeUntilExpiry: session ? 
+        new Date((session.expires_at || 0) * 1000).getTime() - Date.now() : 0,
+      userAgent: navigator.userAgent,
+      lastActivity: new Date().toISOString()
+    };
   };
 
   const value = {
@@ -474,6 +559,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authTimeoutCount,
     forceLogout,
     logSecurityEvent,
+    validatePasswordStrength,
+    getSecurityStatus,
     availableEntities,
     currentEntity,
     setCurrentEntity: handleSetCurrentEntity,

@@ -578,6 +578,48 @@ export type Database = {
           },
         ]
       }
+      security_rate_limits: {
+        Row: {
+          attempt_count: number
+          blocked_until_at: string | null
+          created_at: string
+          identifier: string
+          is_blocked: boolean
+          last_attempt_at: string
+          operation_type: string
+          security_rate_limit_id: number
+          security_rate_limit_uuid: string
+          updated_at: string
+          window_start_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          blocked_until_at?: string | null
+          created_at?: string
+          identifier: string
+          is_blocked?: boolean
+          last_attempt_at?: string
+          operation_type: string
+          security_rate_limit_id?: never
+          security_rate_limit_uuid?: string
+          updated_at?: string
+          window_start_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          blocked_until_at?: string | null
+          created_at?: string
+          identifier?: string
+          is_blocked?: boolean
+          last_attempt_at?: string
+          operation_type?: string
+          security_rate_limit_id?: never
+          security_rate_limit_uuid?: string
+          updated_at?: string
+          window_start_at?: string
+        }
+        Relationships: []
+      }
       user_accounts: {
         Row: {
           approved_at: string | null
@@ -766,6 +808,51 @@ export type Database = {
           },
         ]
       }
+      user_session_logs: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          expires_at: string
+          ip_address: unknown | null
+          is_active: boolean
+          last_activity_at: string
+          session_metadata: Json | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+          user_session_log_id: number
+          user_session_log_uuid: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          expires_at: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_activity_at?: string
+          session_metadata?: Json | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+          user_session_log_id?: never
+          user_session_log_uuid?: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_activity_at?: string
+          session_metadata?: Json | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+          user_session_log_id?: never
+          user_session_log_uuid?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -803,6 +890,15 @@ export type Database = {
       }
       detect_suspicious_activity: {
         Args: { p_time_window_minutes?: number; p_user_id: string }
+        Returns: boolean
+      }
+      enhanced_check_rate_limit: {
+        Args: {
+          p_identifier: string
+          p_max_attempts?: number
+          p_operation_type: string
+          p_window_minutes?: number
+        }
         Returns: boolean
       }
       enhanced_log_security_event: {

@@ -23,7 +23,7 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [signupErrors, setSignupErrors] = useState<string[]>([]);
   
-  const { signIn, signUp, user, isApproved } = useAuth();
+  const { signIn, signUp, user, isApproved, validatePasswordStrength } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if user is already logged in and approved
@@ -49,11 +49,12 @@ export default function Auth() {
     e.preventDefault();
     if (!signupEmail || !signupPassword || !confirmPassword || !firstName || !lastName) return;
     
-    // Enhanced password validation
+    // Enhanced password validation with security policy
     const validation = PasswordValidator.validatePassword(signupPassword);
     const confirmationErrors = PasswordValidator.validatePasswordConfirmation(signupPassword, confirmPassword);
+    const securityValidation = validatePasswordStrength(signupPassword);
     
-    const allErrors = [...validation.errors, ...confirmationErrors];
+    const allErrors = [...validation.errors, ...confirmationErrors, ...securityValidation.violations];
     setSignupErrors(allErrors);
     
     if (allErrors.length > 0) {
@@ -197,7 +198,11 @@ export default function Auth() {
                         onChange={(e) => setSignupPassword(e.target.value)}
                         required
                       />
-                      <PasswordStrengthIndicator password={signupPassword} showRequirements />
+                      <PasswordStrengthIndicator 
+                        password={signupPassword} 
+                        showRequirements 
+                        showSecurityTips 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password">Confirm Password</Label>
