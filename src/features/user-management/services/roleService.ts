@@ -12,20 +12,32 @@ export class RoleService {
   }
 
   static async updateUserRole(userUuid: string, newRole: string): Promise<void> {
-    // First delete existing roles for this user
+    // First fetch the supabase_user_uuid for this user
+    const { data: userAccount, error: fetchError } = await supabase
+      .from('user_accounts')
+      .select('supabase_user_uuid')
+      .eq('user_uuid', userUuid)
+      .single();
+
+    if (fetchError) throw new Error(`User account not found: ${fetchError.message}`);
+    if (!userAccount?.supabase_user_uuid) throw new Error('User account missing supabase_user_uuid');
+
+    const supabaseUserUuid = userAccount.supabase_user_uuid;
+
+    // Delete existing roles for this user (using both possible UUID fields for safety)
     const { error: deleteError } = await supabase
       .from('user_roles')
       .delete()
-      .or(`user_uuid.eq.${userUuid},user_id.eq.${userUuid}`);
+      .or(`user_uuid.eq.${userUuid},user_id.eq.${supabaseUserUuid}`);
 
     if (deleteError) throw deleteError;
 
-    // Insert new role
+    // Insert new role with correct UUID mapping
     const { error: insertError } = await supabase
       .from('user_roles')
       .insert({
-        user_id: userUuid,
-        user_uuid: userUuid,
+        user_id: supabaseUserUuid, // Use supabase_user_uuid for user_id (foreign key to auth.users)
+        user_uuid: userUuid,       // Use user_uuid for user_uuid (reference to user_accounts)
         role: newRole as 'viewer' | 'entity_admin' | 'super_admin'
       });
 
