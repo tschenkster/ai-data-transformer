@@ -88,6 +88,11 @@ export function AppRoutes() {
       <Route path="/trial-balance-import" element={<Navigate to="/data/trial-balance-import" replace />} />
       <Route path="/journal-import" element={<Navigate to="/data/journal-import" replace />} />
       <Route path="/memory" element={<Navigate to="/admin/memory-maintenance" replace />} />
+
+      {/* Redirect auth paths when already authenticated */}
+      <Route path="/auth" element={<Navigate to="/home" replace />} />
+      <Route path="/auth/callback" element={<Navigate to="/home" replace />} />
+      
       <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
