@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowRight, Upload, Languages, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { FileUpload } from '@/components/FileUpload';
+import { FileUpload } from '@/features/imports/shared-pipeline';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useCoATranslation } from '../hooks/useCoATranslation';
 import { languages } from '../constants/languages';

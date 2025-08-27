@@ -1,2 +1,2 @@
-export { EntityManagement } from '@/components/EntityManagement';
-export { EntitySelector } from '@/components/EntitySelector';
+export { EntityManagement } from '@/features/system-administration';
+export { EntitySelector } from '@/features/system-administration';

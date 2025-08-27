@@ -1,4 +1,4 @@
-import ReportStructureManager from '@/components/ReportStructureManager';
+import { ReportStructureManager } from '@/features/report-structures';
 import Footer from '@/components/Footer';
 import { ErrorBoundaryWithRecovery } from '@/components/ErrorBoundaryWithRecovery';
 import { useEffect } from 'react';

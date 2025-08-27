@@ -1,2 +1,2 @@
-export { FileUpload } from '@/components/FileUpload';
-export { AdvancedFileUpload } from '@/components/AdvancedFileUpload';
+export { FileUpload } from '../imports/shared-pipeline';
+export { AdvancedFileUpload } from '../imports/shared-pipeline';

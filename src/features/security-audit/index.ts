@@ -1,2 +1,2 @@
-export { SecurityAuditLog } from '@/components/SecurityAuditLog';
-export { AccessManagement } from '@/components/AccessManagement';
+export { SecurityAuditLog } from '@/features/data-security';
+export { AccessManagement } from '@/features/data-security';

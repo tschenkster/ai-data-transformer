@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SecurityAuditLog } from '@/components/SecurityAuditLog';
-import { AccessManagement } from '@/components/AccessManagement';
-import { UserManagementPanel } from '@/components/UserManagementPanel';
+import { SecurityAuditLog, AccessManagement } from '@/features/data-security';
+import { UserManagementPanel } from '@/features/user-management';
 import Footer from '@/components/Footer';
 
 export default function Admin() {

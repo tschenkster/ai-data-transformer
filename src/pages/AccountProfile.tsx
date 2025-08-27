@@ -1,4 +1,4 @@
-import { UserProfileDisplay } from '@/components/UserProfileDisplay';
+import { UserProfileDisplay } from '@/features/user-management';
 import Footer from '@/components/Footer';
 
 export default function AccountProfile() {

@@ -11,9 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X } from 'lucide-react';
-import { AdvancedFileUpload } from '@/components/AdvancedFileUpload';
-import ReportStructureViewer from '@/components/ReportStructureViewer';
-import ReportStructureModifier from '@/components/ReportStructureModifier';
+import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
+import ReportStructureViewer from './ReportStructureViewer';
+import ReportStructureModifier from './ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
 
 interface ReportStructure {
