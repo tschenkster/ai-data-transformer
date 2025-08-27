@@ -6,7 +6,6 @@ export { PasswordStrengthIndicator } from './components/PasswordStrengthIndicato
 export { EnhancedPasswordStrengthIndicator } from './components/EnhancedPasswordStrengthIndicator';
 export { ForgotPasswordForm } from './components/ForgotPasswordForm';
 export { ResetPasswordForm } from './components/ResetPasswordForm';
-export { SecurityAuditDashboard } from './components/SecurityAuditDashboard';
 
 // Hooks
 export { useEnhancedAuth } from './hooks/useEnhancedAuth';
