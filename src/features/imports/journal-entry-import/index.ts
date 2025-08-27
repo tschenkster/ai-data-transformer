@@ -1,0 +1,1 @@
+export { default as JournalImport } from '@/pages/JournalImport';
