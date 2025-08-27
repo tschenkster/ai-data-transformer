@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogIn, UserPlus, Loader2 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { PasswordStrengthIndicator, PasswordValidator, ForgotPasswordForm } from '@/features/auth';
 
 export default function Auth() {
   const [loginEmail, setLoginEmail] = useState('');
@@ -19,6 +20,8 @@ export default function Auth() {
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [signupErrors, setSignupErrors] = useState<string[]>([]);
   
   const { signIn, signUp, user, isApproved } = useAuth();
   const navigate = useNavigate();
@@ -46,13 +49,14 @@ export default function Auth() {
     e.preventDefault();
     if (!signupEmail || !signupPassword || !confirmPassword || !firstName || !lastName) return;
     
-    if (signupPassword !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
+    // Enhanced password validation
+    const validation = PasswordValidator.validatePassword(signupPassword);
+    const confirmationErrors = PasswordValidator.validatePasswordConfirmation(signupPassword, confirmPassword);
     
-    if (signupPassword.length < 6) {
-      alert('Password must be at least 6 characters');
+    const allErrors = [...validation.errors, ...confirmationErrors];
+    setSignupErrors(allErrors);
+    
+    if (allErrors.length > 0) {
       return;
     }
     
@@ -67,6 +71,7 @@ export default function Auth() {
       setConfirmPassword('');
       setFirstName('');
       setLastName('');
+      setSignupErrors([]);
     }
   };
 
@@ -78,7 +83,10 @@ export default function Auth() {
             <h1 className="text-3xl font-bold text-foreground mb-2">AI-Powered Data Transformer</h1>
           </div>
           
-          <Card className="shadow-elegant">
+          {showForgotPassword ? (
+            <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+          ) : (
+            <Card className="shadow-elegant">
             <CardHeader className="pb-2">
             </CardHeader>
             <CardContent>
@@ -129,6 +137,16 @@ export default function Auth() {
                         </>
                       )}
                     </Button>
+                    
+                    <div className="text-center">
+                      <button 
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Forgot your password?
+                      </button>
+                    </div>
                   </form>
                 </TabsContent>
                 
@@ -174,11 +192,12 @@ export default function Auth() {
                       <Input
                         id="signup-password"
                         type="password"
-                        placeholder="Create a password (min 6 characters)"
+                        placeholder="Create a strong password"
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
                         required
                       />
+                      <PasswordStrengthIndicator password={signupPassword} showRequirements />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password">Confirm Password</Label>
@@ -191,10 +210,19 @@ export default function Auth() {
                         required
                       />
                     </div>
+                    {/* Display validation errors */}
+                    {signupErrors.length > 0 && (
+                      <div className="space-y-1">
+                        {signupErrors.map((error, index) => (
+                          <p key={index} className="text-xs text-red-600">{error}</p>
+                        ))}
+                      </div>
+                    )}
+                    
                     <Button 
                       type="submit" 
                       className="w-full" 
-                      disabled={loading || !signupEmail || !signupPassword || !confirmPassword || !firstName || !lastName}
+                      disabled={loading || !signupEmail || !signupPassword || !confirmPassword || !firstName || !lastName || signupErrors.length > 0}
                     >
                       {loading ? (
                         <>
@@ -216,6 +244,7 @@ export default function Auth() {
               </Tabs>
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
       <Footer />
