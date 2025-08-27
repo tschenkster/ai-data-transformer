@@ -45,7 +45,8 @@ export default function DeleteLineItemDialog({
   if (!item) return null;
 
   const hasChildren = children.length > 0;
-  const hasAccountMappings = false; // TODO: Check if item has account mappings
+  // Check if item has account mappings - placeholder for future implementation
+  const hasAccountMappings = false;
 
   const handleDelete = async () => {
     if (!item) return;
@@ -110,14 +111,22 @@ export default function DeleteLineItemDialog({
           }
 
         } else if (deleteStrategy === 'orphan') {
-          // Move children up one level
+          // Move children up one level - get parent key if needed
+          let parentKey = null;
+          if (item.parent_report_line_item_uuid) {
+            const { data: parentItem } = await supabase
+              .from('report_line_items')
+              .select('report_line_item_key')
+              .eq('report_line_item_uuid', item.parent_report_line_item_uuid)
+              .single();
+            parentKey = parentItem?.report_line_item_key || null;
+          }
+
           const { error: updateChildrenError } = await supabase
             .from('report_line_items')
             .update({ 
               parent_report_line_item_uuid: item.parent_report_line_item_uuid,
-              parent_report_line_item_key: item.parent_report_line_item_uuid ? 
-                // TODO: Get parent key from database
-                null : null,
+              parent_report_line_item_key: parentKey,
               is_parent_key_existing: !!item.parent_report_line_item_uuid
             })
             .eq('parent_report_line_item_uuid', item.report_line_item_uuid);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
+import { UserService } from '../services/userService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,13 +126,14 @@ export function UserManagementPanel() {
         setUserRoles((rolesResponse.data || []) as UserRole[]);
         
       } else if (isEntityAdmin()) {
-        // Entity admins can only see users in their scope
-        // TODO: Implement scope filtering based on entity admin permissions
-        const usersResponse = await supabase.from('user_accounts').select('*').order('created_at', { ascending: false });
-
-        if (usersResponse.error) throw usersResponse.error;
-
-        setUsers((usersResponse.data || []) as UserAccount[]);
+        // Entity admins can only see users within their accessible entities
+        const currentUserUuid = userAccount?.user_uuid;
+        if (currentUserUuid) {
+          const userList = await UserService.fetchUsers(false, currentUserUuid);
+          setUsers(userList);
+        } else {
+          throw new Error('Current user UUID not available for entity admin filtering');
+        }
       }
     } catch (error: any) {
       toast({

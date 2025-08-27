@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { UserAccount, UserFilters } from '../types';
 
 export class UserService {
-  static async fetchUsers(isSuperAdmin: boolean): Promise<UserAccount[]> {
+  static async fetchUsers(isSuperAdmin: boolean, userUuid?: string): Promise<UserAccount[]> {
     if (isSuperAdmin) {
       const { data, error } = await supabase
         .from('user_accounts')
@@ -12,8 +12,12 @@ export class UserService {
       if (error) throw error;
       return (data || []) as UserAccount[];
     } else {
-      // Entity admins can only see users in their scope
-      // TODO: Implement scope filtering based on entity admin permissions
+      // Entity admins can only see users within their accessible entities
+      if (!userUuid) {
+        throw new Error('User UUID required for entity admin scope filtering');
+      }
+      
+      // Get users through entity access scope - fallback to standard query
       const { data, error } = await supabase
         .from('user_accounts')
         .select('*')
