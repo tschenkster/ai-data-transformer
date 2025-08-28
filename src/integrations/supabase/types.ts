@@ -914,6 +914,18 @@ export type Database = {
         Args: { p_line_item_id: number }
         Returns: number
       }
+      get_column_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          character_maximum_length: number
+          column_default: string
+          column_name: string
+          data_type: string
+          is_nullable: string
+          ordinal_position: number
+          table_name: string
+        }[]
+      }
       get_current_user_details: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -921,6 +933,16 @@ export type Database = {
           user_first_name: string
           user_last_name: string
           user_uuid: string
+        }[]
+      }
+      get_database_functions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          argument_types: string
+          function_name: string
+          function_schema: string
+          function_type: string
+          return_type: string
         }[]
       }
       get_enhanced_user_management_summary: {
@@ -944,6 +966,35 @@ export type Database = {
           total_line_items: number
           total_structures: number
           user_count: number
+        }[]
+      }
+      get_enum_values: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          enum_name: string
+          enum_values: string[]
+        }[]
+      }
+      get_foreign_keys: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          column_name: string
+          constraint_name: string
+          foreign_column_name: string
+          foreign_table_name: string
+          foreign_table_schema: string
+          table_name: string
+        }[]
+      }
+      get_indexes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          column_names: string[]
+          index_name: string
+          index_type: string
+          is_primary: boolean
+          is_unique: boolean
+          table_name: string
         }[]
       }
       get_next_concatenated_line_item_id: {
@@ -975,6 +1026,28 @@ export type Database = {
           report_structure_uuid: string
           updated_at: string
           version: number
+        }[]
+      }
+      get_rls_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cmd: string
+          permissive: string
+          policyname: string
+          qual: string
+          roles: string[]
+          schemaname: string
+          tablename: string
+          with_check: string
+        }[]
+      }
+      get_table_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          column_count: number
+          table_name: string
+          table_schema: string
+          table_type: string
         }[]
       }
       get_translation_sessions_by_status: {

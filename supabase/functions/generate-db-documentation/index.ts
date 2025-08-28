@@ -81,33 +81,30 @@ serve(async (req) => {
 
     console.log('Querying database schema...');
 
-    // Query database schema information
-    const { data: tables } = await supabase.rpc('get_database_schema_info', {});
-    
-    if (!tables) {
-      throw new Error('Failed to retrieve database schema information');
-    }
-
-    // Get additional schema details
+    // Query comprehensive database schema information using new RPC functions
     const schemaQueries = await Promise.all([
-      // Get table information
-      supabase.from('information_schema.tables')
-        .select('table_name, table_schema, table_type')
-        .eq('table_schema', 'public'),
-      
-      // Get column information
-      supabase.from('information_schema.columns')
-        .select('table_name, column_name, data_type, is_nullable, column_default, character_maximum_length')
-        .eq('table_schema', 'public')
-        .order('table_name, ordinal_position'),
-        
-      // Get enum information
-      supabase.rpc('get_enum_values', {})
+      supabase.rpc('get_table_info', {}),
+      supabase.rpc('get_column_info', {}),
+      supabase.rpc('get_enum_values', {}),
+      supabase.rpc('get_foreign_keys', {}),
+      supabase.rpc('get_rls_policies', {}),
+      supabase.rpc('get_database_functions', {}),
+      supabase.rpc('get_indexes', {})
     ]);
 
-    const tablesData = schemaQueries[0].data as TableInfo[] || [];
-    const columnsData = schemaQueries[1].data as ColumnInfo[] || [];
+    // Extract data from query results
+    const tablesData = schemaQueries[0].data || [];
+    const columnsData = schemaQueries[1].data || [];
     const enumsData = schemaQueries[2].data || [];
+    const foreignKeysData = schemaQueries[3].data || [];
+    const rlsPoliciesData = schemaQueries[4].data || [];
+    const dbFunctionsData = schemaQueries[5].data || [];
+    const indexesData = schemaQueries[6].data || [];
+
+    // Check if we got any data
+    if (tablesData.length === 0) {
+      console.warn('No tables found in public schema - this might indicate an issue with schema access');
+    }
 
     console.log(`Found ${tablesData.length} tables, ${columnsData.length} columns`);
 
@@ -116,6 +113,10 @@ serve(async (req) => {
       tables: tablesData,
       columns: columnsData,
       enums: enumsData,
+      foreignKeys: foreignKeysData,
+      rlsPolicies: rlsPoliciesData,
+      dbFunctions: dbFunctionsData,
+      indexes: indexesData,
       filename,
       version,
       generatedBy: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
@@ -171,23 +172,44 @@ serve(async (req) => {
 });
 
 function generateDocumentationContent(data: {
-  tables: TableInfo[];
-  columns: ColumnInfo[];
+  tables: any[];
+  columns: any[];
   enums: any[];
+  foreignKeys: any[];
+  rlsPolicies: any[];
+  dbFunctions: any[];
+  indexes: any[];
   filename: string;
   version: string;
   generatedBy: string;
   generatedAt: string;
 }): string {
-  const { tables, columns, enums, filename, version, generatedBy, generatedAt } = data;
+  const { tables, columns, enums, foreignKeys, rlsPolicies, dbFunctions, indexes, filename, version, generatedBy, generatedAt } = data;
   
-  // Group columns by table
-  const tableColumns: { [key: string]: ColumnInfo[] } = {};
+  // Group data by table for easier processing
+  const tableColumns: { [key: string]: any[] } = {};
+  const tableForeignKeys: { [key: string]: any[] } = {};
+  const tablePolicies: { [key: string]: any[] } = {};
+  const tableIndexes: { [key: string]: any[] } = {};
+  
   columns.forEach(col => {
-    if (!tableColumns[col.table_name]) {
-      tableColumns[col.table_name] = [];
-    }
+    if (!tableColumns[col.table_name]) tableColumns[col.table_name] = [];
     tableColumns[col.table_name].push(col);
+  });
+  
+  foreignKeys.forEach(fk => {
+    if (!tableForeignKeys[fk.table_name]) tableForeignKeys[fk.table_name] = [];
+    tableForeignKeys[fk.table_name].push(fk);
+  });
+  
+  rlsPolicies.forEach(policy => {
+    if (!tablePolicies[policy.tablename]) tablePolicies[policy.tablename] = [];
+    tablePolicies[policy.tablename].push(policy);
+  });
+  
+  indexes.forEach(idx => {
+    if (!tableIndexes[idx.table_name]) tableIndexes[idx.table_name] = [];
+    tableIndexes[idx.table_name].push(idx);
   });
 
   const doc = `# Database Structure Documentation
@@ -207,6 +229,10 @@ This document provides a comprehensive overview of the database structure for th
 - **Total Tables**: ${tables.length}
 - **Total Columns**: ${columns.length}
 - **Total Enums**: ${enums.length}
+- **Total Foreign Keys**: ${foreignKeys.length}
+- **Total RLS Policies**: ${rlsPolicies.length}
+- **Total Database Functions**: ${dbFunctions.length}
+- **Total Indexes**: ${indexes.length}
 - **Schema**: public
 
 ---
@@ -215,12 +241,18 @@ This document provides a comprehensive overview of the database structure for th
 
 ${tables.map(table => {
   const cols = tableColumns[table.table_name] || [];
+  const fks = tableForeignKeys[table.table_name] || [];
+  const policies = tablePolicies[table.table_name] || [];
+  const idxs = tableIndexes[table.table_name] || [];
   
   return `### ${table.table_name}
 
 **Type**: ${table.table_type}  
 **Schema**: ${table.table_schema}  
-**Columns**: ${cols.length}
+**Columns**: ${cols.length}  
+**Foreign Keys**: ${fks.length}  
+**RLS Policies**: ${policies.length}  
+**Indexes**: ${idxs.length}
 
 #### Columns
 
@@ -229,6 +261,35 @@ ${tables.map(table => {
 ${cols.map(col => 
   `| ${col.column_name} | ${col.data_type} | ${col.is_nullable} | ${col.column_default || 'None'} | ${col.character_maximum_length || 'N/A'} |`
 ).join('\n')}
+
+${fks.length > 0 ? `#### Foreign Key Relationships
+
+| Column | References | Constraint Name |
+|--------|------------|-----------------|
+${fks.map(fk => 
+  `| ${fk.column_name} | ${fk.foreign_table_schema}.${fk.foreign_table_name}.${fk.foreign_column_name} | ${fk.constraint_name} |`
+).join('\n')}
+` : ''}
+
+${policies.length > 0 ? `#### Row Level Security Policies
+
+${policies.map(policy => `**${policy.policyname}**  
+- **Command**: ${policy.cmd}  
+- **Permissive**: ${policy.permissive}  
+- **Roles**: ${policy.roles.join(', ')}  
+- **Using Expression**: ${policy.qual || 'N/A'}  
+- **With Check Expression**: ${policy.with_check || 'N/A'}  
+`).join('\n')}
+` : ''}
+
+${idxs.length > 0 ? `#### Indexes
+
+| Index Name | Columns | Unique | Primary | Type |
+|------------|---------|--------|---------|------|
+${idxs.map(idx => 
+  `| ${idx.index_name} | ${idx.column_names.join(', ')} | ${idx.is_unique ? 'Yes' : 'No'} | ${idx.is_primary ? 'Yes' : 'No'} | ${idx.index_type} |`
+).join('\n')}
+` : ''}
 
 ---
 `;
@@ -244,26 +305,64 @@ ${enums.length > 0 ? enums.map((enumInfo: any) => `### ${enumInfo.enum_name}
 
 ---
 
-## Database Functions
+## Foreign Key Relationships Graph (Text-Based)
 
-The database includes various functions for business logic, security, and data validation. These functions are used throughout the application for:
+This section provides a text-based mapping of all foreign key relationships in the database:
 
-- Row Level Security (RLS) policy enforcement
-- Data validation and constraints
-- Audit trail logging
-- Complex business logic operations
+${foreignKeys.length > 0 ? foreignKeys.map(fk => 
+  `- **${fk.table_name}.${fk.column_name}** → **${fk.foreign_table_name}.${fk.foreign_column_name}**`
+).join('\n') : 'No foreign key relationships found.'}
 
 ---
 
-## Security Policies
+## Database Functions
 
-This database implements Row Level Security (RLS) across all tables to ensure data isolation and proper access control based on user roles and permissions.
+The database includes ${dbFunctions.length} custom functions for business logic, security, and data validation:
+
+${dbFunctions.length > 0 ? dbFunctions.map(func => `### ${func.function_name}
+
+**Schema**: ${func.function_schema}  
+**Return Type**: ${func.return_type}  
+**Arguments**: ${func.argument_types || 'None'}  
+**Type**: ${func.function_type}
+
+`).join('\n') : 'No custom functions found.'}
+
+---
+
+## Security Policies Summary
+
+This database implements Row Level Security (RLS) across ${tables.filter(t => tablePolicies[t.table_name]?.length > 0).length} tables to ensure data isolation and proper access control.
+
+### Tables with RLS Enabled
+
+${tables.map(table => {
+  const policies = tablePolicies[table.table_name] || [];
+  return policies.length > 0 ? `- **${table.table_name}**: ${policies.length} policies` : null;
+}).filter(Boolean).join('\n') || 'No RLS policies found.'}
 
 ### Key Security Features
-- **Row Level Security**: Enabled on all user data tables
-- **Role-based Access Control**: Different access levels (viewer, admin, super_admin, entity_admin)
+- **Row Level Security**: Enabled on ${tables.filter(t => tablePolicies[t.table_name]?.length > 0).length} tables
+- **Role-based Access Control**: Different access levels (viewer, entity_admin, super_admin)
 - **Audit Logging**: All sensitive operations are logged to security_audit_logs
 - **Rate Limiting**: Protection against excessive API calls
+
+---
+
+## Indexes and Performance
+
+The database includes ${indexes.length} indexes for performance optimization:
+
+### Index Summary by Type
+${indexes.reduce((acc, idx) => {
+  acc[idx.index_type] = (acc[idx.index_type] || 0) + 1;
+  return acc;
+}, {} as {[key: string]: number})}
+
+${Object.entries(indexes.reduce((acc, idx) => {
+  acc[idx.index_type] = (acc[idx.index_type] || 0) + 1;
+  return acc;
+}, {} as {[key: string]: number})).map(([type, count]) => `- **${type}**: ${count} indexes`).join('\n')}
 
 ---
 
@@ -272,16 +371,24 @@ This database implements Row Level Security (RLS) across all tables to ensure da
 This database follows these naming and structural conventions:
 
 - **snake_case**: All table and column names use snake_case
-- **Timestamps**: All tables include created_at and updated_at fields
+- **Timestamps**: All tables include created_at and updated_at fields where applicable
 - **UUIDs**: Primary keys use UUID format with gen_random_uuid() default
 - **Soft Delete**: Some tables support soft delete with is_active flags
 - **Audit Trail**: Important operations are logged with user attribution
+- **Foreign Keys**: Proper referential integrity with named constraints
+- **RLS Policies**: Comprehensive row-level security implementation
 
 ---
 
 ## Changelog
 
 - **${new Date(generatedAt).toLocaleDateString()}**: ${version} - Initial database structure documentation generated by ${generatedBy}
+  - Generated comprehensive schema documentation
+  - Included ${tables.length} tables, ${columns.length} columns
+  - Documented ${foreignKeys.length} foreign key relationships
+  - Cataloged ${rlsPolicies.length} RLS policies
+  - Listed ${dbFunctions.length} database functions
+  - Indexed ${indexes.length} performance indexes
 
 ---
 
