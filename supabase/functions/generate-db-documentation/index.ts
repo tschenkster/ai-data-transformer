@@ -55,89 +55,164 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Progress tracking function
+    let progressData = {
+      phase: 'initialization',
+      progress: 0,
+      message: 'Starting documentation generation...',
+      error: null,
+      completed_phases: [],
+      total_phases: 6
+    };
+
+    const updateProgress = (phase: string, progress: number, message: string) => {
+      progressData = { ...progressData, phase, progress, message };
+      console.log(`[${Math.round(progress)}%] ${phase}: ${message}`);
+    };
+
+    updateProgress('initialization', 5, 'Authenticating user and preparing session...');
+
     // Get current user info for audit logging
     const authHeader = req.headers.get('Authorization');
     let currentUser = null;
     if (authHeader) {
-      const userSupabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-        auth: { persistSession: false }
-      });
-      const { data: { user } } = await userSupabase.auth.getUser(authHeader.replace('Bearer ', ''));
-      if (user) {
-        const { data: userAccount } = await supabase
-          .from('user_accounts')
-          .select('user_uuid, first_name, last_name, email')
-          .eq('supabase_user_uuid', user.id)
-          .maybeSingle();
-        currentUser = userAccount;
+      try {
+        const userSupabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+          auth: { persistSession: false }
+        });
+        const { data: { user } } = await userSupabase.auth.getUser(authHeader.replace('Bearer ', ''));
+        if (user) {
+          const { data: userAccount } = await supabase
+            .from('user_accounts')
+            .select('user_uuid, first_name, last_name, email')
+            .eq('supabase_user_uuid', user.id)
+            .maybeSingle();
+          currentUser = userAccount;
+        }
+      } catch (authError) {
+        console.warn('Authentication check failed, proceeding as system user:', authError);
       }
     }
 
-    // Generate filename and version
+    updateProgress('versioning', 10, 'Determining version number...');
+
+    // Generate filename and version with retry logic
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
     
-    // Check for existing documentation generated today to increment version
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    let version = 'v01';
+    let filename = `DATABASE-STRUCTURE_${dateStr}_${version}.md`;
     
-    const { data: existingDocs } = await supabase
-      .from('security_audit_logs')
-      .select('details')
-      .eq('action', 'database_documentation_generated')
-      .gte('created_at', startOfDay)
-      .lt('created_at', endOfDay)
-      .order('created_at', { ascending: false });
-    
-    // Find the highest version number for today
-    let maxVersion = 0;
-    if (existingDocs && existingDocs.length > 0) {
-      existingDocs.forEach(doc => {
-        if (doc.details?.version) {
-          const versionMatch = doc.details.version.match(/v(\d+)/);
-          if (versionMatch) {
-            const versionNum = parseInt(versionMatch[1], 10);
-            maxVersion = Math.max(maxVersion, versionNum);
+    try {
+      // Check for existing documentation generated today to increment version
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+      
+      const { data: existingDocs } = await supabase
+        .from('security_audit_logs')
+        .select('details')
+        .eq('action', 'database_documentation_generated')
+        .gte('created_at', startOfDay)
+        .lt('created_at', endOfDay)
+        .order('created_at', { ascending: false });
+      
+      // Find the highest version number for today
+      let maxVersion = 0;
+      if (existingDocs && existingDocs.length > 0) {
+        existingDocs.forEach(doc => {
+          if (doc.details?.version) {
+            const versionMatch = doc.details.version.match(/v(\d+)/);
+            if (versionMatch) {
+              const versionNum = parseInt(versionMatch[1], 10);
+              maxVersion = Math.max(maxVersion, versionNum);
+            }
           }
-        }
-      });
+        });
+      }
+      
+      version = `v${String(maxVersion + 1).padStart(2, '0')}`;
+      filename = `DATABASE-STRUCTURE_${dateStr}_${version}.md`;
+    } catch (versionError) {
+      console.warn('Version check failed, using default version:', versionError);
     }
-    
-    const version = `v${String(maxVersion + 1).padStart(2, '0')}`;
-    const filename = `DATABASE-STRUCTURE_${dateStr}_${version}.md`;
 
-    console.log('Querying database schema...');
+    updateProgress('schema_analysis', 20, 'Analyzing database schema...');
 
-    // Query comprehensive database schema information using new RPC functions
-    const schemaQueries = await Promise.all([
-      supabase.rpc('get_table_info', {}),
-      supabase.rpc('get_column_info', {}),
-      supabase.rpc('get_enum_values', {}),
-      supabase.rpc('get_foreign_keys', {}),
-      supabase.rpc('get_rls_policies', {}),
-      supabase.rpc('get_database_functions', {}),
-      supabase.rpc('get_indexes', {}),
-      supabase.rpc('get_table_constraints', {})
-    ]);
+    // Query comprehensive database schema information with batching and error handling
+    let tablesData = [], columnsData = [], enumsData = [], foreignKeysData = [];
+    let rlsPoliciesData = [], dbFunctionsData = [], indexesData = [], constraintsData = [];
 
-    // Extract data from query results
-    const tablesData = schemaQueries[0].data || [];
-    const columnsData = schemaQueries[1].data || [];
-    const enumsData = schemaQueries[2].data || [];
-    const foreignKeysData = schemaQueries[3].data || [];
-    const rlsPoliciesData = schemaQueries[4].data || [];
-    const dbFunctionsData = schemaQueries[5].data || [];
-    const indexesData = schemaQueries[6].data || [];
-    const constraintsData = schemaQueries[7].data || [];
+    // Phase 1: Core schema data (critical)
+    try {
+      updateProgress('schema_analysis', 25, 'Fetching table and column information...');
+      const coreQueries = await Promise.allSettled([
+        supabase.rpc('get_table_info', {}),
+        supabase.rpc('get_column_info', {}),
+        supabase.rpc('get_enum_values', {})
+      ]);
+      
+      tablesData = coreQueries[0].status === 'fulfilled' ? (coreQueries[0].value.data || []) : [];
+      columnsData = coreQueries[1].status === 'fulfilled' ? (coreQueries[1].value.data || []) : [];
+      enumsData = coreQueries[2].status === 'fulfilled' ? (coreQueries[2].value.data || []) : [];
 
-    // Check if we got any data
+      if (coreQueries[0].status === 'rejected') console.error('Tables query failed:', coreQueries[0].reason);
+      if (coreQueries[1].status === 'rejected') console.error('Columns query failed:', coreQueries[1].reason);
+      if (coreQueries[2].status === 'rejected') console.error('Enums query failed:', coreQueries[2].reason);
+
+    } catch (error) {
+      console.error('Critical schema queries failed:', error);
+      throw new Error('Failed to fetch core database schema information');
+    }
+
+    // Phase 2: Relationship and security data (important but not critical)  
+    try {
+      updateProgress('schema_analysis', 35, 'Fetching relationships and security policies...');
+      const relationshipQueries = await Promise.allSettled([
+        supabase.rpc('get_foreign_keys', {}),
+        supabase.rpc('get_rls_policies', {}),
+        supabase.rpc('get_table_constraints', {})
+      ]);
+      
+      foreignKeysData = relationshipQueries[0].status === 'fulfilled' ? (relationshipQueries[0].value.data || []) : [];
+      rlsPoliciesData = relationshipQueries[1].status === 'fulfilled' ? (relationshipQueries[1].value.data || []) : [];
+      constraintsData = relationshipQueries[2].status === 'fulfilled' ? (relationshipQueries[2].value.data || []) : [];
+
+      if (relationshipQueries[0].status === 'rejected') console.warn('Foreign keys query failed:', relationshipQueries[0].reason);
+      if (relationshipQueries[1].status === 'rejected') console.warn('RLS policies query failed:', relationshipQueries[1].reason);
+      if (relationshipQueries[2].status === 'rejected') console.warn('Constraints query failed:', relationshipQueries[2].reason);
+
+    } catch (error) {
+      console.warn('Some relationship queries failed, continuing with partial data:', error);
+    }
+
+    // Phase 3: Performance and function data (supplementary)
+    try {
+      updateProgress('schema_analysis', 45, 'Fetching functions and performance data...');
+      const performanceQueries = await Promise.allSettled([
+        supabase.rpc('get_database_functions', {}),
+        supabase.rpc('get_indexes', {})
+      ]);
+      
+      dbFunctionsData = performanceQueries[0].status === 'fulfilled' ? (performanceQueries[0].value.data || []) : [];
+      indexesData = performanceQueries[1].status === 'fulfilled' ? (performanceQueries[1].value.data || []) : [];
+
+      if (performanceQueries[0].status === 'rejected') console.warn('Functions query failed:', performanceQueries[0].reason);
+      if (performanceQueries[1].status === 'rejected') console.warn('Indexes query failed:', performanceQueries[1].reason);
+
+    } catch (error) {
+      console.warn('Performance queries failed, continuing without performance data:', error);
+    }
+
+    // Validate we have minimum required data
     if (tablesData.length === 0) {
       console.warn('No tables found in public schema - this might indicate an issue with schema access');
+      // Don't fail completely, generate what we can
     }
 
+    updateProgress('documentation_generation', 55, `Processing ${tablesData.length} tables and ${columnsData.length} columns...`);
     console.log(`Found ${tablesData.length} tables, ${columnsData.length} columns`);
 
-    // Generate documentation content
+    // Generate documentation content with progress tracking
     const documentation = generateDocumentationContent({
       tables: tablesData,
       columns: columnsData,
@@ -153,27 +228,43 @@ serve(async (req) => {
       generatedAt: now.toISOString()
     });
 
-    console.log('Documentation generated, saving to storage...');
+    updateProgress('file_preparation', 75, 'Preparing documentation file for storage...');
 
     // Background task to upload file to Supabase Storage and log the event
     async function uploadAndLogTask() {
       try {
-        // Upload file to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('database-docs')
-          .upload(filename, new Blob([documentation], { type: 'text/markdown' }), {
-            cacheControl: '3600',
-            upsert: false
-          });
+        updateProgress('file_upload', 85, 'Uploading documentation to secure storage...');
+        
+        // Upload file to Supabase Storage with retry logic
+        let uploadData, uploadError;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          const uploadResult = await supabase.storage
+            .from('database-docs')
+            .upload(filename, new Blob([documentation], { type: 'text/markdown' }), {
+              cacheControl: '3600',
+              upsert: false
+            });
+          
+          uploadData = uploadResult.data;
+          uploadError = uploadResult.error;
+          
+          if (!uploadError) break;
+          
+          console.warn(`Upload attempt ${attempt} failed:`, uploadError);
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+          }
+        }
 
         if (uploadError) {
-          console.error('Storage upload error:', uploadError);
+          console.error('Storage upload failed after 3 attempts:', uploadError);
           throw uploadError;
         }
 
+        updateProgress('audit_logging', 95, 'Logging generation event...');
         console.log('File uploaded successfully:', uploadData?.path);
 
-        // Log the generation event
+        // Log the generation event with enhanced details
         await supabase.from('security_audit_logs').insert({
           action: 'database_documentation_generated',
           details: {
@@ -184,28 +275,49 @@ serve(async (req) => {
             table_count: tablesData.length,
             column_count: columnsData.length,
             storage_path: uploadData?.path,
-            upload_success: true
+            upload_success: true,
+            generation_duration_ms: Date.now() - now.getTime(),
+            schema_complexity: {
+              enums_count: enumsData.length,
+              foreign_keys_count: foreignKeysData.length,
+              rls_policies_count: rlsPoliciesData.length,
+              functions_count: dbFunctionsData.length,
+              indexes_count: indexesData.length,
+              constraints_count: constraintsData.length
+            }
           }
         });
 
-        // Clean up old files (keep last 10)
-        const cleanupResult = await supabase.rpc('cleanup_old_documentation_files', { p_keep_count: 10 });
-        console.log(`Cleaned up ${cleanupResult.data || 0} old documentation files`);
+        updateProgress('cleanup', 98, 'Cleaning up old files...');
+        
+        // Clean up old files (keep last 10) with error handling
+        try {
+          const cleanupResult = await supabase.rpc('cleanup_old_documentation_files', { p_keep_count: 10 });
+          console.log(`Cleaned up ${cleanupResult.data || 0} old documentation files`);
+        } catch (cleanupError) {
+          console.warn('File cleanup failed but generation succeeded:', cleanupError);
+        }
 
+        updateProgress('complete', 100, 'Documentation generation completed successfully!');
         console.log('Documentation generation and upload completed successfully');
       } catch (error) {
         console.error('Background task error:', error);
         
-        // Log the failure
+        // Log the failure with detailed error information
+        const errorDetails = {
+          filename,
+          version,
+          generated_by_name: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
+          error: error.message,
+          error_stack: error.stack,
+          upload_success: false,
+          generation_duration_ms: Date.now() - now.getTime(),
+          file_size: documentation.length
+        };
+
         await supabase.from('security_audit_logs').insert({
           action: 'database_documentation_generation_failed',
-          details: {
-            filename,
-            version,
-            generated_by_name: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
-            error: error.message,
-            upload_success: false
-          }
+          details: errorDetails
         });
       }
     }
