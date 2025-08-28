@@ -380,7 +380,7 @@ function calculateColumnWidths(data: any[], columnKeys: string[], headers: strin
           }
           value = simpleType;
         } else if (key === 'nullable_display') {
-          value = row.is_nullable === 'YES' ? '✓' : '✗';
+          value = row.is_nullable === 'YES' ? 'Yes' : 'No';
         } else if (key === 'default_display') {
           let simpleDefault = row.column_default || 'None';
           if (simpleDefault.includes('gen_random_uuid')) simpleDefault = 'UUID';
@@ -633,7 +633,7 @@ ${cols.length > 0 ? (() => {
     const values = [
       `**${col.column_name}**`,
       simpleType,
-      col.is_nullable === 'YES' ? '✓' : '✗',
+      col.is_nullable === 'YES' ? 'Yes' : 'No',
       simpleDefault
     ];
     
