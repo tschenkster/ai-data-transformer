@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
-import { TabsContent } from '@/components/ui/tabs';
 import { UserManagementPanel, UserAccessManagementPanel } from '@/features/user-management';
 import { EntityManagement } from '@/features/system-administration';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
@@ -83,19 +82,19 @@ export default function UserEntityManagement() {
         <Routes>
           <Route path="/" element={<Navigate to="users" replace />} />
           <Route path="/users" element={
-            <TabsContent value="users" className="space-y-4">
+            <div className="space-y-4">
               <UserManagementPanel />
-            </TabsContent>
+            </div>
           } />
           <Route path="/roles-permissions" element={
-            <TabsContent value="roles-permissions" className="space-y-4">
+            <div className="space-y-4">
               <UserAccessManagementPanel />
-            </TabsContent>
+            </div>
           } />
           <Route path="/entities" element={
-            <TabsContent value="entities" className="space-y-4">
+            <div className="space-y-4">
               <EntityManagement />
-            </TabsContent>
+            </div>
           } />
         </Routes>
 
