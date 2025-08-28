@@ -1045,6 +1045,20 @@ export type Database = {
           with_check: string
         }[]
       }
+      get_table_constraints: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          check_clause: string
+          column_name: string
+          constraint_name: string
+          constraint_type: string
+          foreign_column_name: string
+          foreign_table_name: string
+          initially_deferred: string
+          is_deferrable: string
+          table_name: string
+        }[]
+      }
       get_table_info: {
         Args: Record<PropertyKey, never>
         Returns: {
