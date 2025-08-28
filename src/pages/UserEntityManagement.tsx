@@ -3,20 +3,8 @@ import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { UserManagementPanel, UserAccessManagementPanel } from '@/features/user-management';
 import { SecurityAuditLog } from '@/features/data-security';
+import { EntityManagement } from '@/features/system-administration';
 import Footer from '@/components/Footer';
-
-// Placeholder components for new tabs
-function EntitiesManagement() {
-  return (
-    <div className="space-y-6">
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold mb-2">Entities</h2>
-        <p className="text-muted-foreground">Manage entity configurations and settings</p>
-        <p className="text-sm text-muted-foreground mt-4">Coming soon...</p>
-      </div>
-    </div>
-  );
-}
 
 export default function UserEntityManagement() {
   const navigate = useNavigate();
@@ -89,7 +77,7 @@ export default function UserEntityManagement() {
             } />
             <Route path="/entities" element={
               <TabsContent value="entities" className="space-y-4">
-                <EntitiesManagement />
+                <EntityManagement />
               </TabsContent>
             } />
             <Route path="/activity-log" element={
