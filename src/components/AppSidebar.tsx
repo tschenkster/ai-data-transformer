@@ -13,6 +13,7 @@ import {
   BookOpen, 
   PieChart,
   Table,
+  Shield,
   User, 
   LogOut,
   ChevronDown,
@@ -95,6 +96,12 @@ export function AppSidebar() {
           title: 'User & Entity Management', 
           url: '/admin/user-entity-management', 
           icon: Users,
+          permissions: 'admin'
+        },
+        { 
+          title: 'Activity Log', 
+          url: '/admin/activity-log', 
+          icon: Shield,
           permissions: 'admin'
         }
       ]
