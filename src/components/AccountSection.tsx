@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { EntitySelector } from '@/features/system-administration';
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
 
 interface AccountSectionProps {
   open: boolean;
@@ -12,47 +11,18 @@ interface AccountSectionProps {
 }
 
 export function AccountSection({ open, isActive, getNavClass }: AccountSectionProps) {
-  const { userAccount, signOut, isSuperAdmin, isAdmin, currentEntity, availableEntities } = useAuth();
-
-  const getRoleDisplay = () => {
-    if (isSuperAdmin) return 'Super Admin';
-    if (isAdmin) return 'Admin';
-    return 'User';
-  };
-
-  const getRoleBadgeVariant = () => {
-    if (isSuperAdmin) return 'default';
-    if (isAdmin) return 'secondary';
-    return 'outline';
-  };
+  const { userAccount, signOut, availableEntities } = useAuth();
 
   return (
     <>
-      {/* Entity & Role Info */}
-      <SidebarMenuItem>
-        <div className="px-2 py-3 space-y-2">
-          {/* Entity Selector */}
-          {availableEntities.length > 1 && (
-            <div className="space-y-1">
-              <EntitySelector />
-            </div>
-          )}
-          
-          {/* Current Entity & Role Display */}
-          {open && (
-            <div className="space-y-1">
-              {currentEntity && (
-                <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">{currentEntity.entity_name}</span>
-                </div>
-              )}
-              <Badge variant={getRoleBadgeVariant()} className="text-xs h-5">
-                {getRoleDisplay()}
-              </Badge>
-            </div>
-          )}
-        </div>
-      </SidebarMenuItem>
+      {/* Entity Selector */}
+      {availableEntities.length > 1 && (
+        <SidebarMenuItem>
+          <div className="px-2 py-2">
+            <EntitySelector />
+          </div>
+        </SidebarMenuItem>
+      )}
       
       {/* User Profile */}
       <SidebarMenuItem>
@@ -63,7 +33,7 @@ export function AccountSection({ open, isActive, getNavClass }: AccountSectionPr
             }`} />
             {open && (
               <div className="flex flex-col items-start text-xs min-w-0">
-                <span className="truncate max-w-32 font-medium">
+                <span className="truncate max-w-32">
                   {userAccount?.first_name} {userAccount?.last_name}
                 </span>
               </div>
