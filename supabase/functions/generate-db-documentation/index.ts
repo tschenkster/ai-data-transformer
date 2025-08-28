@@ -199,7 +199,7 @@ serve(async (req) => {
 });
 
 // Utility function to calculate column widths
-function calculateColumnWidths(data: any[], columnKeys: string[], headers: string[]): number[] {
+function calculateColumnWidths(data: any[], columnKeys: string[], headers: string[], options: { tableNameColumn?: boolean } = {}): number[] {
   return columnKeys.map((key, index) => {
     const headerLength = headers[index].length;
     const maxDataLength = Math.max(
@@ -237,6 +237,8 @@ function calculateColumnWidths(data: any[], columnKeys: string[], headers: strin
           value = row.is_primary ? 'Yes' : 'No';
         } else if (key === 'index_type') {
           value = row.index_type;
+        } else if (key === 'table_name') {
+          value = `**${row.table_name}**`;
         } else {
           value = String(row[key] || '');
         }
@@ -246,7 +248,8 @@ function calculateColumnWidths(data: any[], columnKeys: string[], headers: strin
     
     // Set minimum and maximum column widths
     const minWidth = 8;
-    const maxWidth = 50;
+    // Use higher max width for table names to prevent truncation
+    const maxWidth = (key === 'table_name' || options.tableNameColumn) ? 80 : 50;
     return Math.min(Math.max(Math.max(headerLength, maxDataLength), minWidth), maxWidth);
   });
 }
@@ -353,7 +356,7 @@ ${tables.length > 0 ? (() => {
     index_count: (tableIndexes[table.table_name] || []).length
   }));
   
-  const widths = calculateColumnWidths(tableData, columnKeys, headers);
+  const widths = calculateColumnWidths(tableData, columnKeys, headers, { tableNameColumn: true });
   
   const headerRow = createFixedWidthRow(headers, widths);
   const separatorRow = createTableSeparator(widths);
