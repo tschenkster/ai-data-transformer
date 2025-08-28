@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { UserService } from '../services/userService';
+import { UserStatsCards } from './UserStatsCards';
+import { UserFilters } from './UserFilters';
+import { UserTableSkeleton } from './UserTableSkeleton';
+import { EmptyUserState } from './EmptyUserState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -415,18 +419,7 @@ export function UserManagementPanel() {
   }
 
   if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>User Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <UserTableSkeleton />;
   }
 
   // Calculate status counts
@@ -450,277 +443,242 @@ export function UserManagementPanel() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-            {/* User Statistics Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <div className="text-2xl font-bold">{statusCounts.total}</div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Total Users</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-yellow-600" />
-                    <div className="text-2xl font-bold">{statusCounts.pending}</div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Pending</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <div className="text-2xl font-bold">{statusCounts.approved}</div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Approved</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-2">
-                    <Pause className="h-4 w-4 text-orange-600" />
-                    <div className="text-2xl font-bold">{statusCounts.suspended}</div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Suspended</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-2">
-                    <XCircle className="h-4 w-4 text-red-600" />
-                    <div className="text-2xl font-bold">{statusCounts.rejected}</div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Rejected</p>
-                </CardContent>
-              </Card>
-            </div>
+        <div className="space-y-6">
+          {/* Enhanced User Statistics */}
+          <UserStatsCards stats={statusCounts} />
 
-            {/* Actions Bar */}
-            <div className="flex justify-between items-center gap-4">
-              <div className="flex items-center gap-2 flex-1">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Search users..."
-                    value={filters.search}
-                    onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filters.role} onValueChange={(value) => setFilters(prev => ({ ...prev, role: value }))}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filter by role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="viewer">Viewer</SelectItem>
-                    <SelectItem value="entity_admin">Entity Admin</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex gap-2">
-                {isSuperAdmin && (
-                  <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Invite User
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Invite New User</DialogTitle>
-                        <DialogDescription>
-                          Send an invitation to a new user to join the system
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="invite-email">Email</Label>
-                          <Input
-                            id="invite-email"
-                            type="email"
-                            value={inviteForm.email}
-                            onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
-                            placeholder="user@company.com"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="invite-first-name">First Name</Label>
-                            <Input
-                              id="invite-first-name"
-                              value={inviteForm.firstName}
-                              onChange={(e) => setInviteForm(prev => ({ ...prev, firstName: e.target.value }))}
-                              placeholder="John"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="invite-last-name">Last Name</Label>
-                            <Input
-                              id="invite-last-name"
-                              value={inviteForm.lastName}
-                              onChange={(e) => setInviteForm(prev => ({ ...prev, lastName: e.target.value }))}
-                              placeholder="Doe"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="invite-role">Initial Role</Label>
-                          <Select value={inviteForm.role} onValueChange={(value: 'viewer' | 'entity_admin' | 'super_admin') => setInviteForm(prev => ({ ...prev, role: value }))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="viewer">Viewer</SelectItem>
-                              <SelectItem value="entity_admin">Entity Admin</SelectItem>
-                              {isSuperAdmin && <SelectItem value="super_admin">Super Admin</SelectItem>}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={inviteUser} disabled={actionLoading === 'invite'}>
-                          {actionLoading === 'invite' ? 'Sending...' : 'Send Invitation'}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            </div>
+          {/* Enhanced Filters */}
+          <UserFilters 
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableRoles={['super_admin', 'entity_admin', 'viewer']}
+          />
 
-            {/* Users Table */}
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Login</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.user_uuid}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{getUserName(user)}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getUserRole(user.user_uuid)}</TableCell>
-                    <TableCell>{getStatusBadge(user.user_status)}</TableCell>
-                    <TableCell>
-                      {user.last_login_at 
-                        ? new Date(user.last_login_at).toLocaleDateString() 
-                        : 'Never'
-                      }
-                    </TableCell>
-                    <TableCell>
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                     <TableCell>
-                       <div className="flex gap-1">
-                         {/* Edit User Button - Available to Super Admins and Entity Admins */}
-                         {(isSuperAdmin || isEntityAdmin()) && (
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => openEditUserDialog(user)}
-                             disabled={actionLoading === 'edit'}
-                           >
-                             <Edit className="h-3 w-3" />
-                           </Button>
-                         )}
-                         
-                          {/* Status Change Buttons */}
-                          {user.user_status === 'pending' && (
-                           <>
-                             <Button
-                               size="sm"
-                               variant="outline"
-                               onClick={() => updateUserStatus(user.user_uuid, 'approved')}
-                               disabled={actionLoading === `status-${user.user_uuid}`}
-                             >
-                               <CheckCircle className="h-3 w-3" />
-                             </Button>
-                             <Button
-                               size="sm"
-                               variant="outline"
-                               onClick={() => updateUserStatus(user.user_uuid, 'rejected')}
-                               disabled={actionLoading === `status-${user.user_uuid}`}
-                             >
-                               <XCircle className="h-3 w-3" />
-                             </Button>
-                           </>
-                         )}
-                         {user.user_status === 'approved' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateUserStatus(user.user_uuid, 'suspended')}
-                              disabled={actionLoading === `status-${user.user_uuid}`}
-                            >
-                              <Pause className="h-3 w-3" />
-                            </Button>
-                         )}
-                         {user.user_status === 'suspended' && (
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => updateUserStatus(user.user_uuid, 'approved')}
-                             disabled={actionLoading === `status-${user.user_uuid}`}
-                           >
-                             <RotateCcw className="h-3 w-3" />
-                           </Button>
-                         )}
-                         
-                         {/* Delete Button - Super Admin Only */}
-                         {isSuperAdmin && (
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => setDeleteConfirm({ 
-                               open: true, 
-                               userUuid: user.user_uuid, 
-                               userEmail: user.email 
-                             })}
-                             disabled={actionLoading === `delete-${user.user_uuid}`}
-                           >
-                             <Trash2 className="h-3 w-3" />
-                           </Button>
-                         )}
-                       </div>
-                     </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          {/* Action Bar */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {filteredUsers.length === users.length 
+                ? `Showing all ${users.length} users`
+                : `Showing ${filteredUsers.length} of ${users.length} users`
+              }
+            </div>
+            {isSuperAdmin && (
+              <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Invite User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Invite New User</DialogTitle>
+                    <DialogDescription>
+                      Send an invitation to a new user to join the platform.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={inviteForm.email}
+                        onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                        placeholder="user@example.com"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        value={inviteForm.firstName}
+                        onChange={(e) => setInviteForm({ ...inviteForm, firstName: e.target.value })}
+                        placeholder="John"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        value={inviteForm.lastName}
+                        onChange={(e) => setInviteForm({ ...inviteForm, lastName: e.target.value })}
+                        placeholder="Doe"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="role">Role</Label>
+                      <Select
+                        value={inviteForm.role}
+                        onValueChange={(value: 'viewer' | 'entity_admin' | 'super_admin') => 
+                          setInviteForm({ ...inviteForm, role: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="entity_admin">Entity Admin</SelectItem>
+                          <SelectItem value="super_admin">Super Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsInviteDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={inviteUser}
+                      disabled={!inviteForm.email || !inviteForm.firstName || !inviteForm.lastName || actionLoading === 'invite'}
+                    >
+                      {actionLoading === 'invite' ? 'Sending...' : 'Send Invitation'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+
+          {/* Users Table or Empty State */}
+          {filteredUsers.length === 0 ? (
+            <EmptyUserState 
+              isFiltered={filters.search !== '' || filters.status !== 'all' || filters.role !== 'all'}
+              onClearFilters={() => setFilters({ search: '', status: 'all', role: 'all' })}
+              onInviteUser={() => setIsInviteDialogOpen(true)}
+              canInviteUsers={isSuperAdmin}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Login</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.user_uuid} className="hover:bg-muted/50 transition-colors">
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-medium text-primary">
+                                {getUserName(user).charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-medium">{getUserName(user)}</div>
+                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getUserRole(user.user_uuid)}</TableCell>
+                        <TableCell>{getStatusBadge(user.user_status)}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {user.last_login_at 
+                            ? new Date(user.last_login_at).toLocaleDateString() 
+                            : 'Never'
+                          }
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end space-x-1">
+                            {/* Edit User Button */}
+                            {(isSuperAdmin || isEntityAdmin()) && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => openEditUserDialog(user)}
+                                disabled={actionLoading === 'edit'}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            )}
+                            
+                            {/* Status Change Buttons */}
+                            {user.user_status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => updateUserStatus(user.user_uuid, 'approved')}
+                                  disabled={actionLoading === `status-${user.user_uuid}`}
+                                  className="h-8 w-8 p-0 text-success hover:text-success"
+                                >
+                                  <CheckCircle className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => updateUserStatus(user.user_uuid, 'rejected')}
+                                  disabled={actionLoading === `status-${user.user_uuid}`}
+                                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                >
+                                  <XCircle className="h-3 w-3" />
+                                </Button>
+                              </>
+                            )}
+                            {user.user_status === 'approved' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => updateUserStatus(user.user_uuid, 'suspended')}
+                                disabled={actionLoading === `status-${user.user_uuid}`}
+                                className="h-8 w-8 p-0 text-warning hover:text-warning"
+                              >
+                                <Pause className="h-3 w-3" />
+                              </Button>
+                            )}
+                            {user.user_status === 'suspended' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => updateUserStatus(user.user_uuid, 'approved')}
+                                disabled={actionLoading === `status-${user.user_uuid}`}
+                                className="h-8 w-8 p-0"
+                              >
+                                <RotateCcw className="h-3 w-3" />
+                              </Button>
+                            )}
+                            
+                            {/* Delete Button - Super Admin Only */}
+                            {isSuperAdmin && !isUserSuperAdmin(user.user_uuid) && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setDeleteConfirm({ 
+                                  open: true, 
+                                  userUuid: user.user_uuid, 
+                                  userEmail: user.email 
+                                })}
+                                disabled={actionLoading === `delete-${user.user_uuid}`}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </CardContent>
       
