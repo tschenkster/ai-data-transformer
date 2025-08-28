@@ -106,9 +106,27 @@ export function AppSidebar() {
           permissions: 'admin'
         },
         { 
-          title: 'System Administration', 
-          url: '/admin/system', 
+          title: 'System Tools', 
+          url: '/admin/system-tools', 
           icon: Settings2,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'Codebase Documentation', 
+          url: '/admin/system-tools/codebase-docs', 
+          icon: FileSpreadsheet,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'File Structure Organizer', 
+          url: '/admin/system-tools/file-organizer', 
+          icon: Database,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'Performance Analyzer', 
+          url: '/admin/system-tools/performance', 
+          icon: BarChart3,
           permissions: 'superAdmin'
         }
       ]

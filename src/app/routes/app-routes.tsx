@@ -53,11 +53,37 @@ export function AppRoutes() {
           <ActivityLog />
         </AuthRoute>
       } />
-      <Route path="/admin/system" element={
+      <Route path="/admin/system-tools" element={
         <AuthRoute requireSuperAdmin>
           <SystemAdministration />
         </AuthRoute>
       } />
+      <Route path="/admin/system-tools/codebase-docs" element={
+        <AuthRoute requireSuperAdmin>
+          <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Codebase Documentation Generator</h1>
+            <p className="text-muted-foreground">Coming soon - Generate comprehensive documentation of the codebase structure</p>
+          </div>
+        </AuthRoute>
+      } />
+      <Route path="/admin/system-tools/file-organizer" element={
+        <AuthRoute requireSuperAdmin>
+          <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">File Structure Organizer</h1>
+            <p className="text-muted-foreground">Coming soon - Organize and optimize codebase file structure</p>
+          </div>
+        </AuthRoute>
+      } />
+      <Route path="/admin/system-tools/performance" element={
+        <AuthRoute requireSuperAdmin>
+          <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Database Performance Analyzer</h1>
+            <p className="text-muted-foreground">Coming soon - Analyze database performance and optimize queries</p>
+          </div>
+        </AuthRoute>
+      } />
+      {/* Legacy redirect for old system admin route */}
+      <Route path="/admin/system" element={<Navigate to="/admin/system-tools" replace />} />
       <Route path="/data/coa-translator" element={
         <AuthRoute requireAdmin>
           <CoATranslator />
