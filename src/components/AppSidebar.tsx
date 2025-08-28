@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AccountSection } from "./AccountSection";
+import { EntitySelector } from "@/features/system-administration";
 import {
   Sidebar,
   SidebarContent,
@@ -55,7 +56,7 @@ interface NavigationGroup {
 export function AppSidebar() {
   const { open, setOpen } = useSidebar();
   const location = useLocation();
-  const { user, userAccount, signOut, isAdmin, isSuperAdmin } = useAuth();
+  const { user, userAccount, signOut, isAdmin, isSuperAdmin, availableEntities } = useAuth();
   const { toggleGroup, isGroupCollapsed } = useSidebarState();
   const isMobile = useIsMobile();
   
@@ -195,6 +196,20 @@ export function AppSidebar() {
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
       <SidebarContent className="gap-0">
+        {/* Entity Selector at Top */}
+        {availableEntities.length > 1 && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <div className="px-2 py-2">
+                <EntitySelector />
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        
+        {/* Separator after Entity Selector if it exists */}
+        {availableEntities.length > 1 && <SidebarSeparator />}
+
         {/* Main Section */}
         <SidebarGroup>
           <SidebarGroupLabel>Main</SidebarGroupLabel>

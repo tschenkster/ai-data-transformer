@@ -1,7 +1,6 @@
 import { User, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
-import { EntitySelector } from '@/features/system-administration';
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 
 interface AccountSectionProps {
@@ -11,19 +10,10 @@ interface AccountSectionProps {
 }
 
 export function AccountSection({ open, isActive, getNavClass }: AccountSectionProps) {
-  const { userAccount, signOut, availableEntities } = useAuth();
+  const { userAccount, signOut } = useAuth();
 
   return (
     <>
-      {/* Entity Selector */}
-      {availableEntities.length > 1 && (
-        <SidebarMenuItem>
-          <div className="px-2 py-2">
-            <EntitySelector />
-          </div>
-        </SidebarMenuItem>
-      )}
-      
       {/* User Profile */}
       <SidebarMenuItem>
         <SidebarMenuButton asChild>
