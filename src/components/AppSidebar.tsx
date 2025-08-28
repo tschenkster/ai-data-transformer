@@ -210,28 +210,45 @@ export function AppSidebar() {
         {/* Separator after Entity Selector if it exists */}
         {availableEntities.length > 1 && <SidebarSeparator />}
 
-        {/* Main Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+        {/* Primary Navigation */}
+        <SidebarGroup className="py-2">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild size="lg" className="h-10">
                   <NavLink to="/home" className={() => getNavClass('/home')}>
-                    <Home className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                      isActive('/home') ? "text-primary" : ""
-                    }`} />
-                    {open && <span className="truncate">Home</span>}
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+                      isActive('/home') 
+                        ? "bg-primary text-primary-foreground shadow-sm" 
+                        : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}>
+                      <Home className="h-4 w-4" />
+                    </div>
+                    {open && (
+                      <div className="flex flex-col">
+                        <span className="font-medium">Home</span>
+                        <span className="text-xs text-muted-foreground">Welcome dashboard</span>
+                      </div>
+                    )}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild size="lg" className="h-10">
                   <NavLink to="/dashboard" className={() => getNavClass('/dashboard')}>
-                    <BarChart3 className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                      isActive('/dashboard') ? "text-primary" : ""
-                    }`} />
-                    {open && <span className="truncate">Dashboard</span>}
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+                      isActive('/dashboard') 
+                        ? "bg-primary text-primary-foreground shadow-sm" 
+                        : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}>
+                      <BarChart3 className="h-4 w-4" />
+                    </div>
+                    {open && (
+                      <div className="flex flex-col">
+                        <span className="font-medium">Dashboard</span>
+                        <span className="text-xs text-muted-foreground">Analytics overview</span>
+                      </div>
+                    )}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -239,7 +256,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
+        {/* Elegant separator */}
+        <div className="mx-4 my-2 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
 
         {/* Collapsible Groups */}
         {navigationGroups.map(renderCollapsibleGroup)}
