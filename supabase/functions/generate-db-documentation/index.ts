@@ -68,7 +68,7 @@ serve(async (req) => {
           .from('user_accounts')
           .select('user_uuid, first_name, last_name, email')
           .eq('supabase_user_uuid', user.id)
-          .single();
+          .maybeSingle();
         currentUser = userAccount;
       }
     }
@@ -152,36 +152,87 @@ serve(async (req) => {
 
     console.log('Documentation generated, saving to storage...');
 
-    // For now, we'll return the content directly since we can't write to the file system
-    // In a real implementation, this would save to storage and return a download URL
-    const blob = new Blob([documentation], { type: 'text/markdown' });
-    const downloadUrl = URL.createObjectURL(blob);
+    // Background task to upload file to Supabase Storage and log the event
+    async function uploadAndLogTask() {
+      try {
+        // Upload file to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('database-docs')
+          .upload(filename, new Blob([documentation], { type: 'text/markdown' }), {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-    // Log the generation event
-    await supabase.from('security_audit_logs').insert({
-      action: 'database_documentation_generated',
-      details: {
-        filename,
-        version,
-        generated_by_name: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
-        file_size: documentation.length,
-        table_count: tablesData.length,
-        column_count: columnsData.length
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw uploadError;
+        }
+
+        console.log('File uploaded successfully:', uploadData?.path);
+
+        // Log the generation event
+        await supabase.from('security_audit_logs').insert({
+          action: 'database_documentation_generated',
+          details: {
+            filename,
+            version,
+            generated_by_name: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
+            file_size: documentation.length,
+            table_count: tablesData.length,
+            column_count: columnsData.length,
+            storage_path: uploadData?.path,
+            upload_success: true
+          }
+        });
+
+        // Clean up old files (keep last 10)
+        const cleanupResult = await supabase.rpc('cleanup_old_documentation_files', { p_keep_count: 10 });
+        console.log(`Cleaned up ${cleanupResult.data || 0} old documentation files`);
+
+        console.log('Documentation generation and upload completed successfully');
+      } catch (error) {
+        console.error('Background task error:', error);
+        
+        // Log the failure
+        await supabase.from('security_audit_logs').insert({
+          action: 'database_documentation_generation_failed',
+          details: {
+            filename,
+            version,
+            generated_by_name: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
+            error: error.message,
+            upload_success: false
+          }
+        });
       }
-    });
+    }
 
-    console.log('Documentation generation completed successfully');
+    // Start background task for file upload and logging
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      EdgeRuntime.waitUntil(uploadAndLogTask());
+    } else {
+      // Fallback for environments without EdgeRuntime
+      uploadAndLogTask().catch(console.error);
+    }
 
-    // Create a data URL for download
+    // Get download URL for the file (for immediate download capability)
+    const { data: { publicUrl } } = supabase.storage
+      .from('database-docs')
+      .getPublicUrl(filename);
+
+    // Create a data URL for immediate download (backward compatibility)
     const dataUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(documentation)}`;
 
     return new Response(JSON.stringify({
       success: true,
       filename,
-      download_url: dataUrl,
+      download_url: dataUrl, // Immediate download
+      storage_url: publicUrl, // Storage URL (may not be immediately available)
       file_size: documentation.length,
       table_count: tablesData.length,
-      column_count: columnsData.length
+      column_count: columnsData.length,
+      version,
+      message: 'Documentation generated successfully. File is being uploaded to storage in the background.'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

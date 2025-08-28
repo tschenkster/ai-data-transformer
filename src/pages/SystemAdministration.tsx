@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Database, FileText, Calendar, User, AlertCircle } from 'lucide-react';
+import { Download, Database, FileText, Calendar, User, AlertCircle, Cloud, Archive } from 'lucide-react';
 import Footer from '@/components/Footer';
+import type { FileObject } from '@supabase/storage-js';
 
 interface DocumentationInfo {
   filename: string;
@@ -16,6 +17,8 @@ interface DocumentationInfo {
   generated_by: string;
   version: string;
   file_size?: number;
+  storage_path?: string;
+  upload_success?: boolean;
 }
 
 export default function SystemAdministration() {
@@ -24,12 +27,101 @@ export default function SystemAdministration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastDocumentation, setLastDocumentation] = useState<DocumentationInfo | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [storedFiles, setStoredFiles] = useState<FileObject[]>([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
 
   useEffect(() => {
     if (isSuperAdmin) {
       fetchLastDocumentation();
+      fetchStoredFiles();
     }
   }, [isSuperAdmin]);
+
+  const fetchStoredFiles = async () => {
+    setIsLoadingFiles(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from('database-docs')
+        .list('', {
+          limit: 20,
+          offset: 0,
+          sortBy: { column: 'created_at', order: 'desc' }
+        });
+
+      if (error) {
+        console.error('Error fetching stored files:', error);
+      } else {
+        setStoredFiles(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching stored files:', error);
+    } finally {
+      setIsLoadingFiles(false);
+    }
+  };
+
+  const cleanupOldFiles = async () => {
+    setIsCleaningUp(true);
+    try {
+      const { data, error } = await supabase.rpc('cleanup_old_documentation_files', {
+        p_keep_count: 10
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Cleanup Complete",
+        description: `Successfully cleaned up ${data} old documentation files.`,
+      });
+
+      await fetchStoredFiles();
+    } catch (error) {
+      console.error('Error cleaning up files:', error);
+      toast({
+        title: "Cleanup Failed",
+        description: error.message || 'Failed to cleanup old documentation files',
+        variant: "destructive",
+      });
+    } finally {
+      setIsCleaningUp(false);
+    }
+  };
+
+  const downloadStoredFile = async (filename: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('database-docs')
+        .download(filename);
+
+      if (error) {
+        throw error;
+      }
+
+      const url = URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${filename}...`,
+      });
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast({
+        title: "Download Failed",
+        description: error.message || 'Failed to download the file',
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchLastDocumentation = async () => {
     try {
@@ -78,6 +170,11 @@ export default function SystemAdministration() {
 
         setDownloadUrl(data.download_url);
         await fetchLastDocumentation();
+        
+        // Refresh stored files list to show the new file (with slight delay for background upload)
+        setTimeout(() => {
+          fetchStoredFiles();
+        }, 2000);
       } else {
         throw new Error(data.error || 'Failed to generate documentation');
       }
@@ -271,6 +368,127 @@ export default function SystemAdministration() {
                     </li>
                   </ul>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stored Documentation Files Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Cloud className="h-5 w-5" />
+                Stored Documentation Files
+              </CardTitle>
+              <CardDescription>
+                Manage and download previously generated documentation files stored in the system.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Storage Controls */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  onClick={fetchStoredFiles}
+                  disabled={isLoadingFiles}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {isLoadingFiles ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Cloud className="h-4 w-4" />
+                      Refresh File List
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={cleanupOldFiles}
+                  disabled={isCleaningUp || storedFiles.length === 0}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {isCleaningUp ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      Cleaning...
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="h-4 w-4" />
+                      Cleanup Old Files (Keep 10)
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <Separator />
+
+              {/* Stored Files List */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">
+                  Available Files ({storedFiles.length})
+                </h3>
+
+                {isLoadingFiles ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p>Loading stored files...</p>
+                  </div>
+                ) : storedFiles.length > 0 ? (
+                  <div className="space-y-3">
+                    {storedFiles.map((file) => (
+                      <div 
+                        key={file.id || file.name} 
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex-1 space-y-1">
+                          <div className="font-medium font-mono text-sm">{file.name}</div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-4">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(file.created_at).toLocaleString()}
+                            </span>
+                            {file.metadata?.size && (
+                              <span>
+                                {(file.metadata.size / 1024).toFixed(1)} KB
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => downloadStoredFile(file.name)}
+                          size="sm"
+                          variant="outline"
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Cloud className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No stored documentation files found.</p>
+                    <p className="text-sm">Generate documentation to create files in storage.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Storage Information */}
+              <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                <h4 className="font-semibold text-sm">Storage Information</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Files are automatically stored in Supabase Storage after generation</li>
+                  <li>• Old files are automatically cleaned up to maintain performance</li>
+                  <li>• Only Super Administrators can access and manage these files</li>
+                  <li>• Each file includes comprehensive schema documentation and metadata</li>
+                </ul>
               </div>
             </CardContent>
           </Card>

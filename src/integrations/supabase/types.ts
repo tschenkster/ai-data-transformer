@@ -884,6 +884,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_old_documentation_files: {
+        Args: { p_keep_count?: number }
+        Returns: number
+      }
       convert_line_items_to_concatenated_format: {
         Args: { p_structure_id: number }
         Returns: Json
