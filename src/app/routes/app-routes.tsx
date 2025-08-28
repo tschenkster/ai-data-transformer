@@ -17,6 +17,7 @@ import AccountProfile from '@/pages/AccountProfile';
 import MemoryMaintenance from '@/pages/MemoryMaintenance';
 import ActivityLog from '@/pages/ActivityLog';
 import SystemAdministration from '@/pages/SystemAdministration';
+import SystemTools from '@/pages/SystemTools';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -54,6 +55,11 @@ export function AppRoutes() {
         </AuthRoute>
       } />
       <Route path="/admin/system-tools" element={
+        <AuthRoute requireSuperAdmin>
+          <SystemTools />
+        </AuthRoute>
+      } />
+      <Route path="/admin/system-tools/database-docs" element={
         <AuthRoute requireSuperAdmin>
           <SystemAdministration />
         </AuthRoute>
