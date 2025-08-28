@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserProfileDisplay } from '@/features/user-management';
+import { UserProfileDisplay, UserStatsCards, UserService } from '@/features/user-management';
 import { ReportStructureCard } from '@/features/report-structures';
 import { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, Users, FileText, Activity } from 'lucide-react';
+import type { UserAccount, UserStats } from '@/features/user-management/types';
 
 interface DashboardStats {
   total_structures: number;
@@ -17,15 +18,18 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, user, userAccount, isSuperAdmin } = useAuth();
   const [activeStructureUuid, setActiveStructureUuid] = useState<string | null>(null);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userStatsLoading, setUserStatsLoading] = useState(false);
 
   useEffect(() => {
     fetchActiveStructure();
     if (isAdmin) {
       fetchDashboardStats();
+      fetchUsers();
     }
   }, [isAdmin]);
 
@@ -66,6 +70,18 @@ export default function Dashboard() {
     }
   };
 
+  const fetchUsers = async () => {
+    setUserStatsLoading(true);
+    try {
+      const userList = await UserService.fetchUsers(isSuperAdmin, userAccount?.user_uuid);
+      setUsers(userList);
+    } catch (error) {
+      console.error('Error fetching users for stats:', error);
+    } finally {
+      setUserStatsLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-8">
       <div className="flex items-center justify-between">
@@ -76,6 +92,35 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      {/* User Statistics Cards - Admin Only */}
+      {isAdmin && (
+        <div className="mb-8">
+          {userStatsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[...Array(5)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-8 w-8 mb-2" />
+                    <Skeleton className="h-8 w-16 mb-1" />
+                    <Skeleton className="h-4 w-20" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <UserStatsCards 
+              stats={{
+                total: users.length,
+                pending: users.filter(u => u.user_status === 'pending').length,
+                approved: users.filter(u => u.user_status === 'approved').length,
+                suspended: users.filter(u => u.user_status === 'suspended').length,
+                rejected: users.filter(u => u.user_status === 'rejected').length
+              }} 
+            />
+          )}
+        </div>
+      )}
 
       {/* User Profile Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

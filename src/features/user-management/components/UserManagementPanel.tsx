@@ -444,9 +444,6 @@ export function UserManagementPanel() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Enhanced User Statistics */}
-          <UserStatsCards stats={statusCounts} />
-
           {/* Enhanced Filters */}
           <UserFilters 
             filters={filters}
