@@ -360,24 +360,9 @@ export function UserAccessManagementPanel() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          User Access Management
-        </CardTitle>
-        <CardDescription>
-          Manage user permissions and access levels across entities and groups
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Simplified Header */}
+      <CardContent className="space-y-6 pt-6">
+        {/* Access Management Section */}
         <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-medium">User Access Management</h3>
-            <p className="text-sm text-muted-foreground">
-              Managing access for {allFilteredAccess.length} user{allFilteredAccess.length !== 1 ? 's' : ''}
-            </p>
-          </div>
           <Dialog open={isAssignAccessDialogOpen} onOpenChange={setIsAssignAccessDialogOpen}>
             <DialogTrigger asChild>
               <Button>
