@@ -171,6 +171,79 @@ serve(async (req) => {
   }
 });
 
+// Utility function to calculate column widths
+function calculateColumnWidths(data: any[], columnKeys: string[], headers: string[]): number[] {
+  return columnKeys.map((key, index) => {
+    const headerLength = headers[index].length;
+    const maxDataLength = Math.max(
+      ...data.map(row => {
+        let value = '';
+        if (key === 'column_display') {
+          value = `**${row.column_name}**`;
+        } else if (key === 'type_display') {
+          let simpleType = row.data_type;
+          if (row.character_maximum_length) {
+            simpleType = `${row.data_type}(${row.character_maximum_length})`;
+          }
+          value = simpleType;
+        } else if (key === 'nullable_display') {
+          value = row.is_nullable === 'YES' ? '✓' : '✗';
+        } else if (key === 'default_display') {
+          let simpleDefault = row.column_default || 'None';
+          if (simpleDefault.includes('gen_random_uuid')) simpleDefault = 'UUID';
+          if (simpleDefault.includes('now()')) simpleDefault = 'Current Time';
+          if (simpleDefault.length > 20) simpleDefault = simpleDefault.substring(0, 17) + '...';
+          value = simpleDefault;
+        } else if (key === 'fk_column') {
+          value = row.column_name;
+        } else if (key === 'fk_references') {
+          value = `${row.foreign_table_schema}.${row.foreign_table_name}.${row.foreign_column_name}`;
+        } else if (key === 'fk_constraint') {
+          value = row.constraint_name;
+        } else if (key === 'index_name') {
+          value = row.index_name;
+        } else if (key === 'index_columns') {
+          value = row.column_names.join(', ');
+        } else if (key === 'index_unique') {
+          value = row.is_unique ? 'Yes' : 'No';
+        } else if (key === 'index_primary') {
+          value = row.is_primary ? 'Yes' : 'No';
+        } else if (key === 'index_type') {
+          value = row.index_type;
+        } else {
+          value = String(row[key] || '');
+        }
+        return value.length;
+      })
+    );
+    
+    // Set minimum and maximum column widths
+    const minWidth = 8;
+    const maxWidth = 50;
+    return Math.min(Math.max(Math.max(headerLength, maxDataLength), minWidth), maxWidth);
+  });
+}
+
+// Utility function to pad content to fixed width
+function padToWidth(content: string, width: number): string {
+  if (content.length > width) {
+    return content.substring(0, width - 3) + '...';
+  }
+  return content.padEnd(width, ' ');
+}
+
+// Utility function to create fixed-width table row
+function createFixedWidthRow(values: string[], widths: number[]): string {
+  const paddedValues = values.map((value, index) => padToWidth(value, widths[index]));
+  return `| ${paddedValues.join(' | ')} |`;
+}
+
+// Utility function to create table separator
+function createTableSeparator(widths: number[]): string {
+  const separators = widths.map(width => '-'.repeat(width));
+  return `| ${separators.join(' | ')} |`;
+}
+
 function generateDocumentationContent(data: {
   tables: any[];
   columns: any[];
@@ -256,23 +329,39 @@ ${tables.map(table => {
 
 #### Columns
 
-| Column | Type | Nullable | Default |
-|--------|------|----------|---------|
-${cols.map(col => {
-  // Simplify data types for readability
-  let simpleType = col.data_type;
-  if (col.character_maximum_length) {
-    simpleType = `${col.data_type}(${col.character_maximum_length})`;
-  }
+${cols.length > 0 ? (() => {
+  const headers = ['Column', 'Type', 'Nullable', 'Default'];
+  const columnKeys = ['column_display', 'type_display', 'nullable_display', 'default_display'];
+  const widths = calculateColumnWidths(cols, columnKeys, headers);
   
-  // Simplify default values
-  let simpleDefault = col.column_default || 'None';
-  if (simpleDefault.includes('gen_random_uuid')) simpleDefault = 'UUID';
-  if (simpleDefault.includes('now()')) simpleDefault = 'Current Time';
-  if (simpleDefault.length > 20) simpleDefault = simpleDefault.substring(0, 17) + '...';
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
   
-  return `| **${col.column_name}** | ${simpleType} | ${col.is_nullable === 'YES' ? '✓' : '✗'} | ${simpleDefault} |`;
-}).join('\n')}
+  const dataRows = cols.map(col => {
+    // Simplify data types for readability
+    let simpleType = col.data_type;
+    if (col.character_maximum_length) {
+      simpleType = `${col.data_type}(${col.character_maximum_length})`;
+    }
+    
+    // Simplify default values
+    let simpleDefault = col.column_default || 'None';
+    if (simpleDefault.includes('gen_random_uuid')) simpleDefault = 'UUID';
+    if (simpleDefault.includes('now()')) simpleDefault = 'Current Time';
+    if (simpleDefault.length > 20) simpleDefault = simpleDefault.substring(0, 17) + '...';
+    
+    const values = [
+      `**${col.column_name}**`,
+      simpleType,
+      col.is_nullable === 'YES' ? '✓' : '✗',
+      simpleDefault
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})() : 'No columns found.'}
 
 ${cols.filter(col => col.column_name.includes('_uuid') && col.column_name !== 'supabase_user_uuid').length > 0 ? `
 **Primary Keys**: ${cols.filter(col => col.column_name.includes('_uuid') && col.column_name !== 'supabase_user_uuid').map(col => col.column_name).join(', ')}
@@ -284,11 +373,26 @@ ${cols.filter(col => col.column_name.includes('created_at') || col.column_name.i
 
 ${fks.length > 0 ? `#### Foreign Key Relationships
 
-| Column | References | Constraint Name |
-|--------|------------|-----------------|
-${fks.map(fk => 
-  `| ${fk.column_name} | ${fk.foreign_table_schema}.${fk.foreign_table_name}.${fk.foreign_column_name} | ${fk.constraint_name} |`
-).join('\n')}
+${(() => {
+  const headers = ['Column', 'References', 'Constraint Name'];
+  const columnKeys = ['fk_column', 'fk_references', 'fk_constraint'];
+  const widths = calculateColumnWidths(fks, columnKeys, headers);
+  
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
+  
+  const dataRows = fks.map(fk => {
+    const values = [
+      fk.column_name,
+      `${fk.foreign_table_schema}.${fk.foreign_table_name}.${fk.foreign_column_name}`,
+      fk.constraint_name
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})()}
 ` : ''}
 
 ${policies.length > 0 ? `#### Row Level Security Policies
@@ -304,11 +408,28 @@ ${policies.map(policy => `**${policy.policyname}**
 
 ${idxs.length > 0 ? `#### Indexes
 
-| Index Name | Columns | Unique | Primary | Type |
-|------------|---------|--------|---------|------|
-${idxs.map(idx => 
-  `| ${idx.index_name} | ${idx.column_names.join(', ')} | ${idx.is_unique ? 'Yes' : 'No'} | ${idx.is_primary ? 'Yes' : 'No'} | ${idx.index_type} |`
-).join('\n')}
+${(() => {
+  const headers = ['Index Name', 'Columns', 'Unique', 'Primary', 'Type'];
+  const columnKeys = ['index_name', 'index_columns', 'index_unique', 'index_primary', 'index_type'];
+  const widths = calculateColumnWidths(idxs, columnKeys, headers);
+  
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
+  
+  const dataRows = idxs.map(idx => {
+    const values = [
+      idx.index_name,
+      idx.column_names.join(', '),
+      idx.is_unique ? 'Yes' : 'No',
+      idx.is_primary ? 'Yes' : 'No',
+      idx.index_type
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})()}
 ` : ''}
 
 ---
