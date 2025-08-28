@@ -21,7 +21,7 @@ export function SystemToolsLayout({
 }: SystemToolsLayoutProps) {
   const breadcrumbItems = [
     { path: '/home', label: 'Home' },
-    { path: '/admin/user-entity-management', label: 'System Administration' },
+    { path: '/admin/user-profile-management', label: 'System Administration' },
     { path: '/admin/system-tools', label: 'System Tools' }
   ];
 

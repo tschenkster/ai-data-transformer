@@ -78,7 +78,7 @@ export default function SystemTools() {
 
   const breadcrumbItems = [
     { path: '/home', label: 'Home' },
-    { path: '/admin/user-entity-management', label: 'System Administration' }
+    { path: '/admin/user-profile-management', label: 'System Administration' }
   ];
 
   const pageActions = (

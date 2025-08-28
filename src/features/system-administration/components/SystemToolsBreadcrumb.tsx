@@ -19,7 +19,7 @@ export function SystemToolsBreadcrumb({ toolId, toolTitle }: SystemToolsBreadcru
       <ChevronRight className="h-4 w-4" />
       
       <Link 
-        to="/admin/user-entity-management" 
+        to="/admin/user-profile-management" 
         className="hover:text-foreground transition-colors"
       >
         System Administration

@@ -5,7 +5,9 @@ import { AuthRoute } from '@/features/auth';
 import Home from '@/pages/Home';
 import Dashboard from '@/pages/Dashboard';
 import Admin from '@/pages/Admin';
-import UserEntityManagement from '@/pages/UserEntityManagement';
+import UserProfileManagement from '@/pages/UserProfileManagement';
+import RolesPermissionsManagement from '@/pages/RolesPermissionsManagement';
+import EntityManagementPage from '@/pages/EntityManagementPage';
 import ReportStructures from '@/pages/ReportStructures';
 import CoATranslator from '@/pages/CoATranslator';
 import CoAMapper from '@/pages/CoAMapper';
@@ -34,10 +36,20 @@ export function AppRoutes() {
           <Dashboard />
         </AuthRoute>
       } />
-      <Route path="/admin" element={<Navigate to="/admin/user-entity-management" replace />} />
-      <Route path="/admin/user-entity-management/*" element={
+      <Route path="/admin" element={<Navigate to="/admin/user-profile-management" replace />} />
+      <Route path="/admin/user-profile-management" element={
         <AuthRoute requireAdmin>
-          <UserEntityManagement />
+          <UserProfileManagement />
+        </AuthRoute>
+      } />
+      <Route path="/admin/roles-permissions-management" element={
+        <AuthRoute requireAdmin>
+          <RolesPermissionsManagement />
+        </AuthRoute>
+      } />
+      <Route path="/admin/entity-management" element={
+        <AuthRoute requireAdmin>
+          <EntityManagementPage />
         </AuthRoute>
       } />
       <Route path="/admin/report-configuration" element={
@@ -127,6 +139,8 @@ export function AppRoutes() {
         </AuthRoute>
       } />
       {/* Legacy redirects for old routes */}
+      <Route path="/admin/user-entity-management" element={<Navigate to="/admin/user-profile-management" replace />} />
+      <Route path="/admin/user-entity-management/*" element={<Navigate to="/admin/user-profile-management" replace />} />
       <Route path="/report-structures" element={<Navigate to="/admin/report-configuration" replace />} />
       <Route path="/coa-translator" element={<Navigate to="/data/coa-translator" replace />} />
       <Route path="/coa-mapper" element={<Navigate to="/data/coa-mapper" replace />} />

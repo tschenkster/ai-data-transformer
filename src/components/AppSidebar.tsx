@@ -73,9 +73,6 @@ export function AppSidebar() {
   
   // Check if a path is active, including child paths
   const isActive = (path: string) => {
-    if (path === '/admin/user-entity-management') {
-      return currentPath.startsWith('/admin/user-entity-management');
-    }
     if (path === '/admin/system-tools') {
       return currentPath === '/admin/system-tools';
     }
@@ -100,9 +97,21 @@ export function AppSidebar() {
           permissions: 'admin'
         },
         { 
-          title: 'User & Entity Management', 
-          url: '/admin/user-entity-management', 
+          title: 'User Profile Management', 
+          url: '/admin/user-profile-management', 
           icon: Users,
+          permissions: 'admin'
+        },
+        { 
+          title: 'Roles & Permissions', 
+          url: '/admin/roles-permissions-management', 
+          icon: Shield,
+          permissions: 'admin'
+        },
+        { 
+          title: 'Entity Management', 
+          url: '/admin/entity-management', 
+          icon: Settings,
           permissions: 'admin'
         },
         { 
