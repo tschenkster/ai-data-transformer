@@ -304,6 +304,7 @@ export default function DatabaseDocumentation() {
       toolId="database-docs"
       toolTitle="Database Structure Documentation"
       toolDescription="Generate comprehensive documentation of the current database schema, including tables, relationships, constraints, and security policies."
+      showNavigation={false}
     >
       {/* Generation Card */}
       <Card>
