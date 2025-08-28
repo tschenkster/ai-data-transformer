@@ -75,12 +75,78 @@ export default function DatabaseDocumentation() {
   };
 
   const fetchLastDocumentation = async () => {
-    // Implementation would go here - for now using mock data
-    setIsLoading(false);
+    try {
+      // Get the most recent documentation generation event
+      const { data: auditLog, error: auditError } = await supabase
+        .from('security_audit_logs')
+        .select('created_at, details, user_id')
+        .eq('action', 'database_documentation_generated')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (auditError) {
+        console.error('Error fetching audit log:', auditError);
+        setLastDocumentation(null);
+        return;
+      }
+
+      if (auditLog && auditLog.details) {
+        const details = auditLog.details as any;
+        // Get user name from user_accounts
+        const { data: userAccount } = await supabase
+          .from('user_accounts')
+          .select('first_name, last_name, email')
+          .eq('supabase_user_uuid', auditLog.user_id)
+          .maybeSingle();
+
+        const userName = userAccount 
+          ? `${userAccount.first_name || ''} ${userAccount.last_name || ''}`.trim() || userAccount.email
+          : 'System Generated';
+
+        setLastDocumentation({
+          filename: details.filename || 'Unknown',
+          generated_at: new Date(auditLog.created_at).toLocaleString(),
+          generated_by: userName,
+          file_size: details.file_size
+        });
+      } else {
+        setLastDocumentation(null);
+      }
+    } catch (error) {
+      console.error('Error fetching last documentation:', error);
+      setLastDocumentation(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchStoredFiles = async () => {
-    // Implementation would go here - for now using mock data
+    try {
+      const { data: files, error } = await supabase.storage
+        .from('database-docs')
+        .list('', {
+          sortBy: { 
+            column: sortBy === 'date' ? 'created_at' : sortBy === 'size' ? 'size' : 'name',
+            order: 'desc'
+          }
+        });
+
+      if (error) {
+        console.error('Error fetching stored files:', error);
+        return;
+      }
+
+      // Filter only markdown files
+      const markdownFiles = files?.filter(file => 
+        file.name.endsWith('.md') && file.name.startsWith('DATABASE-STRUCTURE_')
+      ) || [];
+
+      setStoredFiles(markdownFiles);
+    } catch (error) {
+      console.error('Error fetching stored files:', error);
+      setStoredFiles([]);
+    }
   };
 
   useEffect(() => {
@@ -104,7 +170,14 @@ export default function DatabaseDocumentation() {
         description: "Starting database structure analysis...",
       });
 
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 90));
+      }, 500);
+
       const { data, error } = await supabase.functions.invoke('generate-db-documentation');
+      
+      clearInterval(progressInterval);
 
       if (error) throw error;
 
@@ -112,12 +185,24 @@ export default function DatabaseDocumentation() {
       
       toast({
         title: "Documentation Generated Successfully",
-        description: "Database structure documentation has been created and stored.",
+        description: `File created: ${data.filename}`,
       });
 
+      // If the response includes content, trigger immediate download
+      if (data.content && data.filename) {
+        const blob = new Blob([data.content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
       // Refresh the documentation info and files list
-      fetchLastDocumentation();
-      fetchStoredFiles();
+      await Promise.all([fetchLastDocumentation(), fetchStoredFiles()]);
 
     } catch (error) {
       console.error('Error generating documentation:', error);
@@ -132,16 +217,38 @@ export default function DatabaseDocumentation() {
     }
   };
 
-  const handleDownload = async () => {
-    if (!lastDocumentation) return;
+  const handleDownload = async (filename?: string) => {
+    const targetFilename = filename || lastDocumentation?.filename;
+    if (!targetFilename) return;
     
     try {
-      // Implementation for downloading the latest documentation
       toast({
         title: "Download Started",
-        description: "Your documentation file is being prepared...",
+        description: "Preparing your documentation file...",
+      });
+
+      const { data, error } = await supabase.storage
+        .from('database-docs')
+        .download(targetFilename);
+
+      if (error) throw error;
+
+      // Create download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = targetFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Complete",
+        description: `${targetFilename} has been downloaded successfully.`,
       });
     } catch (error) {
+      console.error('Download error:', error);
       toast({
         title: "Download Failed", 
         description: "Unable to download the file. Please try again.",
@@ -150,16 +257,47 @@ export default function DatabaseDocumentation() {
     }
   };
 
-  // Mock data for demonstration
-  useEffect(() => {
-    setLastDocumentation({
-      filename: 'DATABASE-STRUCTURE_20250828_v07.md',
-      generated_at: '28/08/2025, 11:46:18',
-      generated_by: 'Thomas Schenkelberg',
-      file_size: 90112
+  const handleRefreshFiles = async () => {
+    toast({
+      title: "Refreshing File List",
+      description: "Loading latest files from storage...",
     });
-    setIsLoading(false);
-  }, []);
+    await fetchStoredFiles();
+    toast({
+      title: "File List Updated",
+      description: "The file list has been refreshed successfully.",
+    });
+  };
+
+  const handleCleanupFiles = async () => {
+    try {
+      toast({
+        title: "Cleaning Up Files",
+        description: "Removing old documentation files...",
+      });
+
+      const { data, error } = await supabase.rpc('cleanup_old_documentation_files', {
+        p_keep_count: 10
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Cleanup Complete",
+        description: `Removed ${data} old files. Kept the 10 most recent files.`,
+      });
+
+      await fetchStoredFiles();
+    } catch (error) {
+      console.error('Cleanup error:', error);
+      toast({
+        title: "Cleanup Failed",
+        description: "Unable to clean up old files. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <SystemToolsLayout
@@ -242,7 +380,7 @@ export default function DatabaseDocumentation() {
               </div>
             </div>
 
-            <Button onClick={handleDownload} variant="outline" className="w-full sm:w-auto">
+            <Button onClick={() => handleDownload()} variant="outline" className="w-full sm:w-auto">
               <Download className="mr-2 h-4 w-4" />
               Download Latest Documentation
             </Button>
@@ -316,11 +454,11 @@ export default function DatabaseDocumentation() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleRefreshFiles}>
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Refresh File List
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleCleanupFiles}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Cleanup Old Files (Keep 10)
               </Button>
@@ -341,27 +479,36 @@ export default function DatabaseDocumentation() {
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold">Available Files (4)</h4>
+            <h4 className="text-sm font-semibold">Available Files ({storedFiles.length})</h4>
             
-            {/* Mock file entry */}
-            <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="font-medium text-sm truncate">DATABASE-STRUCTURE_20250828_v07.md</span>
-                  <Badge variant="outline">v07</Badge>
-                </div>
-                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                  <span>📅 Created: 28/08/2025</span>
-                  <span>📄 Date: 2025-08-28</span>
-                  <span>💾 Size: 88 KB</span>
-                  <span>👤 System Generated</span>
-                </div>
+            {storedFiles.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No documentation files found.</p>
+                <p className="text-sm">Generate documentation to create your first file.</p>
               </div>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4" />
-              </Button>
-            </div>
+            ) : (
+              storedFiles.map((file) => (
+                <div key={file.name} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="font-medium text-sm truncate">{file.name}</span>
+                      <Badge variant="outline">{getFileVersion(file.name)}</Badge>
+                    </div>
+                    <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                      <span>📅 Created: {new Date(file.created_at).toLocaleDateString()}</span>
+                      <span>📄 Date: {getFileDate(file.name)}</span>
+                      <span>💾 Size: {formatFileSize(file.metadata?.size)}</span>
+                      <span>👤 System Generated</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => handleDownload(file.name)}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
