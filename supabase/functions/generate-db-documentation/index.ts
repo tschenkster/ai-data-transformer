@@ -337,6 +337,47 @@ This document provides a comprehensive overview of the database structure for th
 
 ---
 
+## Tables Overview
+
+${tables.length > 0 ? (() => {
+  const headers = ['Table Name', 'Type', 'Columns', 'Foreign Keys', 'RLS Policies', 'Indexes'];
+  const columnKeys = ['table_name', 'table_type', 'column_count', 'fk_count', 'policy_count', 'index_count'];
+  
+  // Prepare table data with counts
+  const tableData = tables.map(table => ({
+    table_name: table.table_name,
+    table_type: table.table_type,
+    column_count: (tableColumns[table.table_name] || []).length,
+    fk_count: (tableForeignKeys[table.table_name] || []).length,
+    policy_count: (tablePolicies[table.table_name] || []).length,
+    index_count: (tableIndexes[table.table_name] || []).length
+  }));
+  
+  const widths = calculateColumnWidths(tableData, columnKeys, headers);
+  
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
+  
+  const dataRows = tableData.map(table => {
+    const values = [
+      `**${table.table_name}**`,
+      table.table_type,
+      String(table.column_count),
+      String(table.fk_count),
+      String(table.policy_count),
+      String(table.index_count)
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})() : 'No tables found.'}
+
+This overview provides a quick summary of all database tables with their key characteristics. Tables with RLS policies have security controls enabled, while foreign keys indicate relationships between tables.
+
+---
+
 ## Table Structures
 
 ${tables.map(table => {
