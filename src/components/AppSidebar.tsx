@@ -86,6 +86,12 @@ export function AppSidebar() {
       permissions: 'admin',
       items: [
         { 
+          title: 'Dashboard', 
+          url: '/dashboard', 
+          icon: BarChart3,
+          permissions: 'admin'
+        },
+        { 
           title: 'User & Entity Management', 
           url: '/admin/user-entity-management', 
           icon: Users,
@@ -228,25 +234,6 @@ export function AppSidebar() {
                       <div className="flex flex-col">
                         <span className="font-medium">Home</span>
                         <span className="text-xs text-muted-foreground">Welcome dashboard</span>
-                      </div>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" className="h-10">
-                  <NavLink to="/dashboard" className={() => getNavClass('/dashboard')}>
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
-                      isActive('/dashboard') 
-                        ? "bg-primary text-primary-foreground shadow-sm" 
-                        : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}>
-                      <BarChart3 className="h-4 w-4" />
-                    </div>
-                    {open && (
-                      <div className="flex flex-col">
-                        <span className="font-medium">Dashboard</span>
-                        <span className="text-xs text-muted-foreground">Analytics overview</span>
                       </div>
                     )}
                   </NavLink>
