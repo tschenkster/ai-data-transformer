@@ -76,6 +76,12 @@ export function AppSidebar() {
     if (path === '/admin/user-entity-management') {
       return currentPath.startsWith('/admin/user-entity-management');
     }
+    if (path === '/admin/system-tools') {
+      return currentPath === '/admin/system-tools';
+    }
+    if (path.startsWith('/admin/system-tools/')) {
+      return currentPath === path;
+    }
     return currentPath === path;
   };
 
@@ -104,30 +110,6 @@ export function AppSidebar() {
           url: '/admin/activity-log', 
           icon: Shield,
           permissions: 'admin'
-        },
-        { 
-          title: 'System Tools', 
-          url: '/admin/system-tools', 
-          icon: Settings2,
-          permissions: 'superAdmin'
-        },
-        { 
-          title: 'Codebase Documentation', 
-          url: '/admin/system-tools/codebase-docs', 
-          icon: FileSpreadsheet,
-          permissions: 'superAdmin'
-        },
-        { 
-          title: 'File Structure Organizer', 
-          url: '/admin/system-tools/file-organizer', 
-          icon: Database,
-          permissions: 'superAdmin'
-        },
-        { 
-          title: 'Performance Analyzer', 
-          url: '/admin/system-tools/performance', 
-          icon: BarChart3,
-          permissions: 'superAdmin'
         }
       ]
     },
@@ -160,6 +142,38 @@ export function AppSidebar() {
       items: [
         { title: 'Financial Reports', url: '/reports/financial-reports', icon: PieChart },
         { title: 'SQL Tables', url: '/reports/sql-tables', icon: Table, permissions: 'admin' }
+      ]
+    },
+    {
+      id: 'system-tools',
+      title: 'System Tools',
+      collapsible: true,
+      permissions: 'superAdmin',
+      items: [
+        { 
+          title: 'Database Documentation', 
+          url: '/admin/system-tools', 
+          icon: Database,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'Codebase Documentation', 
+          url: '/admin/system-tools/codebase-docs', 
+          icon: FileSpreadsheet,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'File Structure Organizer', 
+          url: '/admin/system-tools/file-organizer', 
+          icon: Settings,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'Performance Analyzer', 
+          url: '/admin/system-tools/performance', 
+          icon: BarChart3,
+          permissions: 'superAdmin'
+        }
       ]
     }
   ];

@@ -40,6 +40,9 @@ export function useSidebarState() {
     if (path.startsWith('/admin/')) {
       updates.admin = false; // expand admin group
     }
+    if (path.startsWith('/admin/system-tools')) {
+      updates['system-tools'] = false; // expand system-tools group
+    }
     if (path.startsWith('/data/')) {
       updates.data = false; // expand data group
     }
