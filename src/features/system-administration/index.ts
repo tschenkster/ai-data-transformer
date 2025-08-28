@@ -5,3 +5,6 @@
 export { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
 export { EntityManagement } from './components/EntityManagement';
 export { EntitySelector } from './components/EntitySelector';
+export { SystemToolsLayout } from './components/SystemToolsLayout';
+export { SystemToolsBreadcrumb } from './components/SystemToolsBreadcrumb';
+export { SystemToolsNavigation } from './components/SystemToolsNavigation';

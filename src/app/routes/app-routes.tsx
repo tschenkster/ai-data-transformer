@@ -18,6 +18,7 @@ import MemoryMaintenance from '@/pages/MemoryMaintenance';
 import ActivityLog from '@/pages/ActivityLog';
 import SystemAdministration from '@/pages/SystemAdministration';
 import SystemTools from '@/pages/SystemTools';
+import DatabaseDocumentation from '@/pages/system-tools/DatabaseDocumentation';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -61,7 +62,7 @@ export function AppRoutes() {
       } />
       <Route path="/admin/system-tools/database-docs" element={
         <AuthRoute requireSuperAdmin>
-          <SystemAdministration />
+          <DatabaseDocumentation />
         </AuthRoute>
       } />
       <Route path="/admin/system-tools/codebase-docs" element={
