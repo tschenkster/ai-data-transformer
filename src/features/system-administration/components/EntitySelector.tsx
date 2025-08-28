@@ -4,7 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Building2 } from 'lucide-react';
 
 export function EntitySelector() {
-  const { availableEntities, currentEntity, setCurrentEntity, isSuperAdmin } = useAuth();
+  const { availableEntities, currentEntity, setCurrentEntity, isSuperAdmin, isAdmin } = useAuth();
+  
+  const getRoleText = () => {
+    if (isSuperAdmin) return 'Super Admin';
+    if (isAdmin) return 'Admin';
+    return 'Viewer';
+  };
 
   if (availableEntities.length <= 1) {
     return null; // Don't show selector if user has access to only one entity
@@ -21,7 +27,9 @@ export function EntitySelector() {
         <SelectTrigger className="w-full h-8 text-xs">
           <SelectValue placeholder="Select entity">
             {currentEntity && (
-              <span className="truncate">{currentEntity.entity_name}</span>
+              <span className="truncate">
+                {currentEntity.entity_name} ({getRoleText()})
+              </span>
             )}
           </SelectValue>
         </SelectTrigger>
