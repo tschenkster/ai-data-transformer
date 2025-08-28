@@ -76,7 +76,34 @@ serve(async (req) => {
     // Generate filename and version
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
-    const version = 'v01';
+    
+    // Check for existing documentation generated today to increment version
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    
+    const { data: existingDocs } = await supabase
+      .from('security_audit_logs')
+      .select('details')
+      .eq('action', 'database_documentation_generated')
+      .gte('created_at', startOfDay)
+      .lt('created_at', endOfDay)
+      .order('created_at', { ascending: false });
+    
+    // Find the highest version number for today
+    let maxVersion = 0;
+    if (existingDocs && existingDocs.length > 0) {
+      existingDocs.forEach(doc => {
+        if (doc.details?.version) {
+          const versionMatch = doc.details.version.match(/v(\d+)/);
+          if (versionMatch) {
+            const versionNum = parseInt(versionMatch[1], 10);
+            maxVersion = Math.max(maxVersion, versionNum);
+          }
+        }
+      });
+    }
+    
+    const version = `v${String(maxVersion + 1).padStart(2, '0')}`;
     const filename = `DATABASE-STRUCTURE_${dateStr}_${version}.md`;
 
     console.log('Querying database schema...');
