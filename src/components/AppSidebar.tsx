@@ -14,6 +14,7 @@ import {
   PieChart,
   Table,
   Shield,
+  Settings2,
   User, 
   LogOut,
   ChevronDown,
@@ -103,6 +104,12 @@ export function AppSidebar() {
           url: '/admin/activity-log', 
           icon: Shield,
           permissions: 'admin'
+        },
+        { 
+          title: 'System Administration', 
+          url: '/admin/system', 
+          icon: Settings2,
+          permissions: 'superAdmin'
         }
       ]
     },

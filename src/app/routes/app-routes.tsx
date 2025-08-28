@@ -16,6 +16,7 @@ import SqlTables from '@/pages/SqlTables';
 import AccountProfile from '@/pages/AccountProfile';
 import MemoryMaintenance from '@/pages/MemoryMaintenance';
 import ActivityLog from '@/pages/ActivityLog';
+import SystemAdministration from '@/pages/SystemAdministration';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -50,6 +51,11 @@ export function AppRoutes() {
       <Route path="/admin/activity-log" element={
         <AuthRoute requireAdmin>
           <ActivityLog />
+        </AuthRoute>
+      } />
+      <Route path="/admin/system" element={
+        <AuthRoute requireSuperAdmin>
+          <SystemAdministration />
         </AuthRoute>
       } />
       <Route path="/data/coa-translator" element={
