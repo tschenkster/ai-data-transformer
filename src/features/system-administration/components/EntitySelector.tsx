@@ -11,12 +11,7 @@ export function EntitySelector() {
   }
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Building2 className="h-3 w-3" />
-        <span>Entity</span>
-      </div>
-      <Select
+    <Select
         value={currentEntity?.entity_uuid || ''}
         onValueChange={(value) => {
           const entity = availableEntities.find(e => e.entity_uuid === value);
@@ -45,7 +40,6 @@ export function EntitySelector() {
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
-    </div>
+    </Select>
   );
 }
