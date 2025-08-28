@@ -531,14 +531,28 @@ ${foreignKeys.length > 0 ? foreignKeys.map(fk =>
 
 The database includes ${dbFunctions.length} custom functions for business logic, security, and data validation:
 
-${dbFunctions.length > 0 ? dbFunctions.map(func => `### ${func.function_name}
-
-**Schema**: ${func.function_schema}  
-**Return Type**: ${func.return_type}  
-**Arguments**: ${func.argument_types || 'None'}  
-**Type**: ${func.function_type}
-
-`).join('\n') : 'No custom functions found.'}
+${dbFunctions.length > 0 ? (() => {
+  const headers = ['Function Name', 'Schema', 'Return Type', 'Arguments', 'Type'];
+  const columnKeys = ['function_name', 'function_schema', 'return_type', 'argument_types', 'function_type'];
+  const widths = calculateColumnWidths(dbFunctions, columnKeys, headers);
+  
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
+  
+  const dataRows = dbFunctions.map(func => {
+    const values = [
+      `**${func.function_name}**`,
+      func.function_schema,
+      func.return_type,
+      func.argument_types || 'None',
+      func.function_type
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})() : 'No custom functions found.'}
 
 ---
 
@@ -566,15 +580,34 @@ ${tables.map(table => {
 The database includes ${indexes.length} indexes for performance optimization:
 
 ### Index Summary by Type
-${indexes.reduce((acc, idx) => {
-  acc[idx.index_type] = (acc[idx.index_type] || 0) + 1;
-  return acc;
-}, {} as {[key: string]: number})}
 
-${Object.entries(indexes.reduce((acc, idx) => {
-  acc[idx.index_type] = (acc[idx.index_type] || 0) + 1;
-  return acc;
-}, {} as {[key: string]: number})).map(([type, count]) => `- **${type}**: ${count} indexes`).join('\n')}
+${indexes.length > 0 ? (() => {
+  const indexTypeData = Object.entries(indexes.reduce((acc, idx) => {
+    acc[idx.index_type] = (acc[idx.index_type] || 0) + 1;
+    return acc;
+  }, {} as {[key: string]: number})).map(([type, count]) => ({
+    index_type: type,
+    count: count
+  }));
+  
+  const headers = ['Index Type', 'Count'];
+  const columnKeys = ['index_type', 'count'];
+  const widths = calculateColumnWidths(indexTypeData, columnKeys, headers);
+  
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
+  
+  const dataRows = indexTypeData.map(item => {
+    const values = [
+      `**${item.index_type}**`,
+      String(item.count)
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})() : 'No indexes found.'}
 
 ---
 
