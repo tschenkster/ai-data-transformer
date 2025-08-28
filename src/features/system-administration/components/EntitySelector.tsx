@@ -34,19 +34,34 @@ export function EntitySelector() {
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {availableEntities.map((entity) => (
-            <SelectItem key={entity.entity_uuid} value={entity.entity_uuid}>
-              <div className="flex items-center gap-2">
-                <span>{entity.entity_name}</span>
-                <Badge 
-                  variant={entity.access_level === 'entity_admin' ? 'secondary' : 'outline'}
-                  className="text-xs"
-                >
-                  {entity.access_level === 'entity_admin' ? 'Admin' : 'Viewer'}
-                </Badge>
-              </div>
-            </SelectItem>
-          ))}
+          {availableEntities.map((entity) => {
+            // Determine the correct role display for this entity
+            const getEntityRoleText = (entity: any) => {
+              if (isSuperAdmin) return 'Super Admin';
+              if (entity.access_level === 'entity_admin') return 'Admin';
+              return 'Viewer';
+            };
+
+            const getEntityRoleBadgeVariant = (entity: any) => {
+              if (isSuperAdmin) return 'default';
+              if (entity.access_level === 'entity_admin') return 'secondary';
+              return 'outline';
+            };
+
+            return (
+              <SelectItem key={entity.entity_uuid} value={entity.entity_uuid}>
+                <div className="flex items-center gap-2">
+                  <span>{entity.entity_name}</span>
+                  <Badge 
+                    variant={getEntityRoleBadgeVariant(entity)}
+                    className="text-xs"
+                  >
+                    {getEntityRoleText(entity)}
+                  </Badge>
+                </div>
+              </SelectItem>
+            );
+          })}
         </SelectContent>
     </Select>
   );
