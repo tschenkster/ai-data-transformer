@@ -10,6 +10,9 @@ max_rows = 1000
 [functions.process-report-structure]
 verify_jwt = true
 
+[functions.sync-documentation]
+verify_jwt = true
+
 [db]
 shadow_port = 54320
 major_version = 15
