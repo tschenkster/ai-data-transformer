@@ -256,11 +256,31 @@ ${tables.map(table => {
 
 #### Columns
 
-| Column Name | Data Type | Nullable | Default | Max Length |
-|-------------|-----------|----------|---------|------------|
-${cols.map(col => 
-  `| ${col.column_name} | ${col.data_type} | ${col.is_nullable} | ${col.column_default || 'None'} | ${col.character_maximum_length || 'N/A'} |`
-).join('\n')}
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+${cols.map(col => {
+  // Simplify data types for readability
+  let simpleType = col.data_type;
+  if (col.character_maximum_length) {
+    simpleType = `${col.data_type}(${col.character_maximum_length})`;
+  }
+  
+  // Simplify default values
+  let simpleDefault = col.column_default || 'None';
+  if (simpleDefault.includes('gen_random_uuid')) simpleDefault = 'UUID';
+  if (simpleDefault.includes('now()')) simpleDefault = 'Current Time';
+  if (simpleDefault.length > 20) simpleDefault = simpleDefault.substring(0, 17) + '...';
+  
+  return `| **${col.column_name}** | ${simpleType} | ${col.is_nullable === 'YES' ? '✓' : '✗'} | ${simpleDefault} |`;
+}).join('\n')}
+
+${cols.filter(col => col.column_name.includes('_uuid') && col.column_name !== 'supabase_user_uuid').length > 0 ? `
+**Primary Keys**: ${cols.filter(col => col.column_name.includes('_uuid') && col.column_name !== 'supabase_user_uuid').map(col => col.column_name).join(', ')}
+` : ''}
+
+${cols.filter(col => col.column_name.includes('created_at') || col.column_name.includes('updated_at')).length > 0 ? `
+**Timestamps**: ${cols.filter(col => col.column_name.includes('created_at') || col.column_name.includes('updated_at')).map(col => col.column_name).join(', ')}
+` : ''}
 
 ${fks.length > 0 ? `#### Foreign Key Relationships
 
