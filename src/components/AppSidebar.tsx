@@ -81,7 +81,7 @@ export function AppSidebar() {
   const navigationGroups: NavigationGroup[] = [
     {
       id: 'admin',
-      title: 'Admin',  
+      title: 'System Administration',  
       collapsible: true,
       permissions: 'admin',
       items: [
@@ -90,17 +90,6 @@ export function AppSidebar() {
           url: '/admin/user-entity-management', 
           icon: Users,
           permissions: 'admin'
-        },
-        { 
-          title: 'Report Configuration', 
-          url: '/admin/report-configuration', 
-          icon: Database,
-          permissions: 'superAdmin'
-        },
-        { 
-          title: 'Memory Maintenance', 
-          url: '/admin/memory-maintenance', 
-          icon: Brain
         }
       ]
     },
@@ -112,7 +101,18 @@ export function AppSidebar() {
         { title: 'CoA Translator', url: '/data/coa-translator', icon: Languages, permissions: 'admin' },
         { title: 'CoA Mapper', url: '/data/coa-mapper', icon: Map },
         { title: 'Trial Balance Import', url: '/data/trial-balance-import', icon: FileSpreadsheet },
-        { title: 'Journal Import', url: '/data/journal-import', icon: BookOpen }
+        { title: 'Journal Import', url: '/data/journal-import', icon: BookOpen },
+        { 
+          title: 'Report Configuration', 
+          url: '/admin/report-configuration', 
+          icon: Database,
+          permissions: 'superAdmin'
+        },
+        { 
+          title: 'Memory Maintenance', 
+          url: '/admin/memory-maintenance', 
+          icon: Brain
+        }
       ]
     },
     {
