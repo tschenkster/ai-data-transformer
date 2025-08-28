@@ -11,8 +11,11 @@ export function EntitySelector() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Building2 className="h-4 w-4 text-muted-foreground" />
+    <div className="space-y-1">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Building2 className="h-3 w-3" />
+        <span>Entity</span>
+      </div>
       <Select
         value={currentEntity?.entity_uuid || ''}
         onValueChange={(value) => {
@@ -20,22 +23,10 @@ export function EntitySelector() {
           setCurrentEntity(entity || null);
         }}
       >
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-full h-8 text-xs">
           <SelectValue placeholder="Select entity">
             {currentEntity && (
-              <div className="flex items-center gap-2">
-                <span>{currentEntity.entity_name}</span>
-                {isSuperAdmin && (
-                  <Badge variant="outline" className="text-xs">
-                    Super Admin
-                  </Badge>
-                )}
-                {currentEntity.access_level === 'entity_admin' && !isSuperAdmin && (
-                  <Badge variant="secondary" className="text-xs">
-                    Admin
-                  </Badge>
-                )}
-              </div>
+              <span className="truncate">{currentEntity.entity_name}</span>
             )}
           </SelectValue>
         </SelectTrigger>

@@ -21,7 +21,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { EntitySelector } from "@/features/system-administration";
+import { AccountSection } from "./AccountSection";
 import {
   Sidebar,
   SidebarContent,
@@ -245,46 +245,11 @@ export function AppSidebar() {
             <CollapsibleContent className="space-y-1">
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {/* Entity Selector & Role Display */}
-                  <SidebarMenuItem>
-                    <div className="px-2 py-2">
-                      <EntitySelector />
-                      {open && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Admin' : 'User'}
-                        </div>
-                      )}
-                    </div>
-                  </SidebarMenuItem>
-                  
-                  {/* User Profile */}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <NavLink to="/account/profile" className={() => getNavClass('/account/profile')}>
-                        <User className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                          isActive('/account/profile') ? "text-primary" : ""
-                        }`} />
-                        {open && (
-                          <div className="flex flex-col items-start text-xs min-w-0">
-                            <span className="truncate max-w-32 font-medium">
-                              {userAccount?.first_name} {userAccount?.last_name}
-                            </span>
-                          </div>
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  
-                  {/* Logout */}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      onClick={signOut} 
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      {open && <span>Logout</span>}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <AccountSection 
+                    open={open}
+                    isActive={isActive}
+                    getNavClass={getNavClass}
+                  />
                 </SidebarMenu>
               </SidebarGroupContent>
             </CollapsibleContent>
