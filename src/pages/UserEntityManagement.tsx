@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import { UserManagementPanel, UserAccessManagementPanel } from '@/features/user-management';
 import { EntityManagement } from '@/features/system-administration';
+import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
+import { TabNavigation } from '@/components/navigation/TabNavigation';
+import { Users, Shield, Building2, Plus, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import Footer from '@/components/Footer';
 
 export default function UserEntityManagement() {
@@ -45,43 +49,58 @@ export default function UserEntityManagement() {
     navigate(`/admin/user-entity-management/${value}`);
   };
 
+  const tabConfig = [
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'roles-permissions', label: 'Roles & Permissions', icon: Shield },
+    { id: 'entities', label: 'Entities', icon: Building2 }
+  ];
+
+  const pageActions = (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm">
+        <Download className="h-4 w-4 mr-2" />
+        Export
+      </Button>
+      <Button size="sm">
+        <Plus className="h-4 w-4 mr-2" />
+        Add New
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">User & Entity Management</h1>
-          <p className="text-muted-foreground">Manage users, roles, and entities</p>
-        </div>
+    <CompactPageLayout 
+      currentPage="User & Entity Management"
+      actions={pageActions}
+    >
+      <div className="space-y-6">
+        <TabNavigation 
+          tabs={tabConfig}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="roles-permissions">Roles & Permissions</TabsTrigger>
-            <TabsTrigger value="entities">Entities</TabsTrigger>
-          </TabsList>
-
-          <Routes>
-            <Route path="/" element={<Navigate to="users" replace />} />
-            <Route path="/users" element={
-              <TabsContent value="users" className="space-y-4">
-                <UserManagementPanel />
-              </TabsContent>
-            } />
-            <Route path="/roles-permissions" element={
-              <TabsContent value="roles-permissions" className="space-y-4">
-                <UserAccessManagementPanel />
-              </TabsContent>
-            } />
-            <Route path="/entities" element={
-              <TabsContent value="entities" className="space-y-4">
-                <EntityManagement />
-              </TabsContent>
-            } />
-          </Routes>
-        </Tabs>
+        <Routes>
+          <Route path="/" element={<Navigate to="users" replace />} />
+          <Route path="/users" element={
+            <TabsContent value="users" className="space-y-4">
+              <UserManagementPanel />
+            </TabsContent>
+          } />
+          <Route path="/roles-permissions" element={
+            <TabsContent value="roles-permissions" className="space-y-4">
+              <UserAccessManagementPanel />
+            </TabsContent>
+          } />
+          <Route path="/entities" element={
+            <TabsContent value="entities" className="space-y-4">
+              <EntityManagement />
+            </TabsContent>
+          } />
+        </Routes>
 
         <Footer />
       </div>
-    </div>
+    </CompactPageLayout>
   );
 }

@@ -7,7 +7,9 @@ import { ReportStructureCard } from '@/features/report-structures';
 import { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, Users, FileText, Activity } from 'lucide-react';
+import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
+import { BarChart3, Users, FileText, Activity, Plus, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { UserAccount, UserStats } from '@/features/user-management/types';
 
 interface DashboardStats {
@@ -82,16 +84,29 @@ export default function Dashboard() {
     }
   };
 
+  const dashboardActions = (
+    <div className="flex items-center gap-2">
+      {isAdmin && (
+        <>
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Quick Action
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back! Here's what's happening with your account.
-          </p>
-        </div>
-      </div>
+    <CompactPageLayout 
+      currentPage="Dashboard"
+      actions={dashboardActions}
+    >
+      <div className="space-y-8">
 
       {/* User Statistics Cards - Admin Only */}
       {isAdmin && (
@@ -213,13 +228,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Workflow Status Manager Section - New ENUM Features */}
-      {isAdmin && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Workflow Management</h2>
-          <WorkflowStatusManager />
-        </div>
-      )}
-    </div>
+        {/* Workflow Status Manager Section - New ENUM Features */}
+        {isAdmin && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Workflow Management</h2>
+            <WorkflowStatusManager />
+          </div>
+        )}
+      </div>
+    </CompactPageLayout>
   );
 }

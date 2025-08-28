@@ -2,7 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Database, FileSpreadsheet, Settings, BarChart3, ArrowRight } from "lucide-react";
+import { CompactPageLayout } from "@/components/layout/CompactPageLayout";
+import { Database, FileSpreadsheet, Settings, BarChart3, ArrowRight, Plus, Wrench } from "lucide-react";
 
 interface SystemTool {
   id: string;
@@ -75,16 +76,36 @@ export default function SystemTools() {
     }
   };
 
+  const breadcrumbItems = [
+    { path: '/home', label: 'Home' },
+    { path: '/admin/user-entity-management', label: 'System Administration' }
+  ];
+
+  const pageActions = (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm">
+        <Wrench className="h-4 w-4 mr-2" />
+        Maintenance
+      </Button>
+      <Button size="sm">
+        <Plus className="h-4 w-4 mr-2" />
+        New Tool
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="container max-w-6xl mx-auto p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">System Tools</h1>
+    <CompactPageLayout 
+      currentPage="System Tools"
+      breadcrumbItems={breadcrumbItems}
+      actions={pageActions}
+    >
+      <div className="space-y-6">
         <p className="text-muted-foreground text-lg">
           Advanced system management tools for Super Administrators. Select a tool to get started.
         </p>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {systemTools.map((tool) => {
           const IconComponent = tool.icon;
           return (
@@ -141,15 +162,16 @@ export default function SystemTools() {
             </Card>
           );
         })}
-      </div>
+        </div>
 
-      <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-dashed">
-        <h3 className="font-semibold mb-2">Need a new system tool?</h3>
-        <p className="text-sm text-muted-foreground">
-          System tools are designed to help Super Administrators manage and maintain the platform. 
-          If you need additional tools for specific administrative tasks, please contact the development team.
-        </p>
+        <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-dashed">
+          <h3 className="font-semibold mb-2">Need a new system tool?</h3>
+          <p className="text-sm text-muted-foreground">
+            System tools are designed to help Super Administrators manage and maintain the platform. 
+            If you need additional tools for specific administrative tasks, please contact the development team.
+          </p>
+        </div>
       </div>
-    </div>
+    </CompactPageLayout>
   );
 }

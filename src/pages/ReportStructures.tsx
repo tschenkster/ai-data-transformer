@@ -1,6 +1,9 @@
 import { ReportStructureManager } from '@/features/report-structures';
-import Footer from '@/components/Footer';
+import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { ErrorBoundaryWithRecovery } from '@/components/ErrorBoundaryWithRecovery';
+import { Button } from '@/components/ui/button';
+import { Plus, Upload, Settings } from 'lucide-react';
+import Footer from '@/components/Footer';
 import { useEffect } from 'react';
 
 export default function ReportStructures() {
@@ -25,25 +28,43 @@ export default function ReportStructures() {
     };
   }, []);
 
+  const pageActions = (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm">
+        <Settings className="h-4 w-4 mr-2" />
+        Settings
+      </Button>
+      <Button variant="outline" size="sm">
+        <Upload className="h-4 w-4 mr-2" />
+        Import
+      </Button>
+      <Button size="sm">
+        <Plus className="h-4 w-4 mr-2" />
+        New Structure
+      </Button>
+    </div>
+  );
+
   return (
     <ErrorBoundaryWithRecovery
       onError={(error, errorInfo) => {
         console.error('ReportStructures page error:', error, errorInfo);
       }}
     >
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <ErrorBoundaryWithRecovery
-            onError={(error, errorInfo) => {
-              console.error('ReportStructureManager error:', error, errorInfo);
-            }}
-          >
-            <ReportStructureManager />
-          </ErrorBoundaryWithRecovery>
-          
-          <Footer />
-        </div>
-      </div>
+      <CompactPageLayout 
+        currentPage="Report Structures"
+        actions={pageActions}
+      >
+        <ErrorBoundaryWithRecovery
+          onError={(error, errorInfo) => {
+            console.error('ReportStructureManager error:', error, errorInfo);
+          }}
+        >
+          <ReportStructureManager />
+        </ErrorBoundaryWithRecovery>
+        
+        <Footer />
+      </CompactPageLayout>
     </ErrorBoundaryWithRecovery>
   );
 }
