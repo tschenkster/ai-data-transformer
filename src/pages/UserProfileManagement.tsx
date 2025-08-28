@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { UserService } from '@/features/user-management/services/userService';
-import { UserStatsCards } from '@/features/user-management/components/UserStatsCards';
+
 import { UserFilters } from '@/features/user-management/components/UserFilters';
 import { UserTableSkeleton } from '@/features/user-management/components/UserTableSkeleton';
 import { EmptyUserState } from '@/features/user-management/components/EmptyUserState';
@@ -345,14 +345,6 @@ export default function UserProfileManagement() {
     );
   }
 
-  // Calculate status counts
-  const statusCounts = {
-    total: users.length,
-    pending: users.filter(u => u.user_status === 'pending').length,
-    approved: users.filter(u => u.user_status === 'approved').length,
-    suspended: users.filter(u => u.user_status === 'suspended').length,
-    rejected: users.filter(u => u.user_status === 'rejected').length
-  };
 
   const pageActions = (
     <div className="flex items-center gap-2">
@@ -375,9 +367,6 @@ export default function UserProfileManagement() {
       actions={pageActions}
     >
       <div className="space-y-6">
-        {/* Statistics Cards */}
-        <UserStatsCards stats={statusCounts} />
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
