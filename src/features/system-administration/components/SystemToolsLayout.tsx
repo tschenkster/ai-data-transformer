@@ -19,10 +19,19 @@ export function SystemToolsLayout({
   showNavigation = true,
   actions
 }: SystemToolsLayoutProps) {
+  // Tool path mapping
+  const toolPaths: Record<string, string> = {
+    'codebase-docs': '/admin/system-tools/codebase-docs',
+    'database-docs': '/admin/system-tools/database-docs', 
+    'performance-analyzer': '/admin/system-tools/performance-analyzer',
+    'file-organizer': '/admin/system-tools/file-organizer'
+  };
+
   const breadcrumbItems = [
     { path: '/home', label: 'Home' },
     { path: '/admin/user-profile-management', label: 'System Administration' },
-    { path: '/admin/system-tools', label: 'System Tools' }
+    { path: '/admin/system-tools', label: 'System Tools' },
+    { path: toolPaths[toolId] || `/admin/system-tools/${toolId}`, label: toolTitle }
   ];
 
   const sidebar = showNavigation ? (
@@ -31,7 +40,6 @@ export function SystemToolsLayout({
 
   return (
     <CompactPageLayout
-      currentPage={toolTitle}
       breadcrumbItems={breadcrumbItems}
       actions={actions}
       sidebar={sidebar}
