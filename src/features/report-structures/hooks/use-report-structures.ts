@@ -1,11 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { ReportStructureService } from '../services/reportStructureService';
-import { LineItemService } from '../services/lineItemService';
-import { ReportStructure, ReportLineItem, ProcessStructureData } from '../types';
+import { ReportStructureService } from '@/features/report-structures/services/reportStructureService';
+import { LineItemService } from '@/features/report-structures/services/lineItemService';
+import { ReportStructure, ReportLineItem, ProcessStructureData } from '@/features/report-structures/types';
 
-export function useReportStructures() {
+export function useReportStructures(): {
+  structures: ReportStructure[];
+  activeStructure: ReportStructure | null;
+  lineItems: ReportLineItem[];
+  loading: boolean;
+  uploading: boolean;
+  selectedStructureForModify: number | null;
+  fetchStructures: () => Promise<void>;
+  fetchLineItems: (structureId: number) => Promise<void>;
+  setActiveStructureHandler: (structureId: number) => Promise<void>;
+  deleteStructure: (structureId: number, structureName: string) => Promise<void>;
+  handleFileProcessed: (fileData: ProcessStructureData) => Promise<void>;
+  setSelectedStructureForModify: React.Dispatch<React.SetStateAction<number | null>>;
+  isSuperAdmin: boolean;
+  formatDate: (dateString: string) => string;
+  buildHierarchyTree: (lineItems: ReportLineItem[]) => ReportLineItem[];
+  getLineItemLevel: (item: ReportLineItem) => number;
+} {
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
 

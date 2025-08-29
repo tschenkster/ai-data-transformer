@@ -8,7 +8,7 @@ export * from './services/reportStructureService';
 export * from './services/lineItemService';
 
 // Hooks
-export * from './hooks/useReportStructures';
+export * from './hooks/use-report-structures';
 
 // Utils
 export * from './utils/lineItemUtils';

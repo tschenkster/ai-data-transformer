@@ -1,11 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { UserService } from '../services/userService';
-import { RoleService } from '../services/roleService';
-import { UserAccount, UserRole, UserFilters } from '../types';
+import { UserService } from '@/features/user-management/services/userService';
+import { RoleService } from '@/features/user-management/services/roleService';
+import { UserAccount, UserRole, UserFilters } from '@/features/user-management/types';
 
-export function useUserManagement() {
+export function useUserManagement(): {
+  users: UserAccount[];
+  userRoles: UserRole[];
+  filteredUsers: UserAccount[];
+  userStats: { total: number; pending: number; approved: number; suspended: number; rejected: number };
+  loading: boolean;
+  filters: UserFilters;
+  setFilters: React.Dispatch<React.SetStateAction<UserFilters>>;
+  hasPermission: boolean;
+  isSuperAdmin: boolean;
+  refetchData: () => Promise<void>;
+  getUserRole: (userUuid: string) => string;
+  getUserRoleDisplay: (userUuid: string) => { role: string; label: string; variant: string };
+  getUserName: (user: UserAccount) => string;
+  isUserSuperAdmin: (userUuid: string) => boolean;
+} {
   const { isSuperAdmin, isEntityAdmin } = useAuth();
   const { toast } = useToast();
 

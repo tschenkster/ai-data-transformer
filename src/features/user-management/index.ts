@@ -16,8 +16,8 @@ export * from './services/roleService';
 export * from './services/invitationService';
 
 // Hooks
-export * from './hooks/useUserManagement';
-export * from './hooks/useUserActions';
+export * from './hooks/use-user-management';
+export * from './hooks/use-user-actions';
 
 // Types
 export * from './types';

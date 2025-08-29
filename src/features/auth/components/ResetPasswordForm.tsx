@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Key, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
-import { PasswordValidator } from '../utils/passwordValidation';
+import { PasswordValidator } from '@/features/auth/utils/passwordValidation';
 
 export function ResetPasswordForm() {
   const [password, setPassword] = useState('');

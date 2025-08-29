@@ -1,4 +1,4 @@
-import { PasswordValidator, PasswordValidationResult } from '../utils/passwordValidation';
+import { PasswordValidator, PasswordValidationResult } from '@/features/auth/utils/passwordValidation';
 import { Progress } from '@/components/ui/progress';
 import { AlertCircle, CheckCircle, Shield, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';

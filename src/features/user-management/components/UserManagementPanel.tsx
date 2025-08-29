@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
-import { UserService } from '../services/userService';
+import { UserService } from '@/features/user-management/services/userService';
 import { UserStatsCards } from './UserStatsCards';
 import { UserFilters } from './UserFilters';
 import { UserTableSkeleton } from './UserTableSkeleton';

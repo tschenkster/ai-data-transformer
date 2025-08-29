@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ReportStructure, ProcessStructureData } from '../types';
+import { ReportStructure, ProcessStructureData } from '@/features/report-structures/types';
 
 export class ReportStructureService {
   static async fetchStructures(): Promise<ReportStructure[]> {

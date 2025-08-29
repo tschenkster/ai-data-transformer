@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { UserRole } from '../types';
+import { UserRole } from '@/features/user-management/types';
 
 export class RoleService {
   static async fetchUserRoles(): Promise<UserRole[]> {

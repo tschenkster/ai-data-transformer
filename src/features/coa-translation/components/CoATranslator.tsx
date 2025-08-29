@@ -8,8 +8,8 @@ import { ArrowRight, Upload, Languages, Download, RefreshCw } from 'lucide-react
 import { useToast } from '@/hooks/use-toast';
 import { FileUpload } from '@/features/imports/shared-pipeline';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import { useCoATranslation } from '../hooks/useCoATranslation';
-import { languages } from '../constants/languages';
+import { useCoATranslation } from '../hooks/use-coa-translation';
+import { languages } from '@/features/coa-translation/constants/languages';
 
 export function CoATranslator() {
   const {

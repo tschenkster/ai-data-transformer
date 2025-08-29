@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, X, Filter, RotateCcw } from 'lucide-react';
-import { UserFilters as UserFiltersType } from '../types';
+import { UserFilters as UserFiltersType } from '@/features/user-management/types';
 
 interface UserFiltersProps {
   filters: UserFiltersType;

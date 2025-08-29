@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structures/utils/lineItemUtils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { slugifyToKey } from '@/lib/utils';
+import { slugifyToKey } from '@/shared/utils';
 
 interface CreateLineItemDialogProps {
   open: boolean;

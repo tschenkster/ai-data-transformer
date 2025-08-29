@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { AccountData, TranslationSession } from '../types';
+import { AccountData, TranslationSession } from '@/features/coa-translation/types';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';

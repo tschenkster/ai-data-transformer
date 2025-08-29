@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { UserAccount, UserFilters } from '../types';
+import { UserAccount, UserFilters } from '@/features/user-management/types';
 
 export class UserService {
   static async fetchUsers(isSuperAdmin: boolean, userUuid?: string): Promise<UserAccount[]> {

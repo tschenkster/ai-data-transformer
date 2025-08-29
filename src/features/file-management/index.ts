@@ -1,2 +1,2 @@
-export { FileUpload } from '../imports/shared-pipeline';
-export { AdvancedFileUpload } from '../imports/shared-pipeline';
+export { FileUpload } from '@/features/imports/shared-pipeline';
+export { AdvancedFileUpload } from '@/features/imports/shared-pipeline';

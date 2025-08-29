@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { UserService } from '../services/userService';
-import { RoleService } from '../services/roleService';
-import { InvitationService } from '../services/invitationService';
-import { InviteUserRequest, UpdateUserRequest } from '../types';
+import { UserService } from '@/features/user-management/services/userService';
+import { RoleService } from '@/features/user-management/services/roleService';
+import { InvitationService } from '@/features/user-management/services/invitationService';
+import { InviteUserRequest, UpdateUserRequest } from '@/features/user-management/types';
 
-export function useUserActions(onDataChange?: () => void) {
+export function useUserActions(onDataChange?: () => void): {
+  actionLoading: string | null;
+  inviteUser: (inviteData: InviteUserRequest) => Promise<void>;
+  updateUserStatus: (userUuid: string, status: 'approved' | 'rejected' | 'suspended') => Promise<void>;
+  updateUser: (updateData: UpdateUserRequest) => Promise<void>;
+  deleteUser: (userUuid: string) => Promise<void>;
+} {
   const { user, logSecurityEvent, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { InviteUserRequest } from '../types';
+import { InviteUserRequest } from '@/features/user-management/types';
 
 export class InvitationService {
   static async inviteUser(

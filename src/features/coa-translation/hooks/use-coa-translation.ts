@@ -1,10 +1,29 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { TranslationService } from '../services/translationService';
-import { AccountData, TranslationSession } from '../types';
-import { languages } from '../constants/languages';
+import { TranslationService } from '@/features/coa-translation/services/translationService';
+import { AccountData, TranslationSession } from '@/features/coa-translation/types';
+import { languages } from '@/features/coa-translation/constants/languages';
 
-export function useCoATranslation() {
+export function useCoATranslation(): {
+  step: number;
+  setStep: React.Dispatch<React.SetStateAction<number>>;
+  uploadedData: AccountData[];
+  translatedData: AccountData[];
+  sourceLanguage: string;
+  setSourceLanguage: React.Dispatch<React.SetStateAction<string>>;
+  targetLanguage: string;
+  setTargetLanguage: React.Dispatch<React.SetStateAction<string>>;
+  detectedLanguage: string;
+  session: TranslationSession | null;
+  isTranslating: boolean;
+  isDetectingLanguage: boolean;
+  uploadedFileName: string;
+  handleFileProcessed: (data: { accounts: AccountData[]; filename: string; totalAccounts: number }) => void;
+  startTranslation: () => Promise<void>;
+  exportToCSV: () => void;
+  exportToXLSX: () => void;
+  resetTranslator: () => void;
+} {
   const [step, setStep] = useState(1);
   const [uploadedData, setUploadedData] = useState<AccountData[]>([]);
   const [translatedData, setTranslatedData] = useState<AccountData[]>([]);
