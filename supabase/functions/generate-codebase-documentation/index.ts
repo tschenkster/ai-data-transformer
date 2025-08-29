@@ -340,46 +340,11 @@ async function scanCodebaseStructure(): Promise<any> {
 
   // Enhanced migrations scanning - simulated for serverless environment
   async function scanSupabaseMigrations(): Promise<any[]> {
-    const migrations: any[] = [];
-    
-    // Note: In Edge Functions, we can't access local filesystem
-    // This function now simulates migration analysis based on common patterns
+    // In Edge Functions we cannot read local filesystem. Return an empty list.
     console.log('No supabase/migrations directory found');
-    
-    // Return empty array since we can't scan local files in Edge Functions
-    return migrations;
-              const alterTables = (content.match(/ALTER TABLE/gi) || []).length;
-              const createIndexes = (content.match(/CREATE INDEX/gi) || []).length;
-              const createFunctions = (content.match(/CREATE (?:OR REPLACE )?FUNCTION/gi) || []).length;
-              const createPolicies = (content.match(/CREATE POLICY/gi) || []).length;
-              
-              migrations.push({
-                name: entry.name,
-                timestamp,
-                created_at: fileInfo.mtime || new Date(),
-                size: content.length,
-                lines: content.split('\n').length,
-                operations: {
-                  create_tables: createTables,
-                  alter_tables: alterTables,
-                  create_indexes: createIndexes,
-                  create_functions: createFunctions,
-                  create_policies: createPolicies
-                },
-                content_preview: content.substring(0, 200) + (content.length > 200 ? '...' : '')
-              });
-            } catch (error) {
-              console.warn(`Failed to read migration ${entry.name}:`, error);
-            }
-          }
-        }
-      }
-    } catch {
-      console.log('No supabase/migrations directory found');
-    }
-    
-    return migrations.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+    return [];
   }
+
 
   // Enhanced configuration analysis
   async function analyzeConfigFiles(configFiles: any[]): Promise<any> {
