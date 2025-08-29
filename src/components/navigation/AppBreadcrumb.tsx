@@ -26,7 +26,7 @@ const DEFAULT_ROUTES: Record<string, BreadcrumbConfig> = {
   '/': { path: '/', label: 'Home', icon: Home },
   '/home': { path: '/home', label: 'Home', icon: Home },
   '/dashboard': { path: '/dashboard', label: 'Dashboard' },
-  '/admin': { path: '/admin', label: 'Administration' },
+  '/admin': { path: '/admin', label: 'System Administration' },
   '/admin/user-profile-management': { path: '/admin/user-profile-management', label: 'User Profile Management' },
   '/admin/roles-permissions-management': { path: '/admin/roles-permissions-management', label: 'Roles & Permissions Management' },
   '/admin/entity-management': { path: '/admin/entity-management', label: 'Entity Management' },
