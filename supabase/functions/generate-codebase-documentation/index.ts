@@ -1247,8 +1247,8 @@ ${files.map(file => {
 
 ## File Naming Conventions
 
-- All documentation files use **UPPERCASE** names (e.g., `DATABASE-STRUCTURE_20250828_V07.MD`)
-- Versioned files include date and version: `FILENAME_YYYYMMDD_VNN.MD`
+- All documentation files use **UPPERCASE** names (e.g., \`DATABASE-STRUCTURE_20250828_V07.MD\`)
+- Versioned files include date and version: \`FILENAME_YYYYMMDD_VNN.MD\`
 - Use hyphens for word separation in filenames
 - Core documentation files:
   - \`MASTER-PRD-YYYYMMDD.MD\` - Product Requirements Document
