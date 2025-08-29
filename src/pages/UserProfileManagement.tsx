@@ -363,7 +363,8 @@ export default function UserProfileManagement() {
 
   const adminCrumbs = [
     { path: '/home', label: 'Home' },
-    { path: '/admin', label: 'System Administration' }
+    { path: '/admin', label: 'System Administration' },
+    { path: '/admin/user-profile-management', label: 'User Profile Management' }
   ];
 
   return (

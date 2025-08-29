@@ -5,8 +5,9 @@ import Footer from '@/components/Footer';
 export default function ActivityLog() {
   const adminCrumbs = [
     { path: '/home', label: 'Home' },
-    { path: '/admin', label: 'System Administration' }
-  ];
+    { path: '/admin', label: 'System Administration' },
+    { path: '/admin/activity-log', label: 'Activity Log' }
+   ];
 
   return (
     <CompactPageLayout 
