@@ -23,10 +23,13 @@ Deno.serve(async (req) => {
   try {
     console.log('Starting docs synchronization to project...');
 
-    // Initialize Supabase client
+    // Initialize Supabase clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    // Admin client for storage (bypasses RLS as needed)
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get the authorization header from the request
     const authHeader = req.headers.get('authorization');
@@ -40,10 +43,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify user is authenticated and is super admin
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const token = authHeader.replace('Bearer ', '');
+
+    // User-scoped client for RPC that relies on auth.uid()
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false }
+    });
+
+    // Verify user token
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
 
     if (userError || !user) {
       return new Response(
@@ -55,9 +64,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user is super admin
-    const { data: isSuperAdmin } = await supabase.rpc('is_super_admin_user');
-    if (!isSuperAdmin) {
+    // Check if user is super admin using user-scoped client (for proper auth.uid())
+    const { data: isSuperAdmin, error: superAdminErr } = await supabaseUser.rpc('is_super_admin_user');
+    if (superAdminErr || !isSuperAdmin) {
       return new Response(
         JSON.stringify({ success: false, error: 'Access denied: Super admin privileges required' }),
         { 
@@ -74,7 +83,7 @@ Deno.serve(async (req) => {
 
     // Sync database documentation
     console.log('Syncing database documentation...');
-    const { data: dbFiles, error: dbListError } = await supabase.storage
+    const { data: dbFiles, error: dbListError } = await supabaseAdmin.storage
       .from('database-docs')
       .list('', {
         limit: 5,
@@ -85,7 +94,7 @@ Deno.serve(async (req) => {
     if (!dbListError && dbFiles && dbFiles.length > 0) {
       const latestDbFile = dbFiles[0];
       if (latestDbFile.name.startsWith('DATABASE-STRUCTURE_') && latestDbFile.name.endsWith('.md')) {
-        const { data: dbFileData, error: dbDownloadError } = await supabase.storage
+        const { data: dbFileData, error: dbDownloadError } = await supabaseAdmin.storage
           .from('database-docs')
           .download(latestDbFile.name);
 
@@ -101,7 +110,7 @@ Deno.serve(async (req) => {
 
     // Sync codebase documentation
     console.log('Syncing codebase documentation...');
-    const { data: codebaseFiles, error: codebaseListError } = await supabase.storage
+    const { data: codebaseFiles, error: codebaseListError } = await supabaseAdmin.storage
       .from('codebase-docs')
       .list('', {
         limit: 5,
@@ -112,7 +121,7 @@ Deno.serve(async (req) => {
     if (!codebaseListError && codebaseFiles && codebaseFiles.length > 0) {
       const latestCodebaseFile = codebaseFiles[0];
       if (latestCodebaseFile.name.startsWith('CODEBASE-STRUCTURE_') && latestCodebaseFile.name.endsWith('.md')) {
-        const { data: codebaseFileData, error: codebaseDownloadError } = await supabase.storage
+        const { data: codebaseFileData, error: codebaseDownloadError } = await supabaseAdmin.storage
           .from('codebase-docs')
           .download(latestCodebaseFile.name);
 
@@ -136,7 +145,7 @@ Deno.serve(async (req) => {
     syncedFiles.push(...docsStructure);
 
     // Log the sync operation
-    await supabase.rpc('log_security_event', {
+    await supabaseUser.rpc('log_security_event', {
       p_action: 'docs_sync_to_project',
       p_target_user_id: user.id,
       p_details: {

@@ -31,10 +31,12 @@ Deno.serve(async (req) => {
   try {
     console.log('Starting documentation sync process...');
 
-    // Initialize Supabase client
+    // Initialize Supabase clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get the authorization header from the request
     const authHeader = req.headers.get('authorization');
@@ -48,10 +50,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify user is authenticated and is super admin
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false }
+    });
+
+    // Verify user is authenticated
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
 
     if (userError || !user) {
       return new Response(
@@ -63,8 +69,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user is super admin
-    const { data: isSuperAdmin } = await supabase.rpc('is_super_admin_user');
+    // Check if user is super admin using user-scoped client
+    const { data: isSuperAdmin } = await supabaseUser.rpc('is_super_admin_user');
     if (!isSuperAdmin) {
       return new Response(
         JSON.stringify({ success: false, error: 'Access denied: Super admin privileges required' }),
@@ -79,7 +85,7 @@ Deno.serve(async (req) => {
 
     // Fetch files from database-docs bucket, sorted by created_at desc to get the latest
     console.log('Fetching latest documentation files...');
-    const { data: files, error: listError } = await supabase.storage
+    const { data: files, error: listError } = await supabaseAdmin.storage
       .from('database-docs')
       .list('', {
         limit: 10,
@@ -118,7 +124,7 @@ Deno.serve(async (req) => {
 
     // Download the file
     console.log('Downloading file from storage...');
-    const { data: fileData, error: downloadError } = await supabase.storage
+    const { data: fileData, error: downloadError } = await supabaseAdmin.storage
       .from('database-docs')
       .download(latestFile.name);
 
@@ -137,8 +143,8 @@ Deno.serve(async (req) => {
     const fileContent = await fileData.text();
     console.log(`Downloaded file content (${fileContent.length} characters)`);
 
-    // Log the sync operation
-    await supabase.rpc('log_security_event', {
+    // Log the sync operation (user-scoped so auth.uid() is recorded)
+    await supabaseUser.rpc('log_security_event', {
       p_action: 'documentation_sync',
       p_target_user_id: user.id,
       p_details: {
