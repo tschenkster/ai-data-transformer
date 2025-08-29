@@ -194,8 +194,13 @@ serve(async (req) => {
         throw new Error("Invalid JSON in request body");
       }
 
-      const rawStructure = body.codebaseStructure || body;
+      const rawStructure = body.codebaseStructure || body.structure || body;
       console.log("Raw structure keys:", Object.keys(rawStructure || {}));
+      
+      // Defensive logging for debugging payload mismatches
+      if (body.structure && !body.codebaseStructure) {
+        console.log('PAYLOAD MISMATCH: Client sent body.structure but function expects body.codebaseStructure');
+      }
       
       if (!rawStructure || typeof rawStructure !== 'object') {
         throw new Error("No valid codebase structure in request body");

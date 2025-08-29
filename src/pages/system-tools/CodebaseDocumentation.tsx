@@ -192,7 +192,7 @@ export default function CodebaseDocumentation() {
 
       // Send structure data to edge function
       const { data, error } = await supabase.functions.invoke('generate-codebase-documentation', {
-        body: { structure: codebaseStructure }
+        body: { codebaseStructure: codebaseStructure }
       });
       
       clearInterval(progressInterval);
