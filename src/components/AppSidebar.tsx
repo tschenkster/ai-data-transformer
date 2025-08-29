@@ -231,8 +231,102 @@ export function AppSidebar() {
     );
   };
 
-  // Shared sidebar content component
-  const sidebarContent = (
+  // Mobile sidebar content - always show full content
+  const mobileSidebarContent = (
+    <div className="flex flex-col h-full p-4 space-y-4">
+      {/* Entity Selector at Top */}
+      {availableEntities.length > 1 && (
+        <div>
+          <EntitySelector />
+        </div>
+      )}
+      
+      {/* Primary Navigation */}
+      <div className="space-y-2">
+        <NavLink to="/home" className={() => getNavClass('/home')}>
+          <div className="flex items-center gap-3 p-3 rounded-lg">
+            <Home className={`h-5 w-5 ${isActive('/home') ? "text-primary" : ""}`} />
+            <div className="flex flex-col">
+              <span className="font-medium">Home</span>
+              <span className="text-xs text-muted-foreground">Welcome dashboard</span>
+            </div>
+          </div>
+        </NavLink>
+      </div>
+
+      {/* Navigation Groups */}
+      <div className="space-y-4">
+        {navigationGroups.map(group => {
+          if (!hasPermission(group.permissions)) return null;
+          
+          const collapsed = isGroupCollapsed(group.id);
+          const hasActiveChild = group.items.some(item => isActive(item.url) && hasPermission(item.permissions));
+          
+          return (
+            <div key={group.id} className="space-y-2">
+              <Button 
+                variant="ghost" 
+                onClick={() => toggleGroup(group.id)}
+                className={`w-full justify-between h-auto p-2 font-medium text-sm ${
+                  hasActiveChild ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <span>{group.title}</span>
+                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+              
+              {!collapsed && (
+                <div className="ml-2 space-y-1">
+                  {group.items.map(item => {
+                    if (!hasPermission(item.permissions)) return null;
+                    
+                    return (
+                      <NavLink 
+                        key={item.title}
+                        to={item.url} 
+                        className={() => getNavClass(item.url)}
+                        onClick={() => setOpen(false)} // Close on navigation
+                      >
+                        <div className="flex items-center gap-3 p-2">
+                          <item.icon className={`h-4 w-4 ${isActive(item.url) ? "text-primary" : ""}`} />
+                          <span className="text-sm">{item.title}</span>
+                        </div>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Account Section */}
+      <div className="mt-auto pt-4 border-t">
+        <Button 
+          variant="ghost" 
+          onClick={() => toggleGroup('account')}
+          className="w-full justify-between h-auto p-2 font-medium text-sm text-muted-foreground hover:text-foreground"
+        >
+          <span>Account</span>
+          {isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+        
+        {!isGroupCollapsed('account') && (
+          <div className="ml-2 mt-2">
+            <AccountSection 
+              open={true}
+              isActive={isActive}
+              getNavClass={getNavClass}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Desktop sidebar content
+  const desktopSidebarContent = (
     <SidebarContent className="gap-0">
       {/* Entity Selector at Top */}
       {availableEntities.length > 1 && (
@@ -262,7 +356,7 @@ export function AppSidebar() {
                   }`}>
                     <Home className="h-4 w-4" />
                   </div>
-                  {(open || isMobile) && (
+                  {open && (
                     <div className="flex flex-col">
                       <span className="font-medium">Home</span>
                       <span className="text-xs text-muted-foreground">Welcome dashboard</span>
@@ -291,14 +385,14 @@ export function AppSidebar() {
               className="w-full justify-between h-auto p-2 font-medium text-sm text-muted-foreground hover:text-foreground"
             >
               <span className="truncate">Account</span>
-              {(open || isMobile) && (isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
+              {open && (isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-1">
             <SidebarGroupContent>
               <SidebarMenu>
                 <AccountSection 
-                  open={open || isMobile}
+                  open={open}
                   isActive={isActive}
                   getNavClass={getNavClass}
                 />
@@ -314,10 +408,8 @@ export function AppSidebar() {
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-60 p-0">
-          <Sidebar className="w-full border-0">
-            {sidebarContent}
-          </Sidebar>
+        <SheetContent side="left" className="w-72 p-0 overflow-y-auto">
+          {mobileSidebarContent}
         </SheetContent>
       </Sheet>
     );
@@ -326,7 +418,7 @@ export function AppSidebar() {
   // Desktop: Use normal Sidebar
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
-      {sidebarContent}
+      {desktopSidebarContent}
     </Sidebar>
   );
 }
