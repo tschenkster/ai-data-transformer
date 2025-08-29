@@ -85,7 +85,7 @@ export function AppBreadcrumb({ items, currentPage, actions }: AppBreadcrumbProp
               {previousItems.map((item, index) => {
                 const IconComponent = item.icon;
                 return (
-                  <React.Fragment key={item.path}>
+                  <div key={item.path} className="flex items-center">
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
                         <Link 
@@ -98,7 +98,7 @@ export function AppBreadcrumb({ items, currentPage, actions }: AppBreadcrumbProp
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                  </React.Fragment>
+                  </div>
                 );
               })}
               

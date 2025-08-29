@@ -174,7 +174,26 @@ export default function CodebaseDocumentation() {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 500);
 
-      const { data, error } = await supabase.functions.invoke('generate-codebase-documentation');
+      // Import and use the codebase scanner
+      const { codebaseScanner } = await import('@/utils/codebaseScanner');
+      
+      // Scan the codebase structure
+      toast({
+        title: "Scanning Codebase",
+        description: "Analyzing project files and structure...",
+      });
+      
+      const codebaseStructure = await codebaseScanner.scanCodebase();
+      
+      toast({
+        title: "Processing Documentation", 
+        description: "Sending structure to documentation generator...",
+      });
+
+      // Send structure data to edge function
+      const { data, error } = await supabase.functions.invoke('generate-codebase-documentation', {
+        body: { structure: codebaseStructure }
+      });
       
       clearInterval(progressInterval);
 
