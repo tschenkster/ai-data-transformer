@@ -181,9 +181,24 @@ export default function CodebaseDocumentation() {
 
       setProgress(100);
       
+      // Enhanced success message with docs organization results
+      let successDescription = `File created: ${data.filename}`;
+      if (data.docs_organization) {
+        const org = data.docs_organization;
+        const orgDetails = [];
+        if (org.normalized_files > 0) orgDetails.push(`${org.normalized_files} files normalized`);
+        if (org.updated_readme) orgDetails.push('README updated');
+        if (org.cleaned_files > 0) orgDetails.push(`${org.cleaned_files} obsolete files cleaned`);
+        if (org.broken_links > 0) orgDetails.push(`${org.broken_links} broken links detected`);
+        
+        if (orgDetails.length > 0) {
+          successDescription += ` | /docs organized: ${orgDetails.join(', ')}`;
+        }
+      }
+      
       toast({
         title: "Documentation Generated Successfully",
-        description: `File created: ${data.filename}`,
+        description: successDescription,
       });
 
       // If the response includes content, trigger immediate download
