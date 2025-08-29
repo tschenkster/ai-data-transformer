@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileSpreadsheet, RefreshCw, Trash2, Calendar, User, HardDrive, CheckCircle, Code2, GitBranch, AlertTriangle } from "lucide-react";
+import { Download, FileSpreadsheet, RefreshCw, Trash2, Calendar, User, HardDrive, CheckCircle, Code2, GitBranch, AlertTriangle, RotateCcw as Sync } from "lucide-react";
 
 interface DocumentationInfo {
   filename: string;
@@ -27,6 +27,7 @@ export default function CodebaseDocumentation() {
   const [storedFiles, setStoredFiles] = useState<any[]>([]);
   const [sortBy, setSortBy] = useState<string>('date');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   if (!isSuperAdmin) {
     return (
@@ -216,6 +217,9 @@ export default function CodebaseDocumentation() {
 
       await Promise.all([fetchLastDocumentation(), fetchStoredFiles()]);
 
+      // Auto-sync to project after successful generation
+      await handleSyncToProject();
+
     } catch (error) {
       console.error('Error generating documentation:', error);
       toast({
@@ -278,6 +282,36 @@ export default function CodebaseDocumentation() {
       title: "File List Updated",
       description: "The file list has been refreshed successfully.",
     });
+  };
+
+  const handleSyncToProject = async () => {
+    setIsSyncing(true);
+    
+    try {
+      toast({
+        title: "Syncing to Project",
+        description: "Updating project documentation folder...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('sync-docs-to-project');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Sync Complete",
+        description: `Updated ${data.total_files} files in project /docs folder`,
+      });
+
+    } catch (error) {
+      console.error('Error syncing to project:', error);
+      toast({
+        title: "Sync Failed",
+        description: error instanceof Error ? error.message : "Failed to sync documentation to project.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -369,10 +403,25 @@ export default function CodebaseDocumentation() {
               </div>
             </div>
 
-            <Button onClick={() => handleDownload()} variant="outline" className="w-full sm:w-auto">
-              <Download className="mr-2 h-4 w-4" />
-              Download Latest Documentation
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={() => handleDownload()} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Download Latest Documentation
+              </Button>
+              <Button onClick={handleSyncToProject} disabled={isSyncing} variant="secondary">
+                {isSyncing ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Sync className="mr-2 h-4 w-4" />
+                    Sync to Project
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -8,10 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, RefreshCw, Trash2, Calendar, User, HardDrive, CheckCircle, Search, Filter, Eye, Archive, AlertTriangle, Database, Shield, Zap, BarChart3 } from "lucide-react";
+import { Download, FileText, RefreshCw, Trash2, Calendar, User, HardDrive, CheckCircle, Search, Filter, Eye, Archive, AlertTriangle, Database, Shield, Zap, BarChart3, RotateCcw as Sync } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { syncAllDocsToProject } from '@/utils/documentationSync';
 
 interface DocumentationInfo {
   filename: string;
@@ -34,6 +35,7 @@ export default function DatabaseDocumentation() {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [fileFilter, setFileFilter] = useState<string>('all');
   const [dbStats, setDbStats] = useState<any>(null);
+  const [isSyncingToProject, setIsSyncingToProject] = useState(false);
 
   if (!isSuperAdmin) {
     return (
@@ -234,6 +236,9 @@ export default function DatabaseDocumentation() {
       // Refresh data
       await Promise.all([fetchLastDocumentation(), fetchStoredFiles()]);
 
+      // Auto-sync to project after successful generation
+      await handleSyncToProject();
+
     } catch (error) {
       console.error('Error generating documentation:', error);
       toast({
@@ -326,6 +331,38 @@ export default function DatabaseDocumentation() {
         description: "Unable to clean up old files. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleSyncToProject = async () => {
+    setIsSyncingToProject(true);
+    
+    try {
+      toast({
+        title: "Syncing to Project",
+        description: "Updating project documentation folder...",
+      });
+
+      const result = await syncAllDocsToProject();
+      
+      if (result.success) {
+        toast({
+          title: "Sync Complete",
+          description: `Updated ${result.total_files} files in project /docs folder`,
+        });
+      } else {
+        throw new Error(result.error);
+      }
+
+    } catch (error) {
+      console.error('Error syncing to project:', error);
+      toast({
+        title: "Sync Failed",
+        description: error instanceof Error ? error.message : "Failed to sync documentation to project.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncingToProject(false);
     }
   };
 
@@ -486,10 +523,25 @@ export default function DatabaseDocumentation() {
               </div>
             </div>
 
-            <Button onClick={() => handleDownload()} variant="outline" className="w-full sm:w-auto">
-              <Download className="mr-2 h-4 w-4" />
-              Download Latest Documentation
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={() => handleDownload()} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Download Latest Documentation
+              </Button>
+              <Button onClick={handleSyncToProject} disabled={isSyncingToProject} variant="secondary">
+                {isSyncingToProject ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Sync className="mr-2 h-4 w-4" />
+                    Sync to Project
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

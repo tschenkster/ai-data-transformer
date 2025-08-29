@@ -6,9 +6,46 @@ export interface SyncResult {
   content?: string;
   size?: number;
   error?: string;
+  synced_files?: string[];
+  total_files?: number;
 }
 
-export const syncLatestDocumentation = async (): Promise<SyncResult> => {
+// Sync all documentation types to project folder
+const syncAllDocsToProject = async (): Promise<SyncResult> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('sync-docs-to-project');
+    
+    if (error) {
+      console.error('Project sync function error:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to sync documentation to project'
+      };
+    }
+
+    if (data && data.success) {
+      return {
+        success: true,
+        synced_files: data.synced_files,
+        total_files: data.total_files || 0
+      };
+    } else {
+      return {
+        success: false,
+        error: data?.error || 'Unknown project sync error'
+      };
+    }
+  } catch (error) {
+    console.error('Project sync error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to sync documentation to project'
+    };
+  }
+};
+
+// Sync latest database documentation from storage to local project
+const syncLatestDocumentation = async (): Promise<SyncResult> => {
   try {
     const { data, error } = await supabase.functions.invoke('sync-documentation', {
       body: { action: 'sync' }
@@ -70,7 +107,8 @@ export const syncLatestDocumentation = async (): Promise<SyncResult> => {
   }
 };
 
-export const writeDocumentationToFile = async (filename: string, content: string): Promise<void> => {
+// Write documentation content to a downloadable file
+const writeDocumentationToFile = async (filename: string, content: string): Promise<void> => {
   // This function would be used in a Node.js environment to write files
   // In the browser, we use the download approach above
   const blob = new Blob([content], { type: 'text/markdown' });
@@ -83,3 +121,6 @@ export const writeDocumentationToFile = async (filename: string, content: string
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
+
+// Export all functions
+export { syncAllDocsToProject, syncLatestDocumentation, writeDocumentationToFile };
