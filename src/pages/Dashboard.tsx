@@ -187,8 +187,14 @@ export default function Dashboard() {
     </div>
   );
 
+  const adminCrumbs = [
+    { path: '/home', label: 'Home' },
+    { path: '/admin', label: 'System Administration' }
+  ];
+
   return (
     <CompactPageLayout 
+      breadcrumbItems={adminCrumbs}
       currentPage="Dashboard"
       actions={dashboardActions}
     >

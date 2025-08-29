@@ -23,13 +23,13 @@ export function SystemToolsLayout({
   const toolPaths: Record<string, string> = {
     'codebase-docs': '/admin/system-tools/codebase-docs',
     'database-docs': '/admin/system-tools/database-docs', 
-    'performance-analyzer': '/admin/system-tools/performance-analyzer',
+    'performance-analyzer': '/admin/system-tools/performance',
     'file-organizer': '/admin/system-tools/file-organizer'
   };
 
   const breadcrumbItems = [
     { path: '/home', label: 'Home' },
-    { path: '/admin/user-profile-management', label: 'System Administration' },
+    { path: '/admin', label: 'System Administration' },
     { path: '/admin/system-tools', label: 'System Tools' },
     { path: toolPaths[toolId] || `/admin/system-tools/${toolId}`, label: toolTitle }
   ];

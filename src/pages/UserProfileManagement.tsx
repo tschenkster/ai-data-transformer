@@ -361,8 +361,14 @@ export default function UserProfileManagement() {
     </div>
   );
 
+  const adminCrumbs = [
+    { path: '/home', label: 'Home' },
+    { path: '/admin', label: 'System Administration' }
+  ];
+
   return (
     <CompactPageLayout 
+      breadcrumbItems={adminCrumbs}
       currentPage="User Profile Management"
       actions={pageActions}
     >
