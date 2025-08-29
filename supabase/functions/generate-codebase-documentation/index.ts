@@ -457,6 +457,222 @@ async function scanCodebaseStructure(): Promise<any> {
     }
   }
 
+  // Enhanced migrations scanning
+  async function scanSupabaseMigrations(): Promise<any[]> {
+    const migrations: any[] = [];
+    try {
+      const migrationsPath = 'supabase/migrations';
+      const stat = await Deno.stat(migrationsPath);
+      if (stat.isDirectory) {
+        for await (const entry of Deno.readDir(migrationsPath)) {
+          if (entry.isFile && entry.name.endsWith('.sql')) {
+            try {
+              const content = await Deno.readTextFile(`${migrationsPath}/${entry.name}`);
+              const fileInfo = await Deno.stat(`${migrationsPath}/${entry.name}`);
+              
+              // Extract timestamp from filename (format: YYYYMMDDHHMMSS_uuid.sql)
+              const timestampMatch = entry.name.match(/^(\d{14})/);
+              const timestamp = timestampMatch ? timestampMatch[1] : null;
+              
+              // Analyze migration content
+              const createTables = (content.match(/CREATE TABLE/gi) || []).length;
+              const alterTables = (content.match(/ALTER TABLE/gi) || []).length;
+              const createIndexes = (content.match(/CREATE INDEX/gi) || []).length;
+              const createFunctions = (content.match(/CREATE (?:OR REPLACE )?FUNCTION/gi) || []).length;
+              const createPolicies = (content.match(/CREATE POLICY/gi) || []).length;
+              
+              migrations.push({
+                name: entry.name,
+                timestamp,
+                created_at: fileInfo.mtime || new Date(),
+                size: content.length,
+                lines: content.split('\n').length,
+                operations: {
+                  create_tables: createTables,
+                  alter_tables: alterTables,
+                  create_indexes: createIndexes,
+                  create_functions: createFunctions,
+                  create_policies: createPolicies
+                },
+                content_preview: content.substring(0, 200) + (content.length > 200 ? '...' : '')
+              });
+            } catch (error) {
+              console.warn(`Failed to read migration ${entry.name}:`, error);
+            }
+          }
+        }
+      }
+    } catch {
+      console.log('No supabase/migrations directory found');
+    }
+    
+    return migrations.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+  }
+
+  // Enhanced configuration analysis
+  async function analyzeConfigFiles(configFiles: any[]): Promise<any> {
+    const analysis: any = {
+      package_json: null,
+      vite_config: null,
+      tailwind_config: null,
+      typescript_config: null,
+      eslint_config: null
+    };
+
+    for (const config of configFiles) {
+      try {
+        if (config.name === 'package.json') {
+          const packageData = JSON.parse(config.content || await Deno.readTextFile(config.path));
+          analysis.package_json = {
+            name: packageData.name,
+            version: packageData.version,
+            dependencies_count: Object.keys(packageData.dependencies || {}).length,
+            dev_dependencies_count: Object.keys(packageData.devDependencies || {}).length,
+            scripts_count: Object.keys(packageData.scripts || {}).length,
+            key_dependencies: ['react', 'typescript', '@supabase/supabase-js', 'tailwindcss', 'vite']
+              .filter(dep => packageData.dependencies?.[dep])
+              .map(dep => ({ name: dep, version: packageData.dependencies[dep] }))
+          };
+        } else if (config.name.includes('vite.config')) {
+          analysis.vite_config = {
+            has_alias: config.content?.includes('@/'),
+            has_proxy: config.content?.includes('proxy'),
+            has_env_config: config.content?.includes('env'),
+            plugins_detected: (config.content?.match(/plugins:\s*\[([^\]]*)\]/s)?.[1] || '')
+              .split(',').map(p => p.trim()).filter(Boolean).length
+          };
+        } else if (config.name.includes('tailwind.config')) {
+          analysis.tailwind_config = {
+            has_content_config: config.content?.includes('content:'),
+            has_theme_extend: config.content?.includes('extend:'),
+            has_plugins: config.content?.includes('plugins:'),
+            darkmode_configured: config.content?.includes('darkMode')
+          };
+        } else if (config.name.includes('tsconfig')) {
+          analysis.typescript_config = {
+            strict_mode: config.content?.includes('"strict": true'),
+            has_path_mapping: config.content?.includes('paths'),
+            target_version: config.content?.match(/"target":\s*"([^"]+)"/)?.[1] || 'unknown',
+            lib_count: (config.content?.match(/"lib":\s*\[([^\]]*)\]/s)?.[1] || '')
+              .split(',').length
+          };
+        } else if (config.name.includes('eslint.config')) {
+          analysis.eslint_config = {
+            has_typescript_support: config.content?.includes('typescript'),
+            has_react_support: config.content?.includes('react'),
+            rules_count: (config.content?.match(/rules:\s*{([^}]*)}/s)?.[1] || '')
+              .split(',').filter(Boolean).length
+          };
+        }
+      } catch (error) {
+        console.warn(`Failed to analyze config ${config.name}:`, error);
+      }
+    }
+
+    return analysis;
+  }
+
+  // Dependency graph analysis
+  async function buildDependencyGraph(allFiles: any[]): Promise<any> {
+    const graph: any = {
+      nodes: new Map(),
+      edges: [],
+      circular_dependencies: [],
+      cross_feature_imports: [],
+      external_dependencies: new Set(),
+      complexity_metrics: {
+        max_imports_per_file: 0,
+        avg_imports_per_file: 0,
+        files_with_high_coupling: 0
+      }
+    };
+
+    // Build nodes and edges
+    for (const file of allFiles) {
+      const fileId = file.path;
+      graph.nodes.set(fileId, {
+        path: file.path,
+        type: file.category,
+        imports: file.imports || [],
+        exports: file.exports || [],
+        lines: file.lines || 0
+      });
+
+      // Analyze imports
+      for (const imp of file.imports || []) {
+        if (imp.startsWith('@/')) {
+          const targetPath = imp.replace('@/', 'src/');
+          graph.edges.push({ from: fileId, to: targetPath, type: 'internal' });
+          
+          // Check for cross-feature imports
+          const fromFeature = fileId.match(/src\/features\/([^\/]+)/)?.[1];
+          const toFeature = targetPath.match(/src\/features\/([^\/]+)/)?.[1];
+          if (fromFeature && toFeature && fromFeature !== toFeature) {
+            graph.cross_feature_imports.push({
+              from: fromFeature,
+              to: toFeature,
+              file: fileId,
+              import: imp
+            });
+          }
+        } else if (!imp.startsWith('.')) {
+          graph.external_dependencies.add(imp.split('/')[0]);
+        }
+      }
+    }
+
+    // Calculate complexity metrics
+    const importCounts = Array.from(graph.nodes.values()).map(node => node.imports.length);
+    graph.complexity_metrics.max_imports_per_file = Math.max(...importCounts, 0);
+    graph.complexity_metrics.avg_imports_per_file = importCounts.length > 0 
+      ? importCounts.reduce((a, b) => a + b, 0) / importCounts.length 
+      : 0;
+    graph.complexity_metrics.files_with_high_coupling = importCounts.filter(count => count > 10).length;
+
+    // Detect circular dependencies using DFS
+    const visited = new Set();
+    const recStack = new Set();
+    
+    function hasCycle(nodeId: string, path: string[] = []): boolean {
+      if (recStack.has(nodeId)) {
+        const cycleStart = path.indexOf(nodeId);
+        if (cycleStart >= 0) {
+          graph.circular_dependencies.push(path.slice(cycleStart).concat(nodeId));
+        }
+        return true;
+      }
+      if (visited.has(nodeId)) return false;
+
+      visited.add(nodeId);
+      recStack.add(nodeId);
+      
+      const edges = graph.edges.filter(e => e.from === nodeId && e.type === 'internal');
+      for (const edge of edges) {
+        if (hasCycle(edge.to, [...path, nodeId])) {
+          return true;
+        }
+      }
+      
+      recStack.delete(nodeId);
+      return false;
+    }
+
+    for (const nodeId of graph.nodes.keys()) {
+      if (!visited.has(nodeId)) {
+        hasCycle(nodeId);
+      }
+    }
+
+    return {
+      total_files: graph.nodes.size,
+      total_internal_dependencies: graph.edges.filter(e => e.type === 'internal').length,
+      external_dependencies: Array.from(graph.external_dependencies).sort(),
+      circular_dependencies: graph.circular_dependencies,
+      cross_feature_imports: graph.cross_feature_imports,
+      complexity_metrics: graph.complexity_metrics
+    };
+  }
+
   // Scan main directories
   const scanPaths = ['src', 'supabase', 'scripts', 'docs'];
   
@@ -502,6 +718,33 @@ async function scanCodebaseStructure(): Promise<any> {
   }
 
   structure.totalFiles = totalFiles;
+
+  // Enhanced analysis
+  const allFiles = [
+    ...structure.pages || [],
+    ...structure.sharedComponents || [],
+    ...structure.edgeFunctions || [],
+    ...structure.scripts || [],
+    ...structure.configs || [],
+    ...structure.integrations || [],
+    ...structure.docs || [],
+    ...(structure.features || []).flatMap((f: any) => [
+      ...(f.components || []),
+      ...(f.hooks || []),
+      ...(f.services || []),
+      ...(f.utils || []),
+      ...(f.types || []),
+      ...(f.tests || []),
+      ...(f.other || [])
+    ])
+  ];
+
+  console.log('Running enhanced analysis...');
+  
+  // Add enhanced analysis data
+  structure.migrations = await scanSupabaseMigrations();
+  structure.config_analysis = await analyzeConfigFiles(structure.configs);
+  structure.dependency_graph = await buildDependencyGraph(allFiles);
 
   // Sort features by name
   structure.features.sort((a, b) => a.name.localeCompare(b.name));
@@ -826,9 +1069,12 @@ function generateCodebaseDocumentation(data: {
 8. [Scripts & Tools](#scripts--tools)
 9. [Configuration Files](#configuration-files)
 10. [Documentation Files](#documentation-files)
-11. [Convention Violations](#convention-violations)
-12. [Code Quality Metrics](#code-quality-metrics)
-13. [Recommendations](#recommendations)
+11. [Supabase Migrations](#supabase-migrations)
+12. [Configuration Analysis](#configuration-analysis)
+13. [Dependency Graph & Architecture](#dependency-graph--architecture)
+14. [Code Quality & Complexity Metrics](#code-quality--complexity-metrics)
+15. [Convention Violations](#convention-violations)
+16. [Recommendations](#recommendations)
 
 ---
 
@@ -963,27 +1209,110 @@ ${structure.docs?.map((doc: any) => `
 
 ---
 
-## Convention Violations
+## Supabase Migrations
 
-${violations.length > 0 ? `
-Found ${violations.length} convention violations:
+Database migration files in \`supabase/migrations/\`:
 
-### Errors (${violations.filter(v => v.severity === 'error').length})
+${structure.migrations?.length > 0 ? `
+**Total Migrations:** ${structure.migrations.length}
 
-${violations.filter(v => v.severity === 'error').map(v => `
-- **${v.rule}** in \`${v.file}\`: ${v.description}
+${structure.migrations.map((migration: any) => `
+### ${migration.name}
+- **Timestamp:** ${migration.timestamp ? new Date(migration.timestamp.substring(0,4) + '-' + migration.timestamp.substring(4,6) + '-' + migration.timestamp.substring(6,8) + 'T' + migration.timestamp.substring(8,10) + ':' + migration.timestamp.substring(10,12) + ':' + migration.timestamp.substring(12,14)).toLocaleString() : 'Unknown'}
+- **Size:** ${migration.lines} lines, ${(migration.size / 1024).toFixed(1)}KB
+- **Operations:** ${migration.operations.create_tables} tables, ${migration.operations.alter_tables} alterations, ${migration.operations.create_indexes} indexes, ${migration.operations.create_functions} functions, ${migration.operations.create_policies} policies
+
+\`\`\`sql
+${migration.content_preview}
+\`\`\`
 `).join('')}
-
-### Warnings (${violations.filter(v => v.severity === 'warning').length})
-
-${violations.filter(v => v.severity === 'warning').map(v => `
-- **${v.rule}** in \`${v.file}\`: ${v.description}
-`).join('')}
-` : 'No convention violations found! 🎉'}
+` : 'No migration files found'}
 
 ---
 
-## Code Quality Metrics
+## Configuration Analysis
+
+Detailed analysis of project configuration files:
+
+### Package.json Analysis
+${structure.config_analysis?.package_json ? `
+- **Project:** ${structure.config_analysis.package_json.name} v${structure.config_analysis.package_json.version}
+- **Dependencies:** ${structure.config_analysis.package_json.dependencies_count} runtime, ${structure.config_analysis.package_json.dev_dependencies_count} dev
+- **Scripts:** ${structure.config_analysis.package_json.scripts_count} available
+- **Key Dependencies:**
+${structure.config_analysis.package_json.key_dependencies?.map((dep: any) => \`  - \${dep.name}@\${dep.version}\`).join('\\n') || '  None detected'}
+` : 'Package.json not analyzed'}
+
+### Build Configuration
+${structure.config_analysis?.vite_config ? \`
+**Vite Configuration:**
+- Path alias (@/) configured: \${structure.config_analysis.vite_config.has_alias ? '✅' : '❌'}
+- Proxy configuration: \${structure.config_analysis.vite_config.has_proxy ? '✅' : '❌'}
+- Environment config: \${structure.config_analysis.vite_config.has_env_config ? '✅' : '❌'}
+- Detected plugins: \${structure.config_analysis.vite_config.plugins_detected}
+\` : 'Vite config not analyzed'}
+
+${structure.config_analysis?.tailwind_config ? \`
+**Tailwind Configuration:**
+- Content paths configured: \${structure.config_analysis.tailwind_config.has_content_config ? '✅' : '❌'}
+- Theme extensions: \${structure.config_analysis.tailwind_config.has_theme_extend ? '✅' : '❌'}
+- Plugins enabled: \${structure.config_analysis.tailwind_config.has_plugins ? '✅' : '❌'}
+- Dark mode configured: \${structure.config_analysis.tailwind_config.darkmode_configured ? '✅' : '❌'}
+\` : 'Tailwind config not analyzed'}
+
+### TypeScript Configuration
+${structure.config_analysis?.typescript_config ? \`
+- **Strict mode:** \${structure.config_analysis.typescript_config.strict_mode ? '✅' : '❌'}
+- **Path mapping:** \${structure.config_analysis.typescript_config.has_path_mapping ? '✅' : '❌'}
+- **Target version:** \${structure.config_analysis.typescript_config.target_version}
+- **Library configurations:** \${structure.config_analysis.typescript_config.lib_count}
+\` : 'TypeScript config not analyzed'}
+
+### ESLint Configuration
+${structure.config_analysis?.eslint_config ? \`
+- **TypeScript support:** \${structure.config_analysis.eslint_config.has_typescript_support ? '✅' : '❌'}
+- **React support:** \${structure.config_analysis.eslint_config.has_react_support ? '✅' : '❌'}
+- **Custom rules:** \${structure.config_analysis.eslint_config.rules_count}
+\` : 'ESLint config not analyzed'}
+
+---
+
+## Dependency Graph & Architecture
+
+### Import/Export Analysis
+- **Total Files:** ${structure.dependency_graph?.total_files || 0}
+- **Internal Dependencies:** ${structure.dependency_graph?.total_internal_dependencies || 0}
+- **External Dependencies:** ${structure.dependency_graph?.external_dependencies?.length || 0}
+
+### External Dependencies
+${structure.dependency_graph?.external_dependencies?.length > 0 ? \`
+\${structure.dependency_graph.external_dependencies.slice(0, 20).map((dep: string) => \`- \${dep}\`).join('\\n')}
+\${structure.dependency_graph.external_dependencies.length > 20 ? \`\\n... and \${structure.dependency_graph.external_dependencies.length - 20} more\` : ''}
+\` : 'No external dependencies detected'}
+
+### Cross-Feature Dependencies
+${structure.dependency_graph?.cross_feature_imports?.length > 0 ? \`
+**Found ${structure.dependency_graph.cross_feature_imports.length} cross-feature import(s):**
+
+\${structure.dependency_graph.cross_feature_imports.slice(0, 10).map((imp: any) => \`
+- **\${imp.from}** → **\${imp.to}** in \`\${imp.file}\`
+  - Import: \`\${imp.import}\`
+\`).join('')}
+\${structure.dependency_graph.cross_feature_imports.length > 10 ? \`\\n... and \${structure.dependency_graph.cross_feature_imports.length - 10} more cross-feature imports\` : ''}
+\` : 'No cross-feature imports detected ✅'}
+
+### Circular Dependencies
+${structure.dependency_graph?.circular_dependencies?.length > 0 ? \`
+**⚠️ Found ${structure.dependency_graph.circular_dependencies.length} circular dependency chain(s):**
+
+\${structure.dependency_graph.circular_dependencies.map((cycle: any, index: number) => \`
+**Cycle \${index + 1}:** \${Array.isArray(cycle) ? cycle.join(' → ') : 'Invalid cycle data'}
+\`).join('')}
+\` : 'No circular dependencies detected ✅'}
+
+---
+
+## Code Quality & Complexity Metrics
 
 ### File Distribution by Category
 - **Components:** ${[...structure.sharedComponents, ...structure.features.flatMap((f: any) => f.components || [])].length}
@@ -993,26 +1322,62 @@ ${violations.filter(v => v.severity === 'warning').map(v => `
 - **Types:** ${structure.features.flatMap((f: any) => f.types || []).length}
 - **Tests:** ${structure.features.flatMap((f: any) => f.tests || []).length}
 
+### Complexity Metrics
+${structure.dependency_graph?.complexity_metrics ? \`
+- **Max imports per file:** \${structure.dependency_graph.complexity_metrics.max_imports_per_file}
+- **Average imports per file:** \${structure.dependency_graph.complexity_metrics.avg_imports_per_file.toFixed(1)}
+- **Files with high coupling (>10 imports):** \${structure.dependency_graph.complexity_metrics.files_with_high_coupling}
+\` : 'Complexity metrics not available'}
+
 ### Feature Module Quality
-${structure.features?.map((feature: any) => `
-- **${feature.name}:** ${feature.hasIndex ? 'Has proper barrel export' : '⚠️ Missing index.ts'} | Files: ${feature.totalFiles} | Lines: ${feature.totalLines?.toLocaleString() || 'N/A'}
-`).join('') || 'No features found'}
+${structure.features?.map((feature: any) => \`
+- **\${feature.name}:** \${feature.hasIndex ? 'Has proper barrel export' : '⚠️ Missing index.ts'} | Files: \${feature.totalFiles} | Lines: \${feature.totalLines?.toLocaleString() || 'N/A'}
+\`).join('') || 'No features found'}
 
 ### Large Files (>500 lines)
-${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).map((file: any) => `
-- **${file.name}** (\`${file.path}\`) - ${file.lines} lines
-`).join('') || 'None found'}
+${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).map((file: any) => \`
+- **\${file.name}** (\`\${file.path}\`) - \${file.lines} lines
+\`).join('') || 'None found'}
+
+---
+
+## Convention Violations
+
+${violations.length > 0 ? \`
+Found \${violations.length} convention violations:
+
+### Errors (\${violations.filter(v => v.severity === 'error').length})
+
+\${violations.filter(v => v.severity === 'error').map(v => \`
+- **\${v.rule}** in \`\${v.file}\`: \${v.description}
+\`).join('')}
+
+### Warnings (\${violations.filter(v => v.severity === 'warning').length})
+
+\${violations.filter(v => v.severity === 'warning').map(v => \`
+- **\${v.rule}** in \`\${v.file}\`: \${v.description}
+\`).join('')}
+\` : 'No convention violations found! 🎉'}
 
 ---
 
 ## Recommendations
 
 1. **Address Convention Violations:** Fix the ${violations.length} identified violations to improve code consistency
-2. **Feature Isolation:** Ensure features don't import directly from other feature modules
+2. **Feature Isolation:** Ensure features don\'t import directly from other feature modules
 3. **Component Reusability:** Consider extracting common patterns into shared components
 4. **Documentation:** Keep this documentation up-to-date by regenerating regularly
 ${structure.features.filter((f: any) => !f.hasIndex).length > 0 ? `5. **Missing Barrel Exports:** Add index.ts files to features: ${structure.features.filter((f: any) => !f.hasIndex).map((f: any) => f.name).join(', ')}` : ''}
 ${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).length > 0 ? `6. **Large Files:** Consider breaking down files with >500 lines for better maintainability` : ''}
+${structure.dependency_graph?.cross_feature_imports?.length > 0 ? `7. **Cross-Feature Dependencies:** Review ${structure.dependency_graph.cross_feature_imports.length} cross-feature imports for architectural compliance` : ''}
+${structure.dependency_graph?.circular_dependencies?.length > 0 ? `8. **Circular Dependencies:** Fix ${structure.dependency_graph.circular_dependencies.length} circular dependency chains` : ''}
+${structure.dependency_graph?.complexity_metrics?.files_with_high_coupling > 0 ? `9. **High Coupling:** Review ${structure.dependency_graph.complexity_metrics.files_with_high_coupling} files with >10 imports` : ''}
+${structure.migrations?.length === 0 ? '10. **Database Setup:** No migrations found - consider setting up database schema' : ''}
+
+### Priority Actions
+${violations.filter(v => v.severity === 'error').length > 0 ? `- **CRITICAL:** Fix ${violations.filter(v => v.severity === 'error').length} error-level convention violations` : ''}
+${structure.dependency_graph?.circular_dependencies?.length > 0 ? '- **HIGH:** Resolve circular dependencies to prevent build issues' : ''}
+${structure.dependency_graph?.cross_feature_imports?.length > 5 ? '- **MEDIUM:** Review cross-feature coupling for maintainability' : ''}
 
 ---
 
