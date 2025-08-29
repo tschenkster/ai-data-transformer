@@ -24,7 +24,7 @@ const systemTools: SystemTool[] = [
     title: 'Codebase Documentation',
     path: '/admin/system-tools/codebase-docs',
     icon: FileSpreadsheet,
-    status: 'coming-soon'
+    status: 'active'
   },
   {
     id: 'file-organizer',

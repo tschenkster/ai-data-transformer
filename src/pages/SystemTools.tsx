@@ -50,7 +50,7 @@ export default function SystemTools() {
       description: 'Generate comprehensive documentation of the codebase structure, components, and architecture.',
       icon: FileSpreadsheet,
       path: '/admin/system-tools/codebase-docs',
-      status: 'coming-soon'
+      status: 'active'
     },
     {
       id: 'file-organizer',

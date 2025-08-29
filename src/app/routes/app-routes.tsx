@@ -21,6 +21,7 @@ import ActivityLog from '@/pages/ActivityLog';
 import SystemAdministration from '@/pages/SystemAdministration';
 import SystemTools from '@/pages/SystemTools';
 import DatabaseDocumentation from '@/pages/system-tools/DatabaseDocumentation';
+import CodebaseDocumentation from '@/pages/system-tools/CodebaseDocumentation';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -79,10 +80,7 @@ export function AppRoutes() {
       } />
       <Route path="/admin/system-tools/codebase-docs" element={
         <AuthRoute requireSuperAdmin>
-          <div className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">Codebase Documentation Generator</h1>
-            <p className="text-muted-foreground">Coming soon - Generate comprehensive documentation of the codebase structure</p>
-          </div>
+          <CodebaseDocumentation />
         </AuthRoute>
       } />
       <Route path="/admin/system-tools/file-organizer" element={
