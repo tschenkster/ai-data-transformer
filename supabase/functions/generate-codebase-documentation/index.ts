@@ -1240,40 +1240,40 @@ ${structure.config_analysis?.package_json ? `
 - **Dependencies:** ${structure.config_analysis.package_json.dependencies_count} runtime, ${structure.config_analysis.package_json.dev_dependencies_count} dev
 - **Scripts:** ${structure.config_analysis.package_json.scripts_count} available
 - **Key Dependencies:**
-${structure.config_analysis.package_json.key_dependencies?.map((dep: any) => \`  - \${dep.name}@\${dep.version}\`).join('\\n') || '  None detected'}
+${structure.config_analysis.package_json.key_dependencies?.map((dep: any) => `  - ${dep.name}@${dep.version}`).join('\n') || '  None detected'}
 ` : 'Package.json not analyzed'}
 
 ### Build Configuration
-${structure.config_analysis?.vite_config ? \`
+${structure.config_analysis?.vite_config ? `
 **Vite Configuration:**
-- Path alias (@/) configured: \${structure.config_analysis.vite_config.has_alias ? '✅' : '❌'}
-- Proxy configuration: \${structure.config_analysis.vite_config.has_proxy ? '✅' : '❌'}
-- Environment config: \${structure.config_analysis.vite_config.has_env_config ? '✅' : '❌'}
-- Detected plugins: \${structure.config_analysis.vite_config.plugins_detected}
-\` : 'Vite config not analyzed'}
+- Path alias (@/) configured: ${structure.config_analysis.vite_config.has_alias ? '✅' : '❌'}
+- Proxy configuration: ${structure.config_analysis.vite_config.has_proxy ? '✅' : '❌'}
+- Environment config: ${structure.config_analysis.vite_config.has_env_config ? '✅' : '❌'}
+- Detected plugins: ${structure.config_analysis.vite_config.plugins_detected}
+` : 'Vite config not analyzed'}
 
-${structure.config_analysis?.tailwind_config ? \`
+${structure.config_analysis?.tailwind_config ? `
 **Tailwind Configuration:**
-- Content paths configured: \${structure.config_analysis.tailwind_config.has_content_config ? '✅' : '❌'}
-- Theme extensions: \${structure.config_analysis.tailwind_config.has_theme_extend ? '✅' : '❌'}
-- Plugins enabled: \${structure.config_analysis.tailwind_config.has_plugins ? '✅' : '❌'}
-- Dark mode configured: \${structure.config_analysis.tailwind_config.darkmode_configured ? '✅' : '❌'}
-\` : 'Tailwind config not analyzed'}
+- Content paths configured: ${structure.config_analysis.tailwind_config.has_content_config ? '✅' : '❌'}
+- Theme extensions: ${structure.config_analysis.tailwind_config.has_theme_extend ? '✅' : '❌'}
+- Plugins enabled: ${structure.config_analysis.tailwind_config.has_plugins ? '✅' : '❌'}
+- Dark mode configured: ${structure.config_analysis.tailwind_config.darkmode_configured ? '✅' : '❌'}
+` : 'Tailwind config not analyzed'}
 
 ### TypeScript Configuration
-${structure.config_analysis?.typescript_config ? \`
-- **Strict mode:** \${structure.config_analysis.typescript_config.strict_mode ? '✅' : '❌'}
-- **Path mapping:** \${structure.config_analysis.typescript_config.has_path_mapping ? '✅' : '❌'}
-- **Target version:** \${structure.config_analysis.typescript_config.target_version}
-- **Library configurations:** \${structure.config_analysis.typescript_config.lib_count}
-\` : 'TypeScript config not analyzed'}
+${structure.config_analysis?.typescript_config ? `
+- **Strict mode:** ${structure.config_analysis.typescript_config.strict_mode ? '✅' : '❌'}
+- **Path mapping:** ${structure.config_analysis.typescript_config.has_path_mapping ? '✅' : '❌'}
+- **Target version:** ${structure.config_analysis.typescript_config.target_version}
+- **Library configurations:** ${structure.config_analysis.typescript_config.lib_count}
+` : 'TypeScript config not analyzed'}
 
 ### ESLint Configuration
-${structure.config_analysis?.eslint_config ? \`
-- **TypeScript support:** \${structure.config_analysis.eslint_config.has_typescript_support ? '✅' : '❌'}
-- **React support:** \${structure.config_analysis.eslint_config.has_react_support ? '✅' : '❌'}
-- **Custom rules:** \${structure.config_analysis.eslint_config.rules_count}
-\` : 'ESLint config not analyzed'}
+${structure.config_analysis?.eslint_config ? `
+- **TypeScript support:** ${structure.config_analysis.eslint_config.has_typescript_support ? '✅' : '❌'}
+- **React support:** ${structure.config_analysis.eslint_config.has_react_support ? '✅' : '❌'}
+- **Custom rules:** ${structure.config_analysis.eslint_config.rules_count}
+` : 'ESLint config not analyzed'}
 
 ---
 
@@ -1285,30 +1285,30 @@ ${structure.config_analysis?.eslint_config ? \`
 - **External Dependencies:** ${structure.dependency_graph?.external_dependencies?.length || 0}
 
 ### External Dependencies
-${structure.dependency_graph?.external_dependencies?.length > 0 ? \`
-\${structure.dependency_graph.external_dependencies.slice(0, 20).map((dep: string) => \`- \${dep}\`).join('\\n')}
-\${structure.dependency_graph.external_dependencies.length > 20 ? \`\\n... and \${structure.dependency_graph.external_dependencies.length - 20} more\` : ''}
-\` : 'No external dependencies detected'}
+${structure.dependency_graph?.external_dependencies?.length > 0 ? `
+${structure.dependency_graph.external_dependencies.slice(0, 20).map((dep: string) => `- ${dep}`).join('\n')}
+${structure.dependency_graph.external_dependencies.length > 20 ? `\n... and ${structure.dependency_graph.external_dependencies.length - 20} more` : ''}
+` : 'No external dependencies detected'}
 
 ### Cross-Feature Dependencies
-${structure.dependency_graph?.cross_feature_imports?.length > 0 ? \`
+${structure.dependency_graph?.cross_feature_imports?.length > 0 ? `
 **Found ${structure.dependency_graph.cross_feature_imports.length} cross-feature import(s):**
 
-\${structure.dependency_graph.cross_feature_imports.slice(0, 10).map((imp: any) => \`
-- **\${imp.from}** → **\${imp.to}** in \`\${imp.file}\`
-  - Import: \`\${imp.import}\`
-\`).join('')}
-\${structure.dependency_graph.cross_feature_imports.length > 10 ? \`\\n... and \${structure.dependency_graph.cross_feature_imports.length - 10} more cross-feature imports\` : ''}
-\` : 'No cross-feature imports detected ✅'}
+${structure.dependency_graph.cross_feature_imports.slice(0, 10).map((imp: any) => `
+- **${imp.from}** → **${imp.to}** in \`${imp.file}\`
+  - Import: \`${imp.import}\`
+`).join('')}
+${structure.dependency_graph.cross_feature_imports.length > 10 ? `\n... and ${structure.dependency_graph.cross_feature_imports.length - 10} more cross-feature imports` : ''}
+` : 'No cross-feature imports detected ✅'}
 
 ### Circular Dependencies
-${structure.dependency_graph?.circular_dependencies?.length > 0 ? \`
+${structure.dependency_graph?.circular_dependencies?.length > 0 ? `
 **⚠️ Found ${structure.dependency_graph.circular_dependencies.length} circular dependency chain(s):**
 
-\${structure.dependency_graph.circular_dependencies.map((cycle: any, index: number) => \`
-**Cycle \${index + 1}:** \${Array.isArray(cycle) ? cycle.join(' → ') : 'Invalid cycle data'}
-\`).join('')}
-\` : 'No circular dependencies detected ✅'}
+${structure.dependency_graph.circular_dependencies.map((cycle: any, index: number) => `
+**Cycle ${index + 1}:** ${Array.isArray(cycle) ? cycle.join(' → ') : 'Invalid cycle data'}
+`).join('')}
+` : 'No circular dependencies detected ✅'}
 
 ---
 
@@ -1323,41 +1323,41 @@ ${structure.dependency_graph?.circular_dependencies?.length > 0 ? \`
 - **Tests:** ${structure.features.flatMap((f: any) => f.tests || []).length}
 
 ### Complexity Metrics
-${structure.dependency_graph?.complexity_metrics ? \`
-- **Max imports per file:** \${structure.dependency_graph.complexity_metrics.max_imports_per_file}
-- **Average imports per file:** \${structure.dependency_graph.complexity_metrics.avg_imports_per_file.toFixed(1)}
-- **Files with high coupling (>10 imports):** \${structure.dependency_graph.complexity_metrics.files_with_high_coupling}
-\` : 'Complexity metrics not available'}
+${structure.dependency_graph?.complexity_metrics ? `
+- **Max imports per file:** ${structure.dependency_graph.complexity_metrics.max_imports_per_file}
+- **Average imports per file:** ${structure.dependency_graph.complexity_metrics.avg_imports_per_file.toFixed(1)}
+- **Files with high coupling (>10 imports):** ${structure.dependency_graph.complexity_metrics.files_with_high_coupling}
+` : 'Complexity metrics not available'}
 
 ### Feature Module Quality
-${structure.features?.map((feature: any) => \`
-- **\${feature.name}:** \${feature.hasIndex ? 'Has proper barrel export' : '⚠️ Missing index.ts'} | Files: \${feature.totalFiles} | Lines: \${feature.totalLines?.toLocaleString() || 'N/A'}
-\`).join('') || 'No features found'}
+${structure.features?.map((feature: any) => `
+- **${feature.name}:** ${feature.hasIndex ? 'Has proper barrel export' : '⚠️ Missing index.ts'} | Files: ${feature.totalFiles} | Lines: ${feature.totalLines?.toLocaleString() || 'N/A'}
+`).join('') || 'No features found'}
 
 ### Large Files (>500 lines)
-${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).map((file: any) => \`
-- **\${file.name}** (\`\${file.path}\`) - \${file.lines} lines
-\`).join('') || 'None found'}
+${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).map((file: any) => `
+- **${file.name}** (\`${file.path}\`) - ${file.lines} lines
+`).join('') || 'None found'}
 
 ---
 
 ## Convention Violations
 
-${violations.length > 0 ? \`
-Found \${violations.length} convention violations:
+${violations.length > 0 ? `
+Found ${violations.length} convention violations:
 
-### Errors (\${violations.filter(v => v.severity === 'error').length})
+### Errors (${violations.filter(v => v.severity === 'error').length})
 
-\${violations.filter(v => v.severity === 'error').map(v => \`
-- **\${v.rule}** in \`\${v.file}\`: \${v.description}
-\`).join('')}
+${violations.filter(v => v.severity === 'error').map(v => `
+- **${v.rule}** in \`${v.file}\`: ${v.description}
+`).join('')}
 
-### Warnings (\${violations.filter(v => v.severity === 'warning').length})
+### Warnings (${violations.filter(v => v.severity === 'warning').length})
 
-\${violations.filter(v => v.severity === 'warning').map(v => \`
-- **\${v.rule}** in \`\${v.file}\`: \${v.description}
-\`).join('')}
-\` : 'No convention violations found! 🎉'}
+${violations.filter(v => v.severity === 'warning').map(v => `
+- **${v.rule}** in \`${v.file}\`: ${v.description}
+`).join('')}
+` : 'No convention violations found! 🎉'}
 
 ---
 
