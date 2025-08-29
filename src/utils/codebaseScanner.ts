@@ -62,8 +62,8 @@ export class CodebaseScanner {
       '/scripts/**/*.js',
     ], { 
       eager: false,
-      as: 'raw',
-      query: '?raw'
+      query: '?raw',
+      import: 'default'
     });
 
     const structure: CodebaseStructure = {
