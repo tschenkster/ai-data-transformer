@@ -513,26 +513,284 @@ async function scanCodebaseStructure(): Promise<any> {
   return structure;
 }
 
-// Mock function to validate conventions
+// Comprehensive convention validation engine
 function validateCodebaseConventions(structure: any): ValidationViolation[] {
   const violations: ValidationViolation[] = [];
+
+  // Rule catalog with severity and descriptions
+  const rules = {
+    'R30': { severity: 'error', description: 'Directories must use kebab-case only' },
+    'R31': { severity: 'error', description: 'React components must use PascalCase.tsx' },
+    'R32': { severity: 'error', description: 'Hooks must use camelCase with use- prefix' },
+    'R33': { severity: 'warning', description: 'No duplicate file functionality across paths' },
+    'R34': { severity: 'warning', description: 'Components over 200 lines need decomposition justification' },
+    'R35': { severity: 'error', description: 'Business logic must be in hooks/services, not components' },
+    'R36': { severity: 'error', description: 'Feature modules must be self-contained' },
+    'R37': { severity: 'warning', description: 'Avoid Enhanced/Improved prefixes without clear need' },
+    'R38': { severity: 'error', description: 'Index files only at package boundaries' },
+    'R39': { severity: 'error', description: 'Must use absolute imports with @/ prefix' },
+    'R40': { severity: 'error', description: 'No circular dependencies between features' },
+    'R41': { severity: 'warning', description: 'Shared utilities must be domain-agnostic' },
+    'R42': { severity: 'error', description: 'Pages must be thin wrappers' },
+    'R43': { severity: 'warning', description: 'Exported functions must have explicit return types' },
+    'R44': { severity: 'warning', description: 'Test files must be colocated as *.test.ts(x)' },
+    'R45': { severity: 'error', description: 'Must follow feature-based architecture' },
+    'R46': { severity: 'warning', description: 'Features must follow internal structure' },
+    'R47': { severity: 'error', description: 'Must follow shared component organization' },
+    'R48': { severity: 'error', description: 'No deep cross-feature imports' },
+    'R49': { severity: 'warning', description: 'Features must map 1:1 to PRD domains' },
+    'R50': { severity: 'error', description: 'Business logic must live in services/hooks' },
+    'R51': { severity: 'error', description: 'Pages only compose features and routing' },
+    'R52': { severity: 'warning', description: 'Tests must be colocated with units under test' },
+    'R53': { severity: 'error', description: 'Use absolute imports, avoid relative paths' },
+    'R54': { severity: 'error', description: 'No circular dependencies across features' },
+    'R55': { severity: 'error', description: 'Cannot reach into other features private folders' },
+    'R56': { severity: 'error', description: 'Cross-feature state is prohibited' }
+  };
+
+  const addViolation = (rule: string, file: string, description: string, autocorrect?: string) => {
+    violations.push({
+      rule,
+      file,
+      description: `${description}${autocorrect ? ` | Suggestion: ${autocorrect}` : ''}`,
+      severity: rules[rule as keyof typeof rules]?.severity as 'error' | 'warning' || 'warning'
+    });
+  };
+
+  // File naming patterns
+  const patterns = {
+    kebabCase: /^[a-z]+(-[a-z]+)*$/,
+    pascalCase: /^[A-Z][A-Za-z0-9]*$/,
+    camelCase: /^[a-z][A-Za-z0-9]*$/,
+    hookName: /^use[A-Z][A-Za-z0-9]*$/,
+    testFile: /\.(test|spec)\.(ts|tsx)$/,
+    componentFile: /^[A-Z][A-Za-z0-9]*\.tsx$/,
+    hookFile: /^use[A-Z][A-Za-z0-9]*\.(ts|tsx)$/,
+    relativeImport: /from\s+['"]\.\.?\//,
+    absoluteImport: /from\s+['"]@\//,
+    deepFeatureImport: /from\s+['"]@\/features\/([^\/]+)\/(?!index)/
+  };
+
+  // Validate directory naming (R30)
+  structure.scannedDirectories?.forEach((dirPath: string) => {
+    const segments = dirPath.split('/').filter(Boolean);
+    segments.forEach(segment => {
+      if (segment.includes('_') || segment.includes(' ') || /[A-Z]/.test(segment)) {
+        addViolation('R30', dirPath, `Directory '${segment}' should use kebab-case`, 
+          `Rename '${segment}' to '${segment.toLowerCase().replace(/[_\s]+/g, '-')}'`);
+      }
+    });
+  });
+
+  // Validate all file types
+  const allFiles = [
+    ...structure.pages || [],
+    ...structure.sharedComponents || [],
+    ...structure.edgeFunctions || [],
+    ...structure.scripts || [],
+    ...structure.configs || [],
+    ...structure.integrations || [],
+    ...structure.docs || [],
+    ...(structure.features || []).flatMap((f: any) => [
+      ...(f.components || []),
+      ...(f.hooks || []),
+      ...(f.services || []),
+      ...(f.utils || []),
+      ...(f.types || []),
+      ...(f.tests || []),
+      ...(f.other || [])
+    ])
+  ];
+
+  allFiles.forEach((file: any) => {
+    const { name, path, category, imports = [], exports = [], lines = 0, content = '' } = file;
+
+    // R31: Component naming
+    if (category === 'component' || name.endsWith('.tsx')) {
+      if (!patterns.componentFile.test(name)) {
+        addViolation('R31', path, `Component '${name}' must use PascalCase.tsx`, 
+          `Rename to '${name.charAt(0).toUpperCase() + name.slice(1).replace(/[^A-Za-z0-9]/g, '')}.tsx'`);
+      }
+    }
+
+    // R32: Hook naming
+    if (category === 'hook' || name.startsWith('use')) {
+      const baseName = name.replace(/\.(ts|tsx)$/, '');
+      if (!patterns.hookName.test(baseName)) {
+        addViolation('R32', path, `Hook '${name}' must use camelCase with use- prefix`, 
+          `Rename to 'use${baseName.charAt(3).toUpperCase()}${baseName.slice(4)}.ts'`);
+      }
+    }
+
+    // R34: Component size
+    if (category === 'component' && lines > 200) {
+      addViolation('R34', path, `Component has ${lines} lines (>200), consider decomposition`);
+    }
+
+    // R37: Enhanced/Improved prefixes
+    if (name.includes('Enhanced') || name.includes('Improved')) {
+      addViolation('R37', path, `Avoid Enhanced/Improved prefixes without clear differentiation need`);
+    }
+
+    // R39 & R53: Import validation
+    imports.forEach((importPath: string) => {
+      // Check for relative imports
+      if (patterns.relativeImport.test(importPath)) {
+        addViolation('R39', path, `Relative import '${importPath}' should use @/ prefix`, 
+          `Change to '@/${importPath.replace(/^\.\.?\//, '')}'`);
+      }
+
+      // Check for deep feature imports (R48)
+      const deepImportMatch = importPath.match(/^@\/features\/([^\/]+)\/(.+)/);
+      if (deepImportMatch && deepImportMatch[2] !== 'index') {
+        const featureName = deepImportMatch[1];
+        addViolation('R48', path, `Deep feature import from '${importPath}'`, 
+          `Import from '@/features/${featureName}' instead`);
+      }
+    });
+
+    // R43: Return type validation for TypeScript files
+    if (path.endsWith('.ts') || path.endsWith('.tsx')) {
+      // Simple pattern matching for exported functions without return types
+      const exportFunctionWithoutType = /export\s+(const|function)\s+\w+[^:]*=>[^:]/;
+      if (exportFunctionWithoutType.test(content)) {
+        addViolation('R43', path, 'Exported function missing explicit return type');
+      }
+    }
+
+    // R44: Test collocation
+    if (category === 'test') {
+      const basePath = path.replace(patterns.testFile, '');
+      const correspondingFile = allFiles.find((f: any) => 
+        f.path === `${basePath}.ts` || f.path === `${basePath}.tsx`
+      );
+      if (!correspondingFile) {
+        addViolation('R44', path, 'Test file should be colocated with unit under test');
+      }
+    }
+  });
+
+  // Feature-specific validations
+  structure.features?.forEach((feature: any) => {
+    const { name, path: featurePath, hasIndex } = feature;
+
+    // R36 & R45: Feature structure
+    if (!hasIndex) {
+      addViolation('R36', featurePath, 'Feature missing index.ts barrel export');
+    }
+
+    // R46: Internal structure
+    const expectedFolders = ['components', 'hooks', 'services', 'utils', 'types'];
+    const hasAnyExpectedFolder = expectedFolders.some(folder => 
+      feature[folder] && feature[folder].length > 0
+    );
+    
+    if (!hasAnyExpectedFolder) {
+      addViolation('R46', featurePath, 'Feature should follow internal structure (components/, hooks/, services/, utils/, types/)');
+    }
+
+    // R49: Feature mapping to domains
+    const validDomains = [
+      'auth', 'user-management', 'report-structures', 'imports', 
+      'coa-translation', 'coa-mapping', 'report-viewer', 'data-security', 
+      'audit-trails', 'system-administration', 'workflow', 'entity-management',
+      'file-management', 'security-audit'
+    ];
+    
+    if (!validDomains.includes(name)) {
+      addViolation('R49', featurePath, `Feature '${name}' should map to a PRD domain`);
+    }
+  });
+
+  // R40 & R54: Circular dependency detection
+  const featureImports = new Map<string, Set<string>>();
   
-  // Mock violations for demonstration
-  violations.push({
-    rule: 'R30-Component-Naming',
-    file: 'src/components/SomeComponent.tsx',
-    description: 'Component file name should use PascalCase',
-    severity: 'warning'
+  structure.features?.forEach((feature: any) => {
+    const featureName = feature.name;
+    const imports = new Set<string>();
+    
+    [...(feature.components || []), ...(feature.hooks || []), ...(feature.services || []), 
+     ...(feature.utils || []), ...(feature.types || [])].forEach((file: any) => {
+      file.imports?.forEach((imp: string) => {
+        const match = imp.match(/^@\/features\/([^\/]+)/);
+        if (match && match[1] !== featureName) {
+          imports.add(match[1]);
+        }
+      });
+    });
+    
+    featureImports.set(featureName, imports);
   });
 
-  violations.push({
-    rule: 'R39-Relative-Imports',
-    file: 'src/features/auth/components/AuthRoute.tsx',
-    description: 'Avoid relative imports, use absolute imports with @/ alias',
-    severity: 'error'
+  // Check for circular dependencies
+  featureImports.forEach((imports, featureName) => {
+    imports.forEach(importedFeature => {
+      const importedFeatureImports = featureImports.get(importedFeature);
+      if (importedFeatureImports?.has(featureName)) {
+        addViolation('R40', `src/features/${featureName}`, 
+          `Circular dependency detected with feature '${importedFeature}'`);
+      }
+    });
   });
 
-  return violations;
+  // R42 & R51: Page validation
+  structure.pages?.forEach((page: any) => {
+    if (page.lines > 100) {
+      addViolation('R42', page.path, `Page has ${page.lines} lines, should be a thin wrapper`);
+    }
+
+    // Check for business logic patterns in pages
+    const businessLogicPatterns = [
+      /useState.*=.*\(/,
+      /useEffect.*=>.*{/,
+      /async.*function/,
+      /\.then\(/,
+      /await\s/
+    ];
+
+    if (businessLogicPatterns.some(pattern => pattern.test(page.content || ''))) {
+      addViolation('R51', page.path, 'Page contains business logic, should delegate to features');
+    }
+  });
+
+  // R35 & R50: Business logic in components
+  [...(structure.sharedComponents || []), 
+   ...(structure.features || []).flatMap((f: any) => f.components || [])].forEach((component: any) => {
+    const businessLogicPatterns = [
+      /fetch\(/,
+      /axios\./,
+      /supabase\./,
+      /localStorage\./,
+      /sessionStorage\./
+    ];
+
+    if (businessLogicPatterns.some(pattern => pattern.test(component.content || ''))) {
+      addViolation('R35', component.path, 'Component contains business logic, move to hooks/services');
+    }
+  });
+
+  // R38: Index file validation
+  allFiles.forEach((file: any) => {
+    if (file.name === 'index.ts' || file.name === 'index.tsx') {
+      const pathSegments = file.path.split('/');
+      const isAtPackageBoundary = pathSegments.includes('features') || 
+                                  pathSegments.includes('components') ||
+                                  pathSegments.includes('integrations') ||
+                                  pathSegments[pathSegments.length - 2] === 'src';
+      
+      if (!isAtPackageBoundary) {
+        addViolation('R38', file.path, 'Index files should only exist at package boundaries');
+      }
+    }
+  });
+
+  // Sort violations by severity and rule
+  return violations.sort((a, b) => {
+    if (a.severity !== b.severity) {
+      return a.severity === 'error' ? -1 : 1;
+    }
+    return a.rule.localeCompare(b.rule);
+  });
 }
 
 // Generate the documentation content
