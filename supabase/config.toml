@@ -13,6 +13,12 @@ verify_jwt = true
 [functions.sync-documentation]
 verify_jwt = true
 
+[functions.sync-docs-to-project]
+verify_jwt = true
+
+[functions.generate-codebase-documentation]
+verify_jwt = true
+
 [db]
 shadow_port = 54320
 major_version = 15
