@@ -17,12 +17,6 @@ interface CodebaseStructure {
     imports?: string[];
     exports?: string[];
   }>;
-  totalSize: number;
-  totalLines: number;
-  directories: string[];
-  directoryTree?: any[];
-  features?: any[];
-  treeStructure?: string;
   summary: {
     components: number;
     pages: number;
@@ -31,8 +25,32 @@ interface CodebaseStructure {
     edgeFunctions: number;
     configFiles: number;
     totalFiles: number;
+    totalSize: number;
+    totalLines: number;
   };
-  projectInfo: {
+  categories: Record<string, number>;
+  directoryTree: Array<{
+    name: string;
+    path: string;
+    files: string[];
+    children: any[];
+    level: number;
+  }>;
+  features: Array<{
+    name: string;
+    path: string;
+    files: {
+      components: string[];
+      hooks: string[];
+      services: string[];
+      types: string[];
+      utils: string[];
+    };
+    hasIndex: boolean;
+    completeness: number;
+  }>;
+  treeStructure: string;
+  projectInfo?: {
     framework: string;
     typescript: boolean;
     environment: string;
@@ -117,7 +135,7 @@ serve(async (req) => {
       if (requestBody.structure) {
         codebaseStructure = requestBody.structure;
         console.log("Using provided codebase structure from client");
-        console.log(`Structure contains: ${codebaseStructure.files.length} files, ${formatBytes(codebaseStructure.totalSize)}`);
+        console.log(`Structure contains: ${codebaseStructure.files.length} files, ${formatBytes(codebaseStructure.summary.totalSize || 0)}`);
       } else {
         throw new Error("No codebase structure provided");
       }
@@ -126,11 +144,6 @@ serve(async (req) => {
       console.warn("No valid structure provided, using minimal fallback");
       codebaseStructure = {
         files: [],
-        totalSize: 0,
-        totalLines: 0,
-        directories: [],
-        directoryTree: [],
-        features: [],
         summary: {
           components: 0,
           pages: 0,
@@ -138,8 +151,14 @@ serve(async (req) => {
           utilities: 0,
           edgeFunctions: 0,
           configFiles: 0,
-          totalFiles: 0
+          totalFiles: 0,
+          totalSize: 0,
+          totalLines: 0
         },
+        categories: {},
+        directoryTree: [],
+        features: [],
+        treeStructure: '',
         projectInfo: {
           framework: 'React + Vite + TypeScript',
           typescript: true,
@@ -203,10 +222,10 @@ serve(async (req) => {
         },
         generated_by_name: userName,
         structure_complexity: {
-          pages_count: codebaseStructure.summary.pages,
-          features_count: 0, // Could be enhanced
-          components_count: codebaseStructure.summary.components,
-          edge_functions_count: codebaseStructure.summary.edgeFunctions,
+          pages_count: codebaseStructure.summary?.pages || 0,
+          features_count: codebaseStructure.features?.length || 0,
+          components_count: codebaseStructure.summary?.components || 0,
+          edge_functions_count: codebaseStructure.summary?.edgeFunctions || 0,
           violations_breakdown: groupViolationsByType(violations)
         },
         generation_duration_ms: Date.now() - Date.now() // Simplified for now
@@ -257,6 +276,11 @@ function formatBytes(bytes: number): string {
 function validateConventions(structure: CodebaseStructure): Array<{type: string, message: string, file?: string}> {
   const violations: Array<{type: string, message: string, file?: string}> = [];
 
+  // Ensure we have required data
+  if (!structure.files || !Array.isArray(structure.files)) {
+    return violations;
+  }
+
   // Check for files that are too large
   structure.files.forEach(file => {
     if (file.lines > 500) {
@@ -268,25 +292,22 @@ function validateConventions(structure: CodebaseStructure): Array<{type: string,
     }
   });
 
-  // Check for missing index files in feature directories
-  const featureDirs = structure.directories.filter(dir => dir.includes('/features/'));
-  featureDirs.forEach(dir => {
-    const hasIndex = structure.files.some(file => 
-      file.path.startsWith(dir) && file.path.endsWith('/index.ts')
-    );
-    if (!hasIndex) {
-      violations.push({
-        type: 'missing_index',
-        message: 'Feature directory missing index.ts file',
-        file: dir
-      });
-    }
-  });
+  // Check for missing index files in feature directories using features array
+  if (structure.features && Array.isArray(structure.features)) {
+    structure.features.forEach(feature => {
+      if (!feature.hasIndex) {
+        violations.push({
+          type: 'missing_index',
+          message: 'Feature directory missing index.ts file',
+          file: feature.path
+        });
+      }
+    });
+  }
 
   // Check for potential circular dependencies in imports
-  const fileMap = new Map(structure.files.map(f => [f.path, f]));
   structure.files.forEach(file => {
-    if (file.imports) {
+    if (file.imports && Array.isArray(file.imports)) {
       const localImports = file.imports.filter(imp => imp.startsWith('./') || imp.startsWith('../'));
       if (localImports.length > 10) {
         violations.push({
@@ -314,7 +335,7 @@ function generateDocumentation(
   violations: Array<{type: string, message: string, file?: string}>,
   metadata: { version: string, generatedBy: string, generatedAt: string }
 ): string {
-  const { files, summary, projectInfo, totalSize, totalLines, directories, directoryTree = [], features = [] } = structure;
+  const { files, summary, projectInfo, directoryTree = [], features = [] } = structure;
   
   return `# Codebase Structure Documentation
 
@@ -328,8 +349,8 @@ function generateDocumentation(
 - **Framework**: ${projectInfo.framework}
 - **TypeScript**: ${projectInfo.typescript ? 'Yes' : 'No'}
 - **Total Files**: ${summary.totalFiles}
-- **Total Size**: ${formatBytes(totalSize)}
-- **Total Lines of Code**: ${totalLines.toLocaleString()}
+- **Total Size**: ${formatBytes(summary.totalSize || 0)}
+- **Total Lines of Code**: ${(summary.totalLines || 0).toLocaleString()}
 
 ## File Distribution
 
@@ -428,9 +449,9 @@ ${analyzeFilePatterns(files)}
 ${analyzeImportExportPatterns(files)}
 
 ### Code Quality Indicators
-- **Average File Size**: ${Math.round(totalSize / files.length)} bytes
-- **Average Lines per File**: ${Math.round(totalLines / files.length)}
-- **TypeScript Coverage**: ${Math.round((files.filter(f => f.extension === 'ts' || f.extension === 'tsx').length / files.length) * 100)}%
+- **Average File Size**: ${files.length > 0 ? Math.round((summary.totalSize || 0) / files.length) : 0} bytes
+- **Average Lines per File**: ${files.length > 0 ? Math.round((summary.totalLines || 0) / files.length) : 0}
+- **TypeScript Coverage**: ${files.length > 0 ? Math.round((files.filter(f => f.extension === 'ts' || f.extension === 'tsx').length / files.length) * 100) : 0}%
 
 ## Development Guidelines
 
@@ -497,7 +518,7 @@ ${generateFileTypeChart(summary)}
 
 ---
 *This documentation was automatically generated by the Hybrid Codebase Documentation Generator ${metadata.version}*
-*Scanned ${files.length} files across ${directories.length} directories*
+*Scanned ${files.length} files across ${directoryTree.length} directories*
 *Features analyzed: ${features.length} modules*
 `;
 }
