@@ -332,92 +332,10 @@ async function scanCodebaseStructure(): Promise<any> {
   }
 
   async function scanDirectory(dirPath: string, relativePath = ''): Promise<void> {
-    try {
-      // Note: In Edge Functions, we can't access project file system
-      // We'll generate a simulated structure based on common patterns
-      console.warn(`Directory ${dirPath} not found, skipping`);
-      return;
-
-          const fileInfo = {
-            name: entry.name,
-            path: relativeFullPath,
-            category,
-            size: fileDetails.content.length,
-            lines: fileDetails.lines,
-            imports: fileDetails.imports,
-            exports: fileDetails.exports
-          };
-
-          // Categorize by location
-          if (relativeFullPath.startsWith('src/features/')) {
-            const featurePath = relativeFullPath.split('/');
-            const featureName = featurePath[2];
-            let feature = structure.features.find(f => f.name === featureName);
-            
-            if (!feature) {
-              feature = {
-                name: featureName,
-                path: `src/features/${featureName}`,
-                components: [],
-                hooks: [],
-                services: [],
-                utils: [],
-                types: [],
-                tests: [],
-                other: [],
-                hasIndex: false,
-                totalFiles: 0,
-                totalLines: 0
-              };
-              structure.features.push(feature);
-            }
-
-            feature.totalFiles++;
-            feature.totalLines += fileDetails.lines;
-
-            if (entry.name === 'index.ts' || entry.name === 'index.tsx') {
-              feature.hasIndex = true;
-            }
-
-            switch (category) {
-              case 'component': feature.components.push(fileInfo); break;
-              case 'hook': feature.hooks.push(fileInfo); break;
-              case 'service': feature.services.push(fileInfo); break;
-              case 'util': feature.utils.push(fileInfo); break;
-              case 'type': feature.types.push(fileInfo); break;
-              case 'test': feature.tests.push(fileInfo); break;
-              default: feature.other.push(fileInfo); break;
-            }
-          }
-          else if (relativeFullPath.startsWith('src/pages/')) {
-            structure.pages.push(fileInfo);
-          }
-          else if (relativeFullPath.startsWith('src/components/')) {
-            structure.sharedComponents.push(fileInfo);
-          }
-          else if (relativeFullPath.startsWith('supabase/functions/')) {
-            structure.edgeFunctions.push(fileInfo);
-          }
-          else if (relativeFullPath.startsWith('scripts/')) {
-            structure.scripts.push(fileInfo);
-          }
-          else if (relativeFullPath.startsWith('src/integrations/')) {
-            structure.integrations.push(fileInfo);
-          }
-          else if (relativeFullPath.startsWith('docs/')) {
-            structure.docs.push(fileInfo);
-          }
-          else if (category === 'config' || relativeFullPath.includes('config')) {
-            structure.configs.push(fileInfo);
-          }
-        }
-        else if (entry.isDirectory) {
-          await scanDirectory(fullPath, relativeFullPath);
-        }
-      }
-    } catch (error) {
-      console.warn(`Failed to scan directory ${dirPath}:`, error);
-    }
+    // Note: In Edge Functions, we can't access project file system
+    // This function is disabled for serverless environment
+    console.warn(`Directory ${dirPath} not found, skipping`);
+    return;
   }
 
   // Enhanced migrations scanning - simulated for serverless environment
