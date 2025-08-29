@@ -12,6 +12,12 @@ interface SyncResult {
   error?: string;
   total_files?: number;
   total_size?: number;
+  file_contents?: Array<{
+    filename: string;
+    path: string;
+    content: string;
+    size: number;
+  }>;
 }
 
 Deno.serve(async (req) => {
@@ -80,6 +86,12 @@ Deno.serve(async (req) => {
 
     const syncedFiles: string[] = [];
     let totalSize = 0;
+    const fileContents: Array<{
+      filename: string;
+      path: string;
+      content: string;
+      size: number;
+    }> = [];
 
     // Sync database documentation
     console.log('Syncing database documentation...');
@@ -99,11 +111,17 @@ Deno.serve(async (req) => {
           .download(latestDbFile.name);
 
         if (!dbDownloadError && dbFileData) {
-          // In a real implementation, this would write to the project's docs folder
-          // For now, we'll simulate the sync by logging and tracking
+          const content = await dbFileData.text();
           console.log(`Synced database documentation: ${latestDbFile.name} (${dbFileData.size} bytes)`);
           syncedFiles.push(`docs/database/${latestDbFile.name}`);
           totalSize += dbFileData.size || 0;
+          
+          fileContents.push({
+            filename: latestDbFile.name,
+            path: `docs/database/${latestDbFile.name}`,
+            content: content,
+            size: dbFileData.size || 0
+          });
         }
       }
     }
@@ -126,23 +144,79 @@ Deno.serve(async (req) => {
           .download(latestCodebaseFile.name);
 
         if (!codebaseDownloadError && codebaseFileData) {
+          const content = await codebaseFileData.text();
           console.log(`Synced codebase documentation: ${latestCodebaseFile.name} (${codebaseFileData.size} bytes)`);
           syncedFiles.push(`docs/codebase/${latestCodebaseFile.name}`);
           totalSize += codebaseFileData.size || 0;
+          
+          fileContents.push({
+            filename: latestCodebaseFile.name,
+            path: `docs/codebase/${latestCodebaseFile.name}`,
+            content: content,
+            size: codebaseFileData.size || 0
+          });
         }
       }
     }
 
-    // Create docs structure simulation
-    const docsStructure = [
-      'docs/README.md',
-      'docs/database/README.md', 
-      'docs/api/README.md',
-      'docs/codebase/README.md'
+    // Create README files for docs structure
+    const docsReadmeFiles = [
+      {
+        filename: 'README.md',
+        path: 'docs/README.md',
+        content: `# Documentation
+
+This folder contains auto-generated documentation for the project.
+
+## Structure
+
+- \`database/\` - Database schema and structure documentation
+- \`codebase/\` - Codebase structure and analysis documentation
+- \`api/\` - API documentation
+
+## Auto-Generated Files
+
+The documentation in this folder is automatically generated and synced from the system's documentation generators. Manual edits may be overwritten during the next sync.
+
+Last updated: ${new Date().toISOString()}
+`,
+        size: 0
+      },
+      {
+        filename: 'README.md',
+        path: 'docs/database/README.md',
+        content: `# Database Documentation
+
+This folder contains auto-generated database documentation.
+
+## Files
+
+The latest database structure documentation is automatically synced here from the system's database documentation generator.
+
+Last updated: ${new Date().toISOString()}
+`,
+        size: 0
+      },
+      {
+        filename: 'README.md',
+        path: 'docs/codebase/README.md',
+        content: `# Codebase Documentation
+
+This folder contains auto-generated codebase documentation.
+
+## Files
+
+The latest codebase structure analysis is automatically synced here from the system's codebase documentation generator.
+
+Last updated: ${new Date().toISOString()}
+`,
+        size: 0
+      }
     ];
 
-    // Add structural files to sync list
-    syncedFiles.push(...docsStructure);
+    // Add README files to content and sync lists
+    fileContents.push(...docsReadmeFiles);
+    syncedFiles.push(...docsReadmeFiles.map(f => f.path));
 
     // Log the sync operation
     await supabaseUser.rpc('log_security_event', {
@@ -162,7 +236,8 @@ Deno.serve(async (req) => {
       synced_files: syncedFiles,
       docs_updated: syncedFiles.length > 0,
       total_files: syncedFiles.length,
-      total_size: totalSize
+      total_size: totalSize,
+      file_contents: fileContents
     };
 
     console.log(`Documentation sync completed: ${syncedFiles.length} files synced (${totalSize} bytes)`);

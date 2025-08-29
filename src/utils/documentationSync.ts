@@ -8,7 +8,42 @@ export interface SyncResult {
   error?: string;
   synced_files?: string[];
   total_files?: number;
+  file_contents?: Array<{
+    filename: string;
+    path: string;
+    content: string;
+    size: number;
+  }>;
 }
+
+// Create files in the project from file contents
+const createProjectFiles = async (fileContents: Array<{
+  filename: string;
+  path: string;
+  content: string;
+  size: number;
+}>): Promise<void> => {
+  // In a Lovable environment, we would use the file creation API
+  // For now, we'll create downloadable files for each document
+  for (const file of fileContents) {
+    try {
+      const blob = new Blob([file.content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.path;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      // Small delay between downloads to avoid overwhelming the browser
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (error) {
+      console.error(`Failed to create file ${file.path}:`, error);
+    }
+  }
+};
 
 // Sync all documentation types to project folder
 const syncAllDocsToProject = async (): Promise<SyncResult> => {
@@ -24,10 +59,16 @@ const syncAllDocsToProject = async (): Promise<SyncResult> => {
     }
 
     if (data && data.success) {
+      // Create the actual files if file contents are provided
+      if (data.file_contents && data.file_contents.length > 0) {
+        await createProjectFiles(data.file_contents);
+      }
+      
       return {
         success: true,
         synced_files: data.synced_files,
-        total_files: data.total_files || 0
+        total_files: data.total_files || 0,
+        file_contents: data.file_contents
       };
     } else {
       return {

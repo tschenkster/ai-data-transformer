@@ -47,7 +47,16 @@ export class CodebaseScanner {
     if (isDevelopment) {
       return this.scanLiveCodebase();
     } else {
-      return this.loadPrebuiltManifest();
+      // Try to load prebuilt manifest first
+      const manifestStructure = await this.loadPrebuiltManifest();
+      
+      // If manifest is empty (no files found), fall back to live scanning
+      if (manifestStructure.files.length === 0) {
+        console.log('📄 Manifest empty, falling back to live scanning...');
+        return this.scanLiveCodebase();
+      }
+      
+      return manifestStructure;
     }
   }
 
