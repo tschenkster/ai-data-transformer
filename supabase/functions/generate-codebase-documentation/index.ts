@@ -22,6 +22,7 @@ interface CodebaseStructure {
   directories: string[];
   directoryTree?: any[];
   features?: any[];
+  treeStructure?: string;
   summary: {
     components: number;
     pages: number;
@@ -345,7 +346,11 @@ ${generateCategoryBreakdown(files)}
 
 ## Directory Structure
 
-${generateHierarchicalStructure(directoryTree)}
+*Complete codebase structure with files organized by feature modules*
+
+\`\`\`
+${structure.treeStructure || 'Tree structure not available'}
+\`\`\`
 
 ## Architecture Principles
 

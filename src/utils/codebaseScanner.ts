@@ -30,27 +30,24 @@ interface FileInfo {
 }
 
 interface CodebaseStructure {
-  files: FileInfo[];
-  totalSize: number;
-  totalLines: number;
-  directories: string[];
-  directoryTree: DirectoryNode[];
-  features: FeatureModule[];
   summary: {
+    totalFiles: number;
+    totalSize: number;
+    totalLines: number;
     components: number;
     pages: number;
     hooks: number;
     utilities: number;
     edgeFunctions: number;
     configFiles: number;
-    totalFiles: number;
-  };
-  projectInfo: {
     framework: string;
     typescript: boolean;
-    environment: 'development' | 'production';
-    generatedAt: string;
   };
+  files: FileInfo[];
+  categories: { [key: string]: number };
+  directoryTree: DirectoryNode[];
+  features: FeatureModule[];
+  treeStructure: string;
 }
 
 export class CodebaseScanner {
@@ -97,31 +94,22 @@ export class CodebaseScanner {
       import: 'default'
     });
 
-    const structure: CodebaseStructure = {
-      files: [],
+    const summary = {
+      totalFiles: 0,
       totalSize: 0,
       totalLines: 0,
-      directories: [],
-      directoryTree: [],
-      features: [],
-      summary: {
-        components: 0,
-        pages: 0,
-        hooks: 0,
-        utilities: 0,
-        edgeFunctions: 0,
-        configFiles: 0,
-        totalFiles: 0
-      },
-      projectInfo: {
-        framework: 'React + Vite + TypeScript',
-        typescript: true,
-        environment: 'development',
-        generatedAt: new Date().toISOString()
-      }
+      components: 0,
+      pages: 0,
+      hooks: 0,
+      utilities: 0,
+      edgeFunctions: 0,
+      configFiles: 0,
+      framework: 'React + Vite + TypeScript',
+      typescript: true
     };
 
-    const directorySet = new Set<string>();
+    const files: FileInfo[] = [];
+    const categories: { [key: string]: number } = {};
 
     // Process each discovered file
     for (const [path, loader] of Object.entries(modules)) {
@@ -129,39 +117,36 @@ export class CodebaseScanner {
         const content = await loader() as string;
         const fileInfo = this.analyzeFile(path, content);
         
-        structure.files.push(fileInfo);
-        structure.totalSize += fileInfo.size;
-        structure.totalLines += fileInfo.lines;
+        files.push(fileInfo);
+        summary.totalSize += fileInfo.size;
+        summary.totalLines += fileInfo.lines;
         
         // Update summary counts
-        this.updateSummary(structure.summary, fileInfo.type);
+        this.updateSummary(summary, fileInfo.type);
         
-        // Track directories
-        const dir = path.split('/').slice(0, -1).join('/');
-        if (dir) directorySet.add(dir);
+        // Update categories
+        categories[fileInfo.category] = (categories[fileInfo.category] || 0) + 1;
         
       } catch (error) {
         console.warn(`⚠️ Failed to analyze ${path}:`, error);
       }
     }
 
-    structure.directories = Array.from(directorySet).sort();
-    structure.summary.totalFiles = structure.files.length;
+    summary.totalFiles = files.length;
 
-    // Generate hierarchical directory structure
-    structure.directoryTree = this.generateDirectoryTree(structure.files);
-    
-    // Analyze feature modules
-    structure.features = this.analyzeFeatureModules(structure.files);
+    // Generate hierarchical directory structure and tree
+    const directoryTree = this.generateDirectoryTree(files);
+    const features = this.analyzeFeatureModules(files);
+    const treeStructure = this.generateCodebaseTree(files);
 
-    console.log('✅ Live codebase scan complete:', {
-      files: structure.files.length,
-      totalSize: this.formatBytes(structure.totalSize),
-      totalLines: structure.totalLines,
-      features: structure.features.length
-    });
-
-    return structure;
+    return {
+      summary,
+      files,
+      categories,
+      directoryTree,
+      features,
+      treeStructure
+    };
   }
 
   private async loadPrebuiltManifest(): Promise<CodebaseStructure> {
@@ -171,13 +156,7 @@ export class CodebaseScanner {
       if (response.ok) {
         const manifest = await response.json();
         console.log('📄 Loaded pre-built codebase manifest');
-        return {
-          ...manifest,
-          projectInfo: {
-            ...manifest.projectInfo,
-            environment: 'production' as const
-          }
-        };
+        return manifest;
       }
     } catch (error) {
       console.warn('⚠️ Failed to load pre-built manifest:', error);
@@ -186,27 +165,24 @@ export class CodebaseScanner {
     // Fallback: return minimal structure
     console.log('🔄 Using fallback minimal structure');
     return {
-      files: [],
-      totalSize: 0,
-      totalLines: 0,
-      directories: [],
-      directoryTree: [],
-      features: [],
       summary: {
+        totalFiles: 0,
+        totalSize: 0,
+        totalLines: 0,
         components: 0,
         pages: 0,
         hooks: 0,
         utilities: 0,
         edgeFunctions: 0,
         configFiles: 0,
-        totalFiles: 0
-      },
-      projectInfo: {
         framework: 'React + Vite + TypeScript',
-        typescript: true,
-        environment: 'production',
-        generatedAt: new Date().toISOString()
-      }
+        typescript: true
+      },
+      files: [],
+      categories: {},
+      directoryTree: [],
+      features: [],
+      treeStructure: ''
     };
   }
 
@@ -374,6 +350,182 @@ export class CodebaseScanner {
     });
     
     return rootNodes.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  private generateCodebaseTree(files: FileInfo[]): string {
+    // Exclude common build/dependency directories
+    const excludedDirs = ['node_modules', '.git', '.next', 'dist', 'build', 'coverage'];
+    const filteredFiles = files.filter(file => {
+      return !excludedDirs.some(excluded => file.path.includes(`/${excluded}/`));
+    });
+
+    // Build directory structure
+    const structure: { [key: string]: any } = {};
+    
+    filteredFiles.forEach(file => {
+      const parts = file.path.split('/').filter(p => p);
+      let current = structure;
+      
+      // Build nested structure
+      parts.forEach((part, index) => {
+        if (index === parts.length - 1) {
+          // This is a file
+          if (!current._files) current._files = [];
+          current._files.push({
+            name: part,
+            path: file.path,
+            type: file.type,
+            description: this.getFileDescription(file.path, file.type)
+          });
+        } else {
+          // This is a directory
+          if (!current[part]) {
+            current[part] = {};
+          }
+          current = current[part];
+        }
+      });
+    });
+
+    // Generate tree string
+    let treeOutput = '';
+    
+    const generateTreeRecursive = (obj: any, prefix: string = '', isLast: boolean = true, depth: number = 0): void => {
+      const entries = Object.entries(obj);
+      const directories = entries.filter(([key]) => key !== '_files');
+      const files = obj._files || [];
+      
+      // Sort directories and files alphabetically
+      directories.sort(([a], [b]) => a.localeCompare(b));
+      files.sort((a: any, b: any) => a.name.localeCompare(b.name));
+      
+      // Render directories first
+      directories.forEach(([dirName, dirContent], index) => {
+        const isLastDir = index === directories.length - 1 && files.length === 0;
+        const connector = isLastDir ? '└─' : '├─';
+        const nextPrefix = prefix + (isLastDir ? '    ' : '│   ');
+        
+        const description = this.getDirectoryDescription(dirName);
+        const displayName = `${dirName}/` + (description ? `                    ${description}` : '');
+        
+        treeOutput += `${prefix}${connector} ${displayName}\n`;
+        generateTreeRecursive(dirContent, nextPrefix, isLastDir, depth + 1);
+      });
+      
+      // Then render files
+      files.forEach((file: any, index: number) => {
+        const isLastFile = index === files.length - 1;
+        const connector = isLastFile ? '└─' : '├─';
+        
+        const description = file.description ? ` ${file.description}` : '';
+        treeOutput += `${prefix}${connector} ${file.name}${description}\n`;
+      });
+    };
+
+    // Start with root level
+    const rootEntries = Object.entries(structure);
+    const rootDirs = rootEntries.filter(([key]) => key !== '_files');
+    const rootFiles = structure._files || [];
+    
+    // Sort root level
+    rootDirs.sort(([a], [b]) => a.localeCompare(b));
+    rootFiles.sort((a: any, b: any) => a.name.localeCompare(b.name));
+    
+    // Generate root directories
+    rootDirs.forEach(([dirName, dirContent], index) => {
+      const isLast = index === rootDirs.length - 1 && rootFiles.length === 0;
+      const connector = isLast ? '└─' : '├─';
+      const nextPrefix = isLast ? '    ' : '│   ';
+      
+      const description = this.getDirectoryDescription(dirName);
+      const displayName = `${dirName}/` + (description ? `                      ${description}` : '');
+      
+      treeOutput += `${connector} ${displayName}\n`;
+      generateTreeRecursive(dirContent, nextPrefix, isLast, 1);
+    });
+    
+    // Generate root files
+    rootFiles.forEach((file: any, index: number) => {
+      const isLast = index === rootFiles.length - 1;
+      const connector = isLast ? '└─' : '├─';
+      
+      const description = file.description ? ` ${file.description}` : '';
+      treeOutput += `${connector} ${file.name}${description}\n`;
+    });
+
+    return treeOutput;
+  }
+
+  private getDirectoryDescription(dirName: string): string {
+    const descriptions: { [key: string]: string } = {
+      'src': '# Source code',
+      'features': '# Feature modules (business logic)',
+      'auth': '# Authentication & Security',
+      'components': '# Components',
+      'services': '# Business logic',
+      'utils': '# Utilities',
+      'hooks': '# React hooks',
+      'types': '# Type definitions',
+      'constants': '# Constants',
+      'user-management': '# User Administration',
+      'report-structures': '# Report Building & Management',
+      'coa-translation': '# Chart of Accounts Translation',
+      'coa-mapping': '# Chart of Accounts Mapping',
+      'data-security': '# Security & Access Control',
+      'imports': '# Data Import Pipeline',
+      'shared-pipeline': '# Reusable import infrastructure',
+      'report-viewer': '# Report Visualization',
+      'system-administration': '# System Admin Functions',
+      'entity-management': '# Multi-entity Management',
+      'file-management': '# File Handling',
+      'workflow': '# Workflow Management',
+      'audit-trails': '# Audit & Change Tracking',
+      'security-audit': '# Security Monitoring',
+      'ui': '# Design system components (shadcn/ui)',
+      'pages': '# Route components',
+      'shared': '# Shared utilities',
+      'integrations': '# External service integrations',
+      'supabase': '# Supabase integration',
+      'lib': '# Library utilities',
+      'app': '# App routing',
+      'routes': '# Route definitions',
+      'functions': '# Edge Functions',
+      'scripts': '# Build & development scripts',
+      'public': '# Static assets'
+    };
+    
+    return descriptions[dirName] || '';
+  }
+
+  private getFileDescription(filePath: string, fileType: string): string {
+    const fileName = filePath.split('/').pop() || '';
+    
+    // Special file descriptions
+    const specialFiles: { [key: string]: string } = {
+      'AppSidebar.tsx': '# Main navigation sidebar',
+      'ErrorBoundary.tsx': '# Error handling wrapper',
+      'Footer.tsx': '# Application footer',
+      'LanguageSelector.tsx': '# Language selection component',
+      'use-auth.tsx': '# Authentication state',
+      'use-mobile.tsx': '# Mobile detection',
+      'use-sidebar-state.tsx': '# Sidebar state management',
+      'use-toast.ts': '# Toast notifications',
+      'client.ts': '# Supabase client configuration',
+      'types.ts': '# Generated database types',
+      'utils.ts': '# Common utilities (cn, slugify)',
+      'app-routes.tsx': '# Route definitions',
+      'index.css': '# Global styles & design tokens',
+      'main.tsx': '# App entry point',
+      'App.tsx': '# Root component',
+      'config.toml': '# Supabase configuration',
+      'tailwind.config.ts': '# Tailwind CSS configuration',
+      'vite.config.ts': '# Vite build configuration',
+      'package.json': '# Dependencies & scripts',
+      'tsconfig.json': '# TypeScript configuration',
+      'eslint.config.js': '# ESLint rules'
+    };
+    
+    return specialFiles[fileName] || '';
   }
 
   private analyzeFeatureModules(files: FileInfo[]): FeatureModule[] {
