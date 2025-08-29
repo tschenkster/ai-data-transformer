@@ -118,7 +118,7 @@ serve(async (req) => {
 
     updateProgress('file_scanning', 20, 'Scanning codebase structure...');
 
-    // Scan codebase structure
+    // Scan codebase structure - start from current working directory
     const codebaseStructure = await scanCodebaseStructure();
     
     updateProgress('convention_validation', 50, 'Validating codebase conventions...');
@@ -261,6 +261,7 @@ serve(async (req) => {
 
 // Real codebase structure scanner
 async function scanCodebaseStructure(): Promise<any> {
+  console.log('Starting real codebase scan from:', Deno.cwd());
   const ignorePatterns = [
     '.git', '.lovable', 'node_modules', 'dist', 'build', '.next', 
     '.vite', '.cache', 'coverage', '.nyc_output', 'tmp', 'temp',
@@ -304,10 +305,34 @@ async function scanCodebaseStructure(): Promise<any> {
     });
   }
 
-  // Simulated file content analysis for Edge Functions
+  // Real file content analysis for Edge Functions
   async function getFileContent(filePath: string): Promise<{ content: string; lines: number; imports: string[]; exports: string[] }> {
-    // In Edge Functions, we can't read actual files, so return simulated data
-    return { content: '', lines: 0, imports: [], exports: [] };
+    try {
+      const content = await Deno.readTextFile(filePath);
+      const lines = content.split('\n').length;
+      
+      // Extract imports and exports
+      const imports: string[] = [];
+      const exports: string[] = [];
+      
+      const importRegex = /import\s+(?:(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)(?:\s*,\s*(?:\{[^}]*\}|\*\s+as\s+\w+|\w+))*\s+from\s+)?['"`]([^'"`]+)['"`]/g;
+      const exportRegex = /export\s+(?:default\s+)?(?:function\s+(\w+)|const\s+(\w+)|class\s+(\w+)|interface\s+(\w+)|type\s+(\w+)|\{[^}]*\})/g;
+      
+      let match;
+      while ((match = importRegex.exec(content)) !== null) {
+        imports.push(match[1]);
+      }
+      
+      while ((match = exportRegex.exec(content)) !== null) {
+        const exportName = match[1] || match[2] || match[3] || match[4] || match[5] || 'default';
+        exports.push(exportName);
+      }
+      
+      return { content, lines, imports, exports };
+    } catch (error) {
+      console.warn(`Failed to read file ${filePath}:`, error);
+      return { content: '', lines: 0, imports: [], exports: [] };
+    }
   }
 
   async function categorizeFile(filePath: string, fileName: string): Promise<string> {
@@ -332,18 +357,208 @@ async function scanCodebaseStructure(): Promise<any> {
   }
 
   async function scanDirectory(dirPath: string, relativePath = ''): Promise<void> {
-    // Note: In Edge Functions, we can't access project file system
-    // This function is disabled for serverless environment
-    console.warn(`Directory ${dirPath} not found, skipping`);
-    return;
+    try {
+      structure.scannedDirectories.push(dirPath);
+      console.log(`Scanning directory: ${dirPath}`);
+      
+      for await (const entry of Deno.readDir(dirPath)) {
+        const fullPath = `${dirPath}/${entry.name}`;
+        const currentRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+        
+        if (await shouldIgnoreFile(fullPath)) {
+          continue;
+        }
+        
+        if (entry.isDirectory) {
+          await scanDirectory(fullPath, currentRelativePath);
+        } else if (entry.isFile) {
+          totalFiles++;
+          
+          const fileInfo = await getFileContent(fullPath);
+          structure.totalLines += fileInfo.lines;
+          
+          const category = await categorizeFile(fullPath, entry.name);
+          
+          const fileData = {
+            path: fullPath,
+            relativePath: currentRelativePath,
+            name: entry.name,
+            size: fileInfo.content.length,
+            lines: fileInfo.lines,
+            category,
+            imports: fileInfo.imports,
+            exports: fileInfo.exports,
+            content: fileInfo.content.substring(0, 1000) // Store first 1000 chars for analysis
+          };
+          
+          // Categorize files into appropriate structure sections
+          if (fullPath.includes('/src/features/')) {
+            const featureName = fullPath.match(/\/src\/features\/([^\/]+)/)?.[1];
+            if (featureName) {
+              let feature = structure.features.find(f => f.name === featureName);
+              if (!feature) {
+                feature = { name: featureName, files: [], components: [], hooks: [], services: [], utils: [], types: [] };
+                structure.features.push(feature);
+              }
+              feature.files.push(fileData);
+              if (category === 'component') feature.components.push(fileData);
+              else if (category === 'hook') feature.hooks.push(fileData);
+              else if (category === 'service') feature.services.push(fileData);
+              else if (category === 'util') feature.utils.push(fileData);
+              else if (category === 'type') feature.types.push(fileData);
+            }
+          } else if (fullPath.includes('/src/pages/')) {
+            structure.pages.push(fileData);
+          } else if (fullPath.includes('/src/components/') && !fullPath.includes('/src/components/ui/')) {
+            structure.sharedComponents.push(fileData);
+          } else if (fullPath.includes('/supabase/functions/')) {
+            structure.edgeFunctions.push(fileData);
+          } else if (fullPath.includes('/scripts/')) {
+            structure.scripts.push(fileData);
+          } else if (fullPath.includes('/src/integrations/')) {
+            structure.integrations.push(fileData);
+          } else if (fullPath.includes('/docs/')) {
+            structure.docs.push(fileData);
+          } else if (category === 'config' || fullPath.match(/\.(config|rc)\.(js|ts|json)$/)) {
+            structure.configs.push(fileData);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to scan directory ${dirPath}:`, error);
+    }
   }
 
-  // Enhanced migrations scanning - simulated for serverless environment
+  // Enhanced migrations scanning
   async function scanSupabaseMigrations(): Promise<any[]> {
-    // In Edge Functions we cannot read local filesystem. Return an empty list.
-    console.log('No supabase/migrations directory found');
-    return [];
+    const migrations: any[] = [];
+    
+    // Try different possible paths for migrations
+    const possiblePaths = ['./supabase/migrations', '../supabase/migrations', '../../supabase/migrations'];
+    
+    for (const migrationsPath of possiblePaths) {
+      try {
+        for await (const entry of Deno.readDir(migrationsPath)) {
+          if (entry.isFile && entry.name.endsWith('.sql')) {
+            const filePath = `${migrationsPath}/${entry.name}`;
+            const content = await Deno.readTextFile(filePath);
+            
+            // Extract migration metadata
+            const timestampMatch = entry.name.match(/^(\d{14})/);
+            const nameMatch = entry.name.match(/^\d{14}_(.+)\.sql$/);
+            
+            migrations.push({
+              filename: entry.name,
+              timestamp: timestampMatch ? timestampMatch[1] : null,
+              name: nameMatch ? nameMatch[1].replace(/_/g, ' ') : entry.name,
+              path: filePath,
+              size: content.length,
+              lines: content.split('\n').length,
+              operations: extractSqlOperations(content)
+            });
+          }
+        }
+        
+        if (migrations.length > 0) {
+          console.log(`Found ${migrations.length} migration files in ${migrationsPath}`);
+          break; // Found migrations, stop looking
+        }
+      } catch (error) {
+        // Try next path
+        continue;
+      }
+    }
+    
+    if (migrations.length === 0) {
+      console.log('No migration files found in any expected location');
+    }
+    
+    return migrations.sort((a, b) => a.timestamp?.localeCompare(b.timestamp || '') || 0);
   }
+  
+  function extractSqlOperations(content: string): string[] {
+    const operations: string[] = [];
+    const lines = content.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim().toUpperCase();
+      if (trimmed.startsWith('CREATE TABLE')) operations.push('CREATE TABLE');
+      else if (trimmed.startsWith('ALTER TABLE')) operations.push('ALTER TABLE');
+      else if (trimmed.startsWith('DROP TABLE')) operations.push('DROP TABLE');
+      else if (trimmed.startsWith('CREATE INDEX')) operations.push('CREATE INDEX');
+      else if (trimmed.startsWith('CREATE FUNCTION')) operations.push('CREATE FUNCTION');
+      else if (trimmed.startsWith('CREATE TRIGGER')) operations.push('CREATE TRIGGER');
+      else if (trimmed.startsWith('CREATE POLICY')) operations.push('CREATE POLICY');
+      else if (trimmed.startsWith('INSERT INTO')) operations.push('INSERT');
+      else if (trimmed.startsWith('UPDATE ')) operations.push('UPDATE');
+      else if (trimmed.startsWith('DELETE FROM')) operations.push('DELETE');
+    }
+    
+    return [...new Set(operations)]; // Remove duplicates
+  }
+
+  // Start scanning from the project root
+  const rootPaths = ['.', '..', '../..'];
+  let projectRoot = '.';
+  
+  // Find the actual project root by looking for package.json
+  for (const path of rootPaths) {
+    try {
+      await Deno.stat(`${path}/package.json`);
+      projectRoot = path;
+      console.log(`Found project root at: ${path}`);
+      break;
+    } catch {
+      continue;
+    }
+  }
+
+  // Scan main directories
+  const directoriesToScan = [
+    `${projectRoot}/src`,
+    `${projectRoot}/supabase/functions`,
+    `${projectRoot}/scripts`,
+    `${projectRoot}/docs`
+  ];
+
+  for (const dir of directoriesToScan) {
+    await scanDirectory(dir);
+  }
+
+  // Scan config files in root
+  const configFilesToCheck = [
+    'package.json', 'vite.config.ts', 'tailwind.config.ts', 
+    'tsconfig.json', 'eslint.config.js', '.env.example'
+  ];
+  
+  for (const configFile of configFilesToCheck) {
+    try {
+      const configPath = `${projectRoot}/${configFile}`;
+      const stat = await Deno.stat(configPath);
+      if (stat.isFile) {
+        const content = await Deno.readTextFile(configPath);
+        structure.configs.push({
+          path: configPath,
+          name: configFile,
+          size: content.length,
+          lines: content.split('\n').length,
+          content: content.substring(0, 2000) // Store more content for config files
+        });
+        totalFiles++;
+      }
+    } catch {
+      // Config file doesn't exist, skip
+    }
+  }
+
+  // Scan migrations
+  const migrations = await scanSupabaseMigrations();
+
+  structure.totalFiles = totalFiles;
+  structure.migrations = migrations;
+
+  console.log(`Codebase scan complete: ${totalFiles} files, ${structure.totalLines} lines`);
+  return structure;
 
 
   // Enhanced configuration analysis
