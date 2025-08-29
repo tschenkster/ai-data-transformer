@@ -66,82 +66,176 @@ serve(async (req) => {
 
   try {
     console.log("Starting codebase documentation generation...");
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get authenticated user
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header provided');
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      throw new Error('Authentication failed');
+    
+    // Validate request method
+    if (req.method !== 'POST') {
+      console.error(`Invalid method: ${req.method}`);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Method not allowed',
+        message: 'Only POST requests are supported'
+      }), {
+        status: 405,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     console.log("[5%] initialization: Authenticating user and preparing session...");
 
-    // Get user account details
-    const { data: userAccount } = await supabase
-      .from('user_accounts')
-      .select('first_name, last_name, email')
-      .eq('supabase_user_uuid', user.id)
-      .single();
+    // Initialize Supabase client with validation
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase environment variables");
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Configuration error',
+        message: 'Missing required environment variables'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    const userName = userAccount 
-      ? `${userAccount.first_name || ''} ${userAccount.last_name || ''}`.trim() || userAccount.email
-      : user.email || 'Unknown User';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get user from auth header with validation
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error("Invalid or missing authorization header");
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'No authorization header',
+        message: 'Authentication required'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Authentication failed',
+        message: authError?.message || 'Invalid token'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get user account details with error handling
+    let userName = 'Unknown User';
+    let userUuid = user.id;
+    
+    try {
+      const { data: userAccount, error: userError } = await supabase
+        .from('user_accounts')
+        .select('user_uuid, first_name, last_name, email')
+        .eq('supabase_user_uuid', user.id)
+        .single();
+
+      if (userError) {
+        console.warn("User account lookup failed:", userError.message);
+        userName = user.email || 'Unknown User';
+      } else if (userAccount) {
+        userName = `${userAccount.first_name || ''} ${userAccount.last_name || ''}`.trim() || userAccount.email || user.email || 'Unknown User';
+        userUuid = userAccount.user_uuid || user.id;
+      }
+    } catch (err) {
+      console.warn("Error fetching user account:", err);
+      userName = user.email || 'Unknown User';
+    }
 
     console.log("[10%] versioning: Determining version number...");
 
-    // Determine version number
-    const { data: lastGeneration } = await supabase
-      .from('security_audit_logs')
-      .select('details')
-      .eq('action', 'codebase_documentation_generated')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    let versionNumber = 1;
-    if (lastGeneration?.details && typeof lastGeneration.details === 'object') {
-      const lastVersion = (lastGeneration.details as any).version;
-      if (lastVersion) {
-        const match = lastVersion.match(/v(\d+)/);
-        if (match) {
-          versionNumber = parseInt(match[1]) + 1;
-        }
+    // Determine version number with error handling
+    let version = 1;
+    try {
+      const { data: existingDocs, error: listError } = await supabase.storage
+        .from('codebase-docs')
+        .list('', { limit: 1000 });
+      
+      if (listError) {
+        console.warn("Error listing existing docs:", listError.message);
+        version = 1;
+      } else {
+        version = (existingDocs?.length || 0) + 1;
       }
+    } catch (err) {
+      console.warn("Error determining version:", err);
+      version = 1;
     }
-
-    const version = `v${versionNumber.toString().padStart(2, '0')}`;
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const filename = `CODEBASE-STRUCTURE_${dateStr}_${version}.md`;
 
     console.log("[20%] file_scanning: Processing codebase structure...");
 
-    // Get codebase structure from request body
+    // Get codebase structure from request body with comprehensive validation
     let codebaseStructure: CodebaseStructure;
-    
     try {
-      const requestBody = await req.json();
-      if (requestBody.structure) {
-        codebaseStructure = requestBody.structure;
-        console.log("Using provided codebase structure from client");
-        console.log(`Structure contains: ${codebaseStructure.files.length} files, ${formatBytes(codebaseStructure.summary.totalSize || 0)}`);
-      } else {
-        throw new Error("No codebase structure provided");
+      let bodyText = '';
+      try {
+        bodyText = await req.text();
+        console.log("Raw request body length:", bodyText.length);
+      } catch (textError) {
+        console.error("Error reading request body as text:", textError);
+        throw new Error("Failed to read request body");
       }
+
+      let body: any;
+      try {
+        body = JSON.parse(bodyText);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        throw new Error("Invalid JSON in request body");
+      }
+
+      const rawStructure = body.codebaseStructure || body;
+      console.log("Raw structure keys:", Object.keys(rawStructure || {}));
+      
+      if (!rawStructure || typeof rawStructure !== 'object') {
+        throw new Error("No valid codebase structure in request body");
+      }
+
+      // Validate and normalize the structure
+      codebaseStructure = {
+        files: Array.isArray(rawStructure.files) ? rawStructure.files : [],
+        summary: {
+          components: Number(rawStructure.summary?.components) || 0,
+          pages: Number(rawStructure.summary?.pages) || 0,
+          hooks: Number(rawStructure.summary?.hooks) || 0,
+          utilities: Number(rawStructure.summary?.utilities) || 0,
+          edgeFunctions: Number(rawStructure.summary?.edgeFunctions) || 0,
+          configFiles: Number(rawStructure.summary?.configFiles) || 0,
+          totalFiles: Number(rawStructure.summary?.totalFiles) || (Array.isArray(rawStructure.files) ? rawStructure.files.length : 0),
+          totalSize: Number(rawStructure.summary?.totalSize) || 0,
+          totalLines: Number(rawStructure.summary?.totalLines) || 0
+        },
+        categories: rawStructure.categories && typeof rawStructure.categories === 'object' ? rawStructure.categories : {},
+        directoryTree: Array.isArray(rawStructure.directoryTree) ? rawStructure.directoryTree : [],
+        features: Array.isArray(rawStructure.features) ? rawStructure.features : [],
+        treeStructure: typeof rawStructure.treeStructure === 'string' ? rawStructure.treeStructure : '',
+        projectInfo: {
+          framework: rawStructure.projectInfo?.framework || 'React + Vite + TypeScript',
+          typescript: Boolean(rawStructure.projectInfo?.typescript !== false),
+          environment: rawStructure.projectInfo?.environment || 'edge-function',
+          generatedAt: rawStructure.projectInfo?.generatedAt || new Date().toISOString()
+        }
+      };
+      
+      console.log("Using provided codebase structure from client");
+      console.log(`Structure contains: ${codebaseStructure.files.length} files, ${formatBytes(codebaseStructure.summary.totalSize || 0)}`);
+      console.log(`Features: ${codebaseStructure.features.length}, DirectoryTree: ${codebaseStructure.directoryTree.length}`);
+      
     } catch (error) {
       // Fallback to minimal structure if no valid structure provided
-      console.warn("No valid structure provided, using minimal fallback");
+      console.error("Error processing codebase structure:", error);
+      console.log("Using minimal fallback structure");
+      
       codebaseStructure = {
         files: [],
         summary: {
@@ -158,7 +252,7 @@ serve(async (req) => {
         categories: {},
         directoryTree: [],
         features: [],
-        treeStructure: '',
+        treeStructure: '# No structure available\n',
         projectInfo: {
           framework: 'React + Vite + TypeScript',
           typescript: true,
@@ -169,68 +263,113 @@ serve(async (req) => {
     }
 
     console.log("[50%] convention_validation: Validating codebase conventions...");
-
-    // Validate conventions
-    const violations = validateConventions(codebaseStructure);
-
-    console.log("[70%] documentation_generation: Generating documentation content...");
-
-    // Generate comprehensive markdown documentation
-    const documentation = generateDocumentation(codebaseStructure, violations, {
-      version,
-      generatedBy: userName,
-      generatedAt: new Date().toISOString()
-    });
-
-    console.log("[85%] docs_organization: Organizing /docs folder...");
-    console.log("Docs organization skipped in Edge Function environment");
-
-    console.log("[90%] file_upload: Uploading documentation to secure storage...");
-
-    // Upload to Supabase storage
-    const { error: uploadError } = await supabase.storage
-      .from('codebase-docs')
-      .upload(filename, new Blob([documentation], { type: 'text/markdown' }), {
-        contentType: 'text/markdown',
-        upsert: true
-      });
-
-    if (uploadError) {
-      throw new Error(`Upload failed: ${uploadError.message}`);
+    let violations: Array<{type: string, message: string, file?: string}> = [];
+    
+    try {
+      violations = validateConventions(codebaseStructure);
+      console.log(`Found ${violations.length} convention violations`);
+    } catch (validationError) {
+      console.error("Error validating conventions:", validationError);
+      violations = [{
+        type: 'validation_error',
+        message: `Convention validation failed: ${validationError.message}`
+      }];
     }
 
-    console.log(`File uploaded successfully: ${filename}`);
+    console.log("[75%] document_generation: Generating documentation content...");
+    let documentation: string;
+    
+    try {
+      documentation = generateDocumentation(codebaseStructure, violations);
+      console.log(`Generated documentation: ${documentation.length} characters`);
+    } catch (docError) {
+      console.error("Error generating documentation:", docError);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Documentation generation failed',
+        message: docError.message,
+        details: docError
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    // Log the generation event
-    await supabase.from('security_audit_logs').insert({
-      action: 'codebase_documentation_generated',
-      user_id: user.id,
-      details: {
-        version,
-        filename,
-        file_size: documentation.length,
-        file_count: codebaseStructure.files.length,
-        storage_path: filename,
-        upload_success: true,
-        violations_count: violations.length,
-        docs_organization: {
-          message: "Skipped in Edge Function environment",
-          broken_links: 0,
-          cleaned_files: 0,
-          updated_readme: false,
-          normalized_files: 0
-        },
-        generated_by_name: userName,
-        structure_complexity: {
-          pages_count: codebaseStructure.summary?.pages || 0,
-          features_count: codebaseStructure.features?.length || 0,
-          components_count: codebaseStructure.summary?.components || 0,
-          edge_functions_count: codebaseStructure.summary?.edgeFunctions || 0,
-          violations_breakdown: groupViolationsByType(violations)
-        },
-        generation_duration_ms: Date.now() - Date.now() // Simplified for now
+    console.log("[85%] file_upload: Uploading to storage...");
+    const filename = `CODEBASE-STRUCTURE_${new Date().toISOString().split('T')[0].replace(/-/g, '')}_v${version.toString().padStart(2, '0')}.md`;
+    
+    let uploadData: any;
+    try {
+      const { data, error: uploadError } = await supabase.storage
+        .from('codebase-docs')
+        .upload(filename, documentation, {
+          contentType: 'text/markdown'
+        });
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Upload failed',
+          message: uploadError.message,
+          details: uploadError
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
-    });
+      
+      uploadData = data;
+      console.log("Upload successful:", filename);
+    } catch (uploadException) {
+      console.error("Upload exception:", uploadException);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Upload exception',
+        message: uploadException.message || 'Unknown upload error'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log("[95%] audit_logging: Recording generation event...");
+    
+    // Log the generation event with error handling
+    try {
+      await supabase.from('security_audit_logs').insert({
+        action: 'codebase_documentation_generated',
+        user_id: user.id,
+        details: {
+          version,
+          filename,
+          file_size: documentation.length,
+          file_count: codebaseStructure.files.length,
+          storage_path: filename,
+          upload_success: true,
+          violations_count: violations.length,
+          docs_organization: {
+            message: "Skipped in Edge Function environment",
+            broken_links: 0,
+            cleaned_files: 0,
+            updated_readme: false,
+            normalized_files: 0
+          },
+          generated_by_name: userName,
+          structure_complexity: {
+            pages_count: codebaseStructure.summary?.pages || 0,
+            features_count: codebaseStructure.features?.length || 0,
+            components_count: codebaseStructure.summary?.components || 0,
+            edge_functions_count: codebaseStructure.summary?.edgeFunctions || 0,
+            violations_breakdown: groupViolationsByType(violations)
+          },
+          generation_duration_ms: Date.now() - Date.now() // Simplified for now
+        }
+      });
+    } catch (logError) {
+      console.warn("Failed to log generation event:", logError);
+      // Don't fail the entire operation if logging fails
+    }
 
     console.log("[100%] complete: Codebase documentation generated successfully!");
     console.log("Codebase documentation generation completed successfully");
@@ -254,13 +393,26 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error generating codebase documentation:', error);
+    console.error("Error generating codebase documentation:", error);
+    
+    // Log detailed error information
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    } else {
+      console.error("Non-Error exception:", JSON.stringify(error, null, 2));
+    }
+    
     return new Response(JSON.stringify({
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      details: 'Failed to generate codebase documentation'
+      success: false,
+      error: error?.message || 'Unknown error occurred',
+      message: 'Failed to generate codebase documentation',
+      errorType: error?.name || 'UnknownError',
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
@@ -332,17 +484,30 @@ function groupViolationsByType(violations: Array<{type: string, message: string,
 
 function generateDocumentation(
   structure: CodebaseStructure, 
-  violations: Array<{type: string, message: string, file?: string}>,
-  metadata: { version: string, generatedBy: string, generatedAt: string }
+  violations: Array<{type: string, message: string, file?: string}>
 ): string {
-  const { files, summary, projectInfo, directoryTree = [], features = [] } = structure;
+  // Defensive extraction with fallbacks
+  const files = Array.isArray(structure.files) ? structure.files : [];
+  const summary = structure.summary || {
+    components: 0, pages: 0, hooks: 0, utilities: 0, edgeFunctions: 0, 
+    configFiles: 0, totalFiles: 0, totalSize: 0, totalLines: 0
+  };
+  const projectInfo = structure.projectInfo || {
+    framework: 'React + Vite + TypeScript',
+    typescript: true,
+    environment: 'development',
+    generatedAt: new Date().toISOString()
+  };
+  const directoryTree = Array.isArray(structure.directoryTree) ? structure.directoryTree : [];
+  const features = Array.isArray(structure.features) ? structure.features : [];
+  const treeStructure = structure.treeStructure || '';
+  const categories = structure.categories || {};
   
   return `# Codebase Structure Documentation
 
 ## Document Information
-- **Version**: ${metadata.version}
-- **Generated At**: ${new Date(metadata.generatedAt).toLocaleString()}
-- **Generated By**: ${metadata.generatedBy}
+- **Generated At**: ${new Date().toLocaleString()}
+- **Generated By**: System
 - **Environment**: ${projectInfo.environment}
 
 ## Project Overview
@@ -370,38 +535,8 @@ ${generateCategoryBreakdown(files)}
 *Complete codebase structure with files organized by feature modules*
 
 \`\`\`
-${structure.treeStructure || 'Tree structure not available'}
+${treeStructure || 'Tree structure not available'}
 \`\`\`
-
-## Architecture Principles
-
-### 1. Feature-Based Organization
-- Each feature is self-contained in \`src/features/[feature-name]/\`
-- Features export their public API through \`index.ts\`
-- Internal structure follows consistent patterns:
-  - \`components/\` - React components
-  - \`hooks/\` - Custom hooks
-  - \`services/\` - Business logic & API calls
-  - \`utils/\` - Utility functions
-  - \`types/\` - TypeScript interfaces
-
-### 2. Design System
-- UI components library in \`src/components/ui/\`
-- Based on shadcn/ui with customizations
-- Design tokens defined in \`index.css\`
-- Semantic color system using CSS variables
-
-### 3. Backend Integration
-- Supabase for database, authentication, and storage
-- Row-Level Security (RLS) policies for data protection
-- Edge Functions for serverless compute
-- Type-safe database access with generated types
-
-### 4. Security Architecture
-- Multi-layered security with rate limiting
-- Password strength validation
-- Session management and audit logging
-- Role-based access control (RBAC)
 
 ## Key Features
 
@@ -414,14 +549,6 @@ ${files
   .sort((a, b) => b.lines - a.lines)
   .slice(0, 10)
   .map(file => `- **${file.path}** (${file.lines} lines, ${formatBytes(file.size)})`)
-  .join('\n')}
-
-### Most Complex Files (by imports)
-${files
-  .filter(f => f.imports && f.imports.length > 0)
-  .sort((a, b) => (b.imports?.length || 0) - (a.imports?.length || 0))
-  .slice(0, 5)
-  .map(file => `- **${file.path}** (${file.imports?.length || 0} imports)`)
   .join('\n')}
 
 ## Convention Compliance
@@ -437,11 +564,6 @@ ${violations.length === 0 ? '✅ No convention violations detected!' :
 
 ## Architecture Analysis
 
-### Component Architecture
-- Components are organized in feature-based modules
-- UI components are separated in \`/components/ui/\`
-- Shared components available across features
-
 ### File Organization Patterns
 ${analyzeFilePatterns(files)}
 
@@ -452,59 +574,6 @@ ${analyzeImportExportPatterns(files)}
 - **Average File Size**: ${files.length > 0 ? Math.round((summary.totalSize || 0) / files.length) : 0} bytes
 - **Average Lines per File**: ${files.length > 0 ? Math.round((summary.totalLines || 0) / files.length) : 0}
 - **TypeScript Coverage**: ${files.length > 0 ? Math.round((files.filter(f => f.extension === 'ts' || f.extension === 'tsx').length / files.length) * 100) : 0}%
-
-## Development Guidelines
-
-### File Naming Conventions
-- Components: PascalCase (e.g., \`UserManagementPanel.tsx\`)
-- Hooks: camelCase with \`use\` prefix (e.g., \`useUserManagement.ts\`)
-- Services: camelCase (e.g., \`userService.ts\`)
-- Utils: camelCase (e.g., \`lineItemUtils.ts\`)
-
-### Import/Export Patterns
-- Features export through barrel files (\`index.ts\`)
-- Use relative imports within features
-- Import from feature barrels externally
-- Avoid deep imports across feature boundaries
-
-### Component Architecture
-- Functional components with TypeScript
-- Custom hooks for state management
-- Service layer for API interactions
-- Error boundaries for fault tolerance
-
-### Database Conventions
-- Snake_case for database fields
-- UUIDs for primary keys where applicable
-- Integer IDs for sequential data
-- Timestamps with \`_at\` suffix (e.g., \`created_at\`)
-
-## Technology Stack Analysis
-
-### Frontend Technologies
-- **React**: Component-based UI framework
-- **TypeScript**: Type-safe JavaScript development
-- **Vite**: Fast build tool and dev server
-- **Tailwind CSS**: Utility-first CSS framework
-
-### Backend Technologies  
-- **Supabase**: Backend-as-a-Service platform
-- **Edge Functions**: Serverless functions (${summary.edgeFunctions} functions)
-- **PostgreSQL**: Database (via Supabase)
-
-### Development Tools
-- **Configuration Files**: ${summary.configFiles} files
-- **Utility Functions**: ${summary.utilities} files
-- **Custom Hooks**: ${summary.hooks} files
-
-## Security Features
-
-- Row-Level Security (RLS) on all database tables
-- Rate limiting on authentication endpoints
-- Password strength validation and security tips
-- Session monitoring and audit logging
-- Role-based access control with entity separation
-- Secure file upload with validation
 
 ## Recommendations
 
@@ -517,7 +586,7 @@ ${generateFileTypeChart(summary)}
 \`\`\`
 
 ---
-*This documentation was automatically generated by the Hybrid Codebase Documentation Generator ${metadata.version}*
+*This documentation was automatically generated by the Codebase Documentation Generator*
 *Scanned ${files.length} files across ${directoryTree.length} directories*
 *Features analyzed: ${features.length} modules*
 `;
@@ -654,42 +723,6 @@ function generateFileTypeChart(summary: CodebaseStructure['summary']): string {
     .join('\n');
 }
 
-function generateHierarchicalStructure(directoryTree: any[]): string {
-  if (!directoryTree || directoryTree.length === 0) {
-    return '```\n├── src/\n```';
-  }
-
-  function renderNode(node: any, indent = ''): string {
-    const branch = indent ? '├── ' : '';
-    let result = `${indent}${branch}${node.name}/\n`;
-    const nextIndent = indent + (indent ? '│   ' : '');
-
-    // Files
-    if (node.files && node.files.length > 0) {
-      node.files.forEach((file: any, i: number) => {
-        const fileName = file.path.split('/').pop();
-        result += `${nextIndent}${i === node.files.length - 1 && (!node.children || node.children.length === 0) ? '└── ' : '├── '}${fileName}\n`;
-      });
-    }
-
-    // Children
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child: any) => {
-        result += renderNode(child, nextIndent);
-      });
-    }
-
-    return result;
-  }
-
-  let output = '```\n';
-  directoryTree.forEach((root: any) => {
-    output += renderNode(root, '');
-  });
-  output += '```';
-  return output;
-}
-
 function generateFeatureAnalysis(features: any[]): string {
   if (!features || features.length === 0) {
     return '### No feature modules detected\n\nConsider organizing code into feature-based modules in `src/features/`';
@@ -698,14 +731,14 @@ function generateFeatureAnalysis(features: any[]): string {
   return features.map((f: any) => {
     const barFilled = '█'.repeat(Math.round(f.completeness / 10));
     const barEmpty = '░'.repeat(10 - Math.round(f.completeness / 10));
-    const components = f.components?.slice(0, 3).map((c: any) => c.path.split('/').pop()).join(', ');
+    const components = f.files?.components?.slice(0, 3).join(', ');
 
     return `### ${f.name} (${f.completeness}% complete)\n` +
-      (components ? `- **Components**: ${f.components.length} (e.g., ${components}${f.components.length > 3 ? `, +${f.components.length - 3} more` : ''})\n` : '') +
-      (f.services?.length ? `- **Services**: ${f.services.length}\n` : '') +
-      (f.hooks?.length ? `- **Hooks**: ${f.hooks.length}\n` : '') +
-      (f.types?.length ? `- **Types**: ${f.types.length}\n` : '') +
-      (f.utils?.length ? `- **Utils**: ${f.utils.length}\n` : '') +
+      (components ? `- **Components**: ${f.files?.components?.length || 0} (e.g., ${components}${f.files?.components?.length > 3 ? `, +${f.files.components.length - 3} more` : ''})\n` : '') +
+      (f.files?.services?.length ? `- **Services**: ${f.files.services.length}\n` : '') +
+      (f.files?.hooks?.length ? `- **Hooks**: ${f.files.hooks.length}\n` : '') +
+      (f.files?.types?.length ? `- **Types**: ${f.files.types.length}\n` : '') +
+      (f.files?.utils?.length ? `- **Utils**: ${f.files.utils.length}\n` : '') +
       `- **Structure**: ${f.hasIndex ? '✅' : '❌'} Index file\n` +
       `- **Completeness**: \`${barFilled + barEmpty}\` ${f.completeness}%\n`;
   }).join('\n');
