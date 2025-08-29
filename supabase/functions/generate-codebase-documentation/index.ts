@@ -257,42 +257,260 @@ serve(async (req) => {
   }
 });
 
-// Mock function to scan codebase structure
+// Real codebase structure scanner
 async function scanCodebaseStructure(): Promise<any> {
-  // In a real implementation, this would scan the actual file system
-  // For now, return a mock structure based on the current codebase
-  return {
-    totalFiles: 150,
-    features: [
-      { name: 'auth', path: 'src/features/auth', components: ['AuthRoute.tsx', 'ForgotPasswordForm.tsx'], hooks: [], services: ['securityService.ts'], types: [], utils: ['passwordValidation.ts'] },
-      { name: 'user-management', path: 'src/features/user-management', components: ['UserManagementPanel.tsx', 'UserFilters.tsx'], hooks: ['use-user-actions.ts'], services: ['userService.ts'], types: ['index.ts'], utils: [] },
-      { name: 'report-structures', path: 'src/features/report-structures', components: ['ReportStructureCard.tsx'], hooks: ['use-report-structures.ts'], services: ['reportStructureService.ts'], types: ['index.ts'], utils: ['lineItemUtils.ts'] },
-      { name: 'system-administration', path: 'src/features/system-administration', components: ['EntityManagement.tsx', 'SystemToolsLayout.tsx'], hooks: [], services: [], types: [], utils: [] }
-    ],
-    pages: [
-      { name: 'Dashboard.tsx', path: 'src/pages/Dashboard.tsx' },
-      { name: 'SystemTools.tsx', path: 'src/pages/SystemTools.tsx' },
-      { name: 'DatabaseDocumentation.tsx', path: 'src/pages/system-tools/DatabaseDocumentation.tsx' }
-    ],
-    sharedComponents: [
-      { name: 'button.tsx', path: 'src/components/ui/button.tsx' },
-      { name: 'card.tsx', path: 'src/components/ui/card.tsx' },
-      { name: 'AppSidebar.tsx', path: 'src/components/AppSidebar.tsx' }
-    ],
-    edgeFunctions: [
-      { name: 'generate-db-documentation', path: 'supabase/functions/generate-db-documentation' },
-      { name: 'translate-accounts', path: 'supabase/functions/translate-accounts' }
-    ],
-    scripts: [
-      { name: 'validate-conventions.js', path: 'scripts/validate-conventions.js' },
-      { name: 'validate-architecture.js', path: 'scripts/validate-architecture.js' }
-    ],
-    configs: [
-      { name: 'tailwind.config.ts', path: 'tailwind.config.ts' },
-      { name: 'vite.config.ts', path: 'vite.config.ts' },
-      { name: 'tsconfig.json', path: 'tsconfig.json' }
-    ]
+  const ignorePatterns = [
+    '.git', '.lovable', 'node_modules', 'dist', 'build', '.next', 
+    '.vite', '.cache', 'coverage', '.nyc_output', 'tmp', 'temp',
+    '.DS_Store', 'Thumbs.db', '*.log', '.env*', 'bun.lockb', 
+    'package-lock.json', '*.min.js', '*.min.css'
+  ];
+
+  const fileTypePatterns = {
+    components: /\.tsx$/,
+    hooks: /^use[A-Z].*\.(ts|tsx)$/,
+    services: /Service\.(ts|tsx)$/,
+    utils: /Utils?\.(ts|tsx)$|util\.(ts|tsx)$/,
+    types: /(types?|interfaces?)\.(ts|tsx)$|\.d\.ts$/,
+    tests: /\.(test|spec)\.(ts|tsx|js|jsx)$/,
+    configs: /\.(config|rc)\.(js|ts|json)$|^(\.eslint|\.prettier|tsconfig|vite\.config|tailwind\.config)/
   };
+
+  let totalFiles = 0;
+  const structure = {
+    features: [] as any[],
+    pages: [] as any[],
+    sharedComponents: [] as any[],
+    edgeFunctions: [] as any[],
+    scripts: [] as any[],
+    configs: [] as any[],
+    integrations: [] as any[],
+    docs: [] as any[],
+    totalFiles: 0,
+    totalLines: 0,
+    scannedDirectories: [] as string[]
+  };
+
+  async function shouldIgnoreFile(path: string): Promise<boolean> {
+    const fileName = path.split('/').pop() || '';
+    return ignorePatterns.some(pattern => {
+      if (pattern.includes('*')) {
+        const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+        return regex.test(fileName);
+      }
+      return fileName.includes(pattern) || path.includes(`/${pattern}/`);
+    });
+  }
+
+  async function getFileContent(filePath: string): Promise<{ content: string; lines: number; imports: string[]; exports: string[] }> {
+    try {
+      const content = await Deno.readTextFile(filePath);
+      const lines = content.split('\n').length;
+      
+      // Extract imports and exports
+      const imports: string[] = [];
+      const exports: string[] = [];
+      
+      // Match import statements
+      const importRegex = /import\s+.*?\s+from\s+['"`]([^'"`]+)['"`]/g;
+      let importMatch;
+      while ((importMatch = importRegex.exec(content)) !== null) {
+        imports.push(importMatch[1]);
+      }
+
+      // Match export statements
+      const exportRegex = /export\s+(?:default\s+)?(?:class|function|const|let|var|interface|type)\s+(\w+)/g;
+      let exportMatch;
+      while ((exportMatch = exportRegex.exec(content)) !== null) {
+        exports.push(exportMatch[1]);
+      }
+
+      return { content, lines, imports, exports };
+    } catch {
+      return { content: '', lines: 0, imports: [], exports: [] };
+    }
+  }
+
+  async function categorizeFile(filePath: string, fileName: string): Promise<string> {
+    if (fileTypePatterns.components.test(fileName)) return 'component';
+    if (fileTypePatterns.hooks.test(fileName)) return 'hook';
+    if (fileTypePatterns.services.test(fileName)) return 'service';
+    if (fileTypePatterns.utils.test(fileName)) return 'util';
+    if (fileTypePatterns.types.test(fileName)) return 'type';
+    if (fileTypePatterns.tests.test(fileName)) return 'test';
+    if (fileTypePatterns.configs.test(fileName)) return 'config';
+    if (fileName === 'index.ts' || fileName === 'index.tsx') return 'barrel';
+    
+    // Analyze content for better categorization
+    try {
+      const { content } = await getFileContent(filePath);
+      if (content.includes('export default function') && content.includes('return (')) return 'component';
+      if (content.includes('useState') || content.includes('useEffect')) return 'hook';
+      if (content.includes('interface ') || content.includes('type ')) return 'type';
+    } catch {}
+    
+    return 'other';
+  }
+
+  async function scanDirectory(dirPath: string, relativePath = ''): Promise<void> {
+    try {
+      const entries = [];
+      for await (const entry of Deno.readDir(dirPath)) {
+        entries.push(entry);
+      }
+
+      structure.scannedDirectories.push(relativePath || dirPath);
+
+      for (const entry of entries) {
+        const fullPath = `${dirPath}/${entry.name}`;
+        const relativeFullPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+
+        if (await shouldIgnoreFile(relativeFullPath)) continue;
+
+        if (entry.isFile) {
+          totalFiles++;
+          const category = await categorizeFile(fullPath, entry.name);
+          const fileDetails = await getFileContent(fullPath);
+          
+          structure.totalLines += fileDetails.lines;
+
+          const fileInfo = {
+            name: entry.name,
+            path: relativeFullPath,
+            category,
+            size: fileDetails.content.length,
+            lines: fileDetails.lines,
+            imports: fileDetails.imports,
+            exports: fileDetails.exports
+          };
+
+          // Categorize by location
+          if (relativeFullPath.startsWith('src/features/')) {
+            const featurePath = relativeFullPath.split('/');
+            const featureName = featurePath[2];
+            let feature = structure.features.find(f => f.name === featureName);
+            
+            if (!feature) {
+              feature = {
+                name: featureName,
+                path: `src/features/${featureName}`,
+                components: [],
+                hooks: [],
+                services: [],
+                utils: [],
+                types: [],
+                tests: [],
+                other: [],
+                hasIndex: false,
+                totalFiles: 0,
+                totalLines: 0
+              };
+              structure.features.push(feature);
+            }
+
+            feature.totalFiles++;
+            feature.totalLines += fileDetails.lines;
+
+            if (entry.name === 'index.ts' || entry.name === 'index.tsx') {
+              feature.hasIndex = true;
+            }
+
+            switch (category) {
+              case 'component': feature.components.push(fileInfo); break;
+              case 'hook': feature.hooks.push(fileInfo); break;
+              case 'service': feature.services.push(fileInfo); break;
+              case 'util': feature.utils.push(fileInfo); break;
+              case 'type': feature.types.push(fileInfo); break;
+              case 'test': feature.tests.push(fileInfo); break;
+              default: feature.other.push(fileInfo); break;
+            }
+          }
+          else if (relativeFullPath.startsWith('src/pages/')) {
+            structure.pages.push(fileInfo);
+          }
+          else if (relativeFullPath.startsWith('src/components/')) {
+            structure.sharedComponents.push(fileInfo);
+          }
+          else if (relativeFullPath.startsWith('supabase/functions/')) {
+            structure.edgeFunctions.push(fileInfo);
+          }
+          else if (relativeFullPath.startsWith('scripts/')) {
+            structure.scripts.push(fileInfo);
+          }
+          else if (relativeFullPath.startsWith('src/integrations/')) {
+            structure.integrations.push(fileInfo);
+          }
+          else if (relativeFullPath.startsWith('docs/')) {
+            structure.docs.push(fileInfo);
+          }
+          else if (category === 'config' || relativeFullPath.includes('config')) {
+            structure.configs.push(fileInfo);
+          }
+        }
+        else if (entry.isDirectory) {
+          await scanDirectory(fullPath, relativeFullPath);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to scan directory ${dirPath}:`, error);
+    }
+  }
+
+  // Scan main directories
+  const scanPaths = ['src', 'supabase', 'scripts', 'docs'];
+  
+  for (const scanPath of scanPaths) {
+    try {
+      const stat = await Deno.stat(scanPath);
+      if (stat.isDirectory) {
+        await scanDirectory(scanPath);
+      }
+    } catch {
+      console.warn(`Directory ${scanPath} not found, skipping`);
+    }
+  }
+
+  // Scan root config files
+  const rootFiles = [
+    'package.json', 'vite.config.ts', 'tailwind.config.ts', 'tsconfig.json',
+    'tsconfig.app.json', 'tsconfig.node.json', 'eslint.config.js',
+    'postcss.config.js', 'components.json', 'README.md'
+  ];
+
+  for (const fileName of rootFiles) {
+    try {
+      const stat = await Deno.stat(fileName);
+      if (stat.isFile && !await shouldIgnoreFile(fileName)) {
+        totalFiles++;
+        const fileDetails = await getFileContent(fileName);
+        structure.totalLines += fileDetails.lines;
+        
+        structure.configs.push({
+          name: fileName,
+          path: fileName,
+          category: 'config',
+          size: fileDetails.content.length,
+          lines: fileDetails.lines,
+          imports: fileDetails.imports,
+          exports: fileDetails.exports
+        });
+      }
+    } catch {
+      // File doesn't exist, skip
+    }
+  }
+
+  structure.totalFiles = totalFiles;
+
+  // Sort features by name
+  structure.features.sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Sort other arrays by path
+  ['pages', 'sharedComponents', 'edgeFunctions', 'scripts', 'configs', 'integrations', 'docs'].forEach(key => {
+    structure[key as keyof typeof structure].sort((a: any, b: any) => a.path.localeCompare(b.path));
+  });
+
+  return structure;
 }
 
 // Mock function to validate conventions
@@ -344,11 +562,14 @@ function generateCodebaseDocumentation(data: {
 3. [Feature Modules](#feature-modules)
 4. [Pages & Routing](#pages--routing)
 5. [Shared Components](#shared-components)
-6. [Edge Functions](#edge-functions)
-7. [Scripts & Tools](#scripts--tools)
-8. [Configuration Files](#configuration-files)
-9. [Convention Violations](#convention-violations)
-10. [Recommendations](#recommendations)
+6. [Integrations](#integrations)
+7. [Edge Functions](#edge-functions)
+8. [Scripts & Tools](#scripts--tools)
+9. [Configuration Files](#configuration-files)
+10. [Documentation Files](#documentation-files)
+11. [Convention Violations](#convention-violations)
+12. [Code Quality Metrics](#code-quality-metrics)
+13. [Recommendations](#recommendations)
 
 ---
 
@@ -357,11 +578,16 @@ function generateCodebaseDocumentation(data: {
 This document provides a comprehensive overview of the codebase structure as of ${new Date(generatedAt).toLocaleDateString()}.
 
 **Key Metrics:**
-- **Total Files:** ${structure.totalFiles}
+- **Total Files Scanned:** ${structure.totalFiles}
+- **Total Lines of Code:** ${structure.totalLines?.toLocaleString() || 'N/A'}
 - **Feature Modules:** ${structure.features?.length || 0}
 - **Pages:** ${structure.pages?.length || 0}
 - **Shared Components:** ${structure.sharedComponents?.length || 0}
 - **Edge Functions:** ${structure.edgeFunctions?.length || 0}
+- **Integrations:** ${structure.integrations?.length || 0}
+- **Scripts:** ${structure.scripts?.length || 0}
+- **Documentation Files:** ${structure.docs?.length || 0}
+- **Configuration Files:** ${structure.configs?.length || 0}
 - **Convention Violations:** ${violations.length} (${violations.filter(v => v.severity === 'error').length} errors, ${violations.filter(v => v.severity === 'warning').length} warnings)
 
 ---
@@ -376,6 +602,9 @@ The project follows a **feature-based architecture** with clear separation of co
 - **Build Tool:** Vite
 - **UI Components:** ShadCN UI + Custom components
 
+**Scanned Directories:**
+${structure.scannedDirectories?.map((dir: string) => `- ${dir || 'root'}`).join('\n') || 'None'}
+
 ---
 
 ## Feature Modules
@@ -384,13 +613,16 @@ The codebase is organized into feature modules located in \`src/features/\`:
 
 ${structure.features?.map((feature: any) => `
 ### ${feature.name}
-**Path:** \`${feature.path}\`
+**Path:** \`${feature.path}\`  
+**Files:** ${feature.totalFiles} | **Lines:** ${feature.totalLines?.toLocaleString() || 'N/A'} | **Has Index:** ${feature.hasIndex ? '✅' : '❌'}
 
-- **Components:** ${feature.components.length > 0 ? feature.components.join(', ') : 'None'}
-- **Hooks:** ${feature.hooks.length > 0 ? feature.hooks.join(', ') : 'None'}
-- **Services:** ${feature.services.length > 0 ? feature.services.join(', ') : 'None'}
-- **Types:** ${feature.types.length > 0 ? feature.types.join(', ') : 'None'}
-- **Utils:** ${feature.utils.length > 0 ? feature.utils.join(', ') : 'None'}
+- **Components (${feature.components?.length || 0}):** ${feature.components?.length > 0 ? feature.components.map((c: any) => c.name).join(', ') : 'None'}
+- **Hooks (${feature.hooks?.length || 0}):** ${feature.hooks?.length > 0 ? feature.hooks.map((h: any) => h.name).join(', ') : 'None'}
+- **Services (${feature.services?.length || 0}):** ${feature.services?.length > 0 ? feature.services.map((s: any) => s.name).join(', ') : 'None'}
+- **Types (${feature.types?.length || 0}):** ${feature.types?.length > 0 ? feature.types.map((t: any) => t.name).join(', ') : 'None'}
+- **Utils (${feature.utils?.length || 0}):** ${feature.utils?.length > 0 ? feature.utils.map((u: any) => u.name).join(', ') : 'None'}
+- **Tests (${feature.tests?.length || 0}):** ${feature.tests?.length > 0 ? feature.tests.map((t: any) => t.name).join(', ') : 'None'}
+- **Other (${feature.other?.length || 0}):** ${feature.other?.length > 0 ? feature.other.map((o: any) => o.name).join(', ') : 'None'}
 `).join('') || 'No features found'}
 
 ---
@@ -400,7 +632,8 @@ ${structure.features?.map((feature: any) => `
 Application pages located in \`src/pages/\`:
 
 ${structure.pages?.map((page: any) => `
-- **${page.name}** - \`${page.path}\`
+- **${page.name}** (\`${page.path}\`) - ${page.lines} lines, ${(page.size / 1024).toFixed(1)}KB
+  - **Imports:** ${page.imports?.length || 0} | **Exports:** ${page.exports?.length || 0}
 `).join('') || 'No pages found'}
 
 ---
@@ -410,8 +643,20 @@ ${structure.pages?.map((page: any) => `
 Reusable UI components in \`src/components/\`:
 
 ${structure.sharedComponents?.map((component: any) => `
-- **${component.name}** - \`${component.path}\`
+- **${component.name}** (\`${component.path}\`) - ${component.lines} lines, ${(component.size / 1024).toFixed(1)}KB
+  - **Category:** ${component.category} | **Imports:** ${component.imports?.length || 0} | **Exports:** ${component.exports?.length || 0}
 `).join('') || 'No shared components found'}
+
+---
+
+## Integrations
+
+External service integrations in \`src/integrations/\`:
+
+${structure.integrations?.map((integration: any) => `
+- **${integration.name}** (\`${integration.path}\`) - ${integration.lines} lines, ${(integration.size / 1024).toFixed(1)}KB
+  - **Category:** ${integration.category} | **Imports:** ${integration.imports?.length || 0} | **Exports:** ${integration.exports?.length || 0}
+`).join('') || 'No integrations found'}
 
 ---
 
@@ -420,7 +665,8 @@ ${structure.sharedComponents?.map((component: any) => `
 Supabase Edge Functions in \`supabase/functions/\`:
 
 ${structure.edgeFunctions?.map((func: any) => `
-- **${func.name}** - \`${func.path}\`
+- **${func.name}** (\`${func.path}\`) - ${func.lines} lines, ${(func.size / 1024).toFixed(1)}KB
+  - **Category:** ${func.category} | **Imports:** ${func.imports?.length || 0} | **Exports:** ${func.exports?.length || 0}
 `).join('') || 'No edge functions found'}
 
 ---
@@ -430,7 +676,8 @@ ${structure.edgeFunctions?.map((func: any) => `
 Development and build scripts in \`scripts/\`:
 
 ${structure.scripts?.map((script: any) => `
-- **${script.name}** - \`${script.path}\`
+- **${script.name}** (\`${script.path}\`) - ${script.lines} lines, ${(script.size / 1024).toFixed(1)}KB
+  - **Category:** ${script.category} | **Imports:** ${script.imports?.length || 0} | **Exports:** ${script.exports?.length || 0}
 `).join('') || 'No scripts found'}
 
 ---
@@ -440,8 +687,20 @@ ${structure.scripts?.map((script: any) => `
 Project configuration files:
 
 ${structure.configs?.map((config: any) => `
-- **${config.name}** - \`${config.path}\`
+- **${config.name}** (\`${config.path}\`) - ${config.lines} lines, ${(config.size / 1024).toFixed(1)}KB
+  - **Category:** ${config.category} | **Imports:** ${config.imports?.length || 0} | **Exports:** ${config.exports?.length || 0}
 `).join('') || 'No configuration files found'}
+
+---
+
+## Documentation Files
+
+Documentation in \`docs/\` folder:
+
+${structure.docs?.map((doc: any) => `
+- **${doc.name}** (\`${doc.path}\`) - ${doc.lines} lines, ${(doc.size / 1024).toFixed(1)}KB
+  - **Category:** ${doc.category}
+`).join('') || 'No documentation files found'}
 
 ---
 
@@ -465,16 +724,41 @@ ${violations.filter(v => v.severity === 'warning').map(v => `
 
 ---
 
+## Code Quality Metrics
+
+### File Distribution by Category
+- **Components:** ${[...structure.sharedComponents, ...structure.features.flatMap((f: any) => f.components || [])].length}
+- **Hooks:** ${structure.features.flatMap((f: any) => f.hooks || []).length}
+- **Services:** ${structure.features.flatMap((f: any) => f.services || []).length}
+- **Utils:** ${structure.features.flatMap((f: any) => f.utils || []).length}
+- **Types:** ${structure.features.flatMap((f: any) => f.types || []).length}
+- **Tests:** ${structure.features.flatMap((f: any) => f.tests || []).length}
+
+### Feature Module Quality
+${structure.features?.map((feature: any) => `
+- **${feature.name}:** ${feature.hasIndex ? 'Has proper barrel export' : '⚠️ Missing index.ts'} | Files: ${feature.totalFiles} | Lines: ${feature.totalLines?.toLocaleString() || 'N/A'}
+`).join('') || 'No features found'}
+
+### Large Files (>500 lines)
+${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).map((file: any) => `
+- **${file.name}** (\`${file.path}\`) - ${file.lines} lines
+`).join('') || 'None found'}
+
+---
+
 ## Recommendations
 
 1. **Address Convention Violations:** Fix the ${violations.length} identified violations to improve code consistency
 2. **Feature Isolation:** Ensure features don't import directly from other feature modules
 3. **Component Reusability:** Consider extracting common patterns into shared components
 4. **Documentation:** Keep this documentation up-to-date by regenerating regularly
+${structure.features.filter((f: any) => !f.hasIndex).length > 0 ? `5. **Missing Barrel Exports:** Add index.ts files to features: ${structure.features.filter((f: any) => !f.hasIndex).map((f: any) => f.name).join(', ')}` : ''}
+${[...structure.pages, ...structure.sharedComponents, ...structure.features.flatMap((f: any) => [...(f.components || []), ...(f.hooks || []), ...(f.services || []), ...(f.utils || []), ...(f.types || [])])].filter((file: any) => file.lines > 500).length > 0 ? `6. **Large Files:** Consider breaking down files with >500 lines for better maintainability` : ''}
 
 ---
 
-*Generated by Codebase Documentation Generator ${version}*
+*Generated by Codebase Documentation Generator ${version}*  
+*Total scan time: Real-time file system analysis*  
 *For questions or issues, contact the development team.*
 `;
 }
