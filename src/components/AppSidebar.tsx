@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface NavigationItem {
   title: string;
@@ -64,11 +65,13 @@ export function AppSidebar() {
   
   const currentPath = location.pathname;
   
-  // Auto-close sidebar on mobile when navigating
+  // Close sidebar on mobile when navigating (only when changing routes)
+  const previousPath = React.useRef(currentPath);
   React.useEffect(() => {
-    if (isMobile && open) {
+    if (isMobile && open && previousPath.current !== currentPath) {
       setOpen(false);
     }
+    previousPath.current = currentPath;
   }, [currentPath, isMobile, open, setOpen]);
   
   // Check if a path is active, including child paths
@@ -189,7 +192,7 @@ export function AppSidebar() {
             <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
               isActive(item.url) ? "text-primary" : ""
             }`} />
-            {open && <span className="truncate">{item.title}</span>}
+            {(open || isMobile) && <span className="truncate">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -213,7 +216,7 @@ export function AppSidebar() {
               }`}
             >
               <span className="truncate">{group.title}</span>
-              {open && (collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
+              {(open || isMobile) && (collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-1">
@@ -228,83 +231,102 @@ export function AppSidebar() {
     );
   };
 
-  return (
-    <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
-      <SidebarContent className="gap-0">
-        {/* Entity Selector at Top */}
-        {availableEntities.length > 1 && (
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <div className="px-2 py-2">
-                <EntitySelector />
-              </div>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-        
-        {/* Separator after Entity Selector if it exists */}
-        {availableEntities.length > 1 && <SidebarSeparator />}
-
-        {/* Primary Navigation */}
-        <SidebarGroup className="py-2">
+  // Shared sidebar content component
+  const sidebarContent = (
+    <SidebarContent className="gap-0">
+      {/* Entity Selector at Top */}
+      {availableEntities.length > 1 && (
+        <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" className="h-10">
-                  <NavLink to="/home" className={() => getNavClass('/home')}>
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
-                      isActive('/home') 
-                        ? "bg-primary text-primary-foreground shadow-sm" 
-                        : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}>
-                      <Home className="h-4 w-4" />
-                    </div>
-                    {open && (
-                      <div className="flex flex-col">
-                        <span className="font-medium">Home</span>
-                        <span className="text-xs text-muted-foreground">Welcome dashboard</span>
-                      </div>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <div className="px-2 py-2">
+              <EntitySelector />
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
+      )}
+      
+      {/* Separator after Entity Selector if it exists */}
+      {availableEntities.length > 1 && <SidebarSeparator />}
 
-        {/* Elegant separator */}
-        <div className="mx-4 my-2 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+      {/* Primary Navigation */}
+      <SidebarGroup className="py-2">
+        <SidebarGroupContent>
+          <SidebarMenu className="space-y-1">
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild size="lg" className="h-10">
+                <NavLink to="/home" className={() => getNavClass('/home')}>
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+                    isActive('/home') 
+                      ? "bg-primary text-primary-foreground shadow-sm" 
+                      : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}>
+                    <Home className="h-4 w-4" />
+                  </div>
+                  {(open || isMobile) && (
+                    <div className="flex flex-col">
+                      <span className="font-medium">Home</span>
+                      <span className="text-xs text-muted-foreground">Welcome dashboard</span>
+                    </div>
+                  )}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
 
-        {/* Collapsible Groups */}
-        {navigationGroups.map(renderCollapsibleGroup)}
+      {/* Elegant separator */}
+      <div className="mx-4 my-2 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
 
-        {/* Account Section */}
-        <SidebarSeparator />
-        <SidebarGroup>
-          <Collapsible open={!isGroupCollapsed('account')} onOpenChange={() => toggleGroup('account')}>
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-between h-auto p-2 font-medium text-sm text-muted-foreground hover:text-foreground"
-              >
-                <span className="truncate">Account</span>
-                {open && (isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-1">
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <AccountSection 
-                    open={open}
-                    isActive={isActive}
-                    getNavClass={getNavClass}
-                  />
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-      </SidebarContent>
+      {/* Collapsible Groups */}
+      {navigationGroups.map(renderCollapsibleGroup)}
+
+      {/* Account Section */}
+      <SidebarSeparator />
+      <SidebarGroup>
+        <Collapsible open={!isGroupCollapsed('account')} onOpenChange={() => toggleGroup('account')}>
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-between h-auto p-2 font-medium text-sm text-muted-foreground hover:text-foreground"
+            >
+              <span className="truncate">Account</span>
+              {(open || isMobile) && (isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-1">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <AccountSection 
+                  open={open || isMobile}
+                  isActive={isActive}
+                  getNavClass={getNavClass}
+                />
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </SidebarGroup>
+    </SidebarContent>
+  );
+
+  // Mobile: Use Sheet for overlay behavior
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="left" className="w-60 p-0">
+          <Sidebar className="w-full border-0">
+            {sidebarContent}
+          </Sidebar>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop: Use normal Sidebar
+  return (
+    <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
+      {sidebarContent}
     </Sidebar>
   );
 }
