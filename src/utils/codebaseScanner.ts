@@ -1,3 +1,23 @@
+export interface FeatureModule {
+  name: string;
+  path: string;
+  components: FileInfo[];
+  hooks: FileInfo[];
+  services: FileInfo[];
+  types: FileInfo[];
+  utils: FileInfo[];
+  hasIndex: boolean;
+  completeness: number; // 0-100 score
+}
+
+export interface DirectoryNode {
+  name: string;
+  path: string;
+  files: FileInfo[];
+  children: DirectoryNode[];
+  level: number;
+}
+
 interface FileInfo {
   path: string;
   size: number;
@@ -14,6 +34,8 @@ interface CodebaseStructure {
   totalSize: number;
   totalLines: number;
   directories: string[];
+  directoryTree: DirectoryNode[];
+  features: FeatureModule[];
   summary: {
     components: number;
     pages: number;
@@ -80,6 +102,8 @@ export class CodebaseScanner {
       totalSize: 0,
       totalLines: 0,
       directories: [],
+      directoryTree: [],
+      features: [],
       summary: {
         components: 0,
         pages: 0,
@@ -124,10 +148,17 @@ export class CodebaseScanner {
     structure.directories = Array.from(directorySet).sort();
     structure.summary.totalFiles = structure.files.length;
 
+    // Generate hierarchical directory structure
+    structure.directoryTree = this.generateDirectoryTree(structure.files);
+    
+    // Analyze feature modules
+    structure.features = this.analyzeFeatureModules(structure.files);
+
     console.log('✅ Live codebase scan complete:', {
       files: structure.files.length,
       totalSize: this.formatBytes(structure.totalSize),
-      totalLines: structure.totalLines
+      totalLines: structure.totalLines,
+      features: structure.features.length
     });
 
     return structure;
@@ -159,6 +190,8 @@ export class CodebaseScanner {
       totalSize: 0,
       totalLines: 0,
       directories: [],
+      directoryTree: [],
+      features: [],
       summary: {
         components: 0,
         pages: 0,
@@ -289,6 +322,107 @@ export class CodebaseScanner {
         summary.configFiles++;
         break;
     }
+  }
+
+  private generateDirectoryTree(files: FileInfo[]): DirectoryNode[] {
+    const rootNodes: DirectoryNode[] = [];
+    const nodeMap = new Map<string, DirectoryNode>();
+    
+    // Create all directory nodes
+    const allDirs = new Set<string>();
+    files.forEach(file => {
+      const parts = file.path.split('/').filter(p => p);
+      for (let i = 1; i <= parts.length; i++) {
+        const dirPath = '/' + parts.slice(0, i - 1).join('/');
+        if (dirPath !== '/') allDirs.add(dirPath);
+      }
+    });
+    
+    // Sort directories by depth and create nodes
+    const sortedDirs = Array.from(allDirs).sort((a, b) => {
+      const depthA = a.split('/').length;
+      const depthB = b.split('/').length;
+      return depthA - depthB;
+    });
+    
+    sortedDirs.forEach(dirPath => {
+      const parts = dirPath.split('/').filter(p => p);
+      const name = parts[parts.length - 1] || 'root';
+      const level = parts.length;
+      
+      const node: DirectoryNode = {
+        name,
+        path: dirPath,
+        files: files.filter(f => f.path.startsWith(dirPath + '/') && 
+          f.path.substring(dirPath.length + 1).indexOf('/') === -1),
+        children: [],
+        level
+      };
+      
+      nodeMap.set(dirPath, node);
+      
+      // Find parent and add as child
+      if (parts.length > 1) {
+        const parentPath = '/' + parts.slice(0, -1).join('/');
+        const parent = nodeMap.get(parentPath);
+        if (parent) {
+          parent.children.push(node);
+        }
+      } else {
+        rootNodes.push(node);
+      }
+    });
+    
+    return rootNodes.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  private analyzeFeatureModules(files: FileInfo[]): FeatureModule[] {
+    const featureFiles = files.filter(f => f.path.includes('/src/features/'));
+    const featureMap = new Map<string, FileInfo[]>();
+    
+    // Group files by feature
+    featureFiles.forEach(file => {
+      const match = file.path.match(/\/src\/features\/([^/]+)/);
+      if (match) {
+        const featureName = match[1];
+        if (!featureMap.has(featureName)) {
+          featureMap.set(featureName, []);
+        }
+        featureMap.get(featureName)!.push(file);
+      }
+    });
+    
+    // Analyze each feature
+    return Array.from(featureMap.entries()).map(([name, files]) => {
+      const featurePath = `/src/features/${name}`;
+      const components = files.filter(f => f.path.includes('/components/'));
+      const hooks = files.filter(f => f.path.includes('/hooks/') || f.path.includes('use-'));
+      const services = files.filter(f => f.path.includes('/services/'));
+      const types = files.filter(f => f.path.includes('/types/'));
+      const utils = files.filter(f => f.path.includes('/utils/'));
+      const hasIndex = files.some(f => f.path.endsWith('/index.ts') || f.path.endsWith('/index.tsx'));
+      
+      // Calculate completeness score
+      let completeness = 0;
+      if (components.length > 0) completeness += 30;
+      if (hasIndex) completeness += 20;
+      if (services.length > 0) completeness += 20;
+      if (hooks.length > 0) completeness += 15;
+      if (types.length > 0) completeness += 10;
+      if (utils.length > 0) completeness += 5;
+      
+      return {
+        name,
+        path: featurePath,
+        components,
+        hooks,
+        services,
+        types,
+        utils,
+        hasIndex,
+        completeness
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private formatBytes(bytes: number): string {
