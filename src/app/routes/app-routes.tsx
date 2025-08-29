@@ -22,6 +22,8 @@ import SystemAdministration from '@/pages/SystemAdministration';
 import SystemTools from '@/pages/SystemTools';
 import DatabaseDocumentation from '@/pages/system-tools/DatabaseDocumentation';
 import CodebaseDocumentation from '@/pages/system-tools/CodebaseDocumentation';
+import FileOrganizer from '@/pages/system-tools/FileOrganizer';
+import PerformanceAnalyzer from '@/pages/system-tools/PerformanceAnalyzer';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -85,18 +87,12 @@ export function AppRoutes() {
       } />
       <Route path="/admin/system-tools/file-organizer" element={
         <AuthRoute requireSuperAdmin>
-          <div className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">File Structure Organizer</h1>
-            <p className="text-muted-foreground">Coming soon - Organize and optimize codebase file structure</p>
-          </div>
+          <FileOrganizer />
         </AuthRoute>
       } />
       <Route path="/admin/system-tools/performance" element={
         <AuthRoute requireSuperAdmin>
-          <div className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">Database Performance Analyzer</h1>
-            <p className="text-muted-foreground">Coming soon - Analyze database performance and optimize queries</p>
-          </div>
+          <PerformanceAnalyzer />
         </AuthRoute>
       } />
       {/* Legacy redirect for old system admin route */}
