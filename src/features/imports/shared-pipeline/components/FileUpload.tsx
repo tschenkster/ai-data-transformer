@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
+import { FileSecurityValidator } from '@/shared/utils/fileSecurityUtils';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
@@ -280,6 +281,20 @@ export function FileUpload({ onFileProcessed, mode = 'accounts' }: FileUploadPro
     setUploadProgress(0);
 
     try {
+      // Enhanced security validation
+      await FileSecurityValidator.validateFile(file, {
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedMimeTypes: ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        allowedExtensions: ['.csv', '.xls', '.xlsx'],
+        checkMagicNumbers: true,
+        sanitizeFilename: true
+      });
+      
+      // Additional CSV content validation
+      if (file.name.endsWith('.csv')) {
+        await FileSecurityValidator.validateCSVContent(file);
+      }
+      
       setUploadProgress(25);
       
       let accounts: string[];

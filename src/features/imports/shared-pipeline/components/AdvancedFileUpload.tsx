@@ -14,8 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { FileSecurityValidator } from '@/shared/utils/fileSecurityUtils';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
+import * * XLSX from 'xlsx';
 
 interface ColumnMapping {
   dbColumn: string;
@@ -200,6 +201,29 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
+
+    try {
+      // Enhanced security validation before processing
+      await FileSecurityValidator.validateFile(file, {
+        maxSize: 10 * 1024 * 1024, // 10MB
+        allowedMimeTypes: ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        allowedExtensions: ['.csv', '.xls', '.xlsx'],
+        checkMagicNumbers: true,
+        sanitizeFilename: true
+      });
+      
+      // Additional CSV content validation
+      if (file.name.endsWith('.csv')) {
+        await FileSecurityValidator.validateCSVContent(file);
+      }
+    } catch (error) {
+      toast({
+        title: "File validation failed",
+        description: error instanceof Error ? error.message : "File validation failed",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setSelectedFile(file);
     setUploadProgress(25);

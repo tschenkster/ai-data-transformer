@@ -41,17 +41,33 @@ const renderApp = () => {
       setTimeout(renderApp, 1000);
     } else {
       console.error('Maximum crashes reached, showing fallback UI');
-      document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui;">
-          <div style="text-align: center; padding: 2rem;">
-            <h1 style="color: #dc2626; margin-bottom: 1rem;">Application Error</h1>
-            <p style="color: #6b7280; margin-bottom: 1rem;">The application has encountered a critical error and cannot continue.</p>
-            <button onclick="window.location.reload()" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.375rem; cursor: pointer;">
-              Reload Page
-            </button>
-          </div>
-        </div>
-      `;
+      // Secure error display - avoid XSS by using DOM manipulation instead of innerHTML
+      document.body.textContent = ''; // Clear existing content safely
+      
+      const errorContainer = document.createElement('div');
+      errorContainer.style.cssText = 'display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui;';
+      
+      const errorBox = document.createElement('div');
+      errorBox.style.cssText = 'text-align: center; padding: 2rem;';
+      
+      const title = document.createElement('h1');
+      title.style.cssText = 'color: #dc2626; margin-bottom: 1rem;';
+      title.textContent = 'Application Error';
+      
+      const message = document.createElement('p');
+      message.style.cssText = 'color: #6b7280; margin-bottom: 1rem;';
+      message.textContent = 'The application has encountered a critical error and cannot continue.';
+      
+      const reloadButton = document.createElement('button');
+      reloadButton.style.cssText = 'background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.375rem; cursor: pointer;';
+      reloadButton.textContent = 'Reload Page';
+      reloadButton.addEventListener('click', () => window.location.reload());
+      
+      errorBox.appendChild(title);
+      errorBox.appendChild(message);
+      errorBox.appendChild(reloadButton);
+      errorContainer.appendChild(errorBox);
+      document.body.appendChild(errorContainer);
     }
   }
 };
