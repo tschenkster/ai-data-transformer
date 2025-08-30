@@ -16,7 +16,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { FileSecurityValidator } from '@/shared/utils/fileSecurityUtils';
 import Papa from 'papaparse';
-import * * XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 
 interface ColumnMapping {
   dbColumn: string;
