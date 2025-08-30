@@ -74,28 +74,34 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+  // Create CSS custom properties safely using React.createElement
+  const styleElement = React.createElement('style', {
+    key: `chart-style-${id}`,
+    // Use textContent instead of dangerouslySetInnerHTML for safer CSS injection
+    children: Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        // Sanitize the CSS selector and validate color values
+        const sanitizedId = id.replace(/[^a-zA-Z0-9-_]/g, '')
+        const cssRules = colorConfig
+          .map(([key, itemConfig]) => {
+            const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color
+            // Validate color format (basic validation for HSL, RGB, hex)
+            if (!color || !/^(#[0-9a-fA-F]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-zA-Z]+)/.test(color)) {
+              return null
+            }
+            // Sanitize key to prevent CSS injection
+            const sanitizedKey = key.replace(/[^a-zA-Z0-9-_]/g, '')
+            return `  --color-${sanitizedKey}: ${color};`
+          })
+          .filter(Boolean)
+          .join('\n')
+        
+        return `${prefix} [data-chart="${sanitizedId}"] {\n${cssRules}\n}`
+      })
+      .join('\n')
   })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
+
+  return styleElement
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
