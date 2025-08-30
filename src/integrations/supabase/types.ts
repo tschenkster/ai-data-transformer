@@ -866,6 +866,10 @@ export type Database = {
         }
         Returns: Json
       }
+      can_delete_users: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_permission_conflicts: {
         Args: { p_user_uuid: string }
         Returns: {
@@ -1221,6 +1225,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_super_admin_user_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_user_deletable: {
+        Args: { target_user_uuid: string }
+        Returns: boolean
+      }
       is_valid_report_structure_lifecycle_transition: {
         Args: {
           p_from_status: Database["public"]["Enums"]["report_structure_lifecycle_status"]
@@ -1248,6 +1260,16 @@ export type Database = {
       }
       log_security_event: {
         Args: { p_action: string; p_details?: Json; p_target_user_id?: string }
+        Returns: string
+      }
+      log_security_event_enhanced: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_ip_address?: unknown
+          p_target_user_id?: string
+          p_user_agent?: string
+        }
         Returns: string
       }
       log_structure_change: {
@@ -1298,6 +1320,10 @@ export type Database = {
       user_has_entity_access: {
         Args: { p_entity_uuid: string; p_user_uuid: string }
         Returns: boolean
+      }
+      validate_user_input: {
+        Args: { input_text: string; max_length?: number }
+        Returns: string
       }
     }
     Enums: {

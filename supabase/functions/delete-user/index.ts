@@ -45,11 +45,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user is admin
-    const ADMIN_EMAILS = ['thomas@cfo-team.de'];
-    if (!ADMIN_EMAILS.includes(user.email || '')) {
+    // Check if user has super admin privileges using role-based system
+    const { data: hasPermission, error: permissionError } = await supabaseAnon
+      .rpc('can_delete_users');
+      
+    if (permissionError || !hasPermission) {
+      console.log(`Permission denied for user ${user.email}: ${permissionError?.message || 'No delete permission'}`);
       return new Response(
-        JSON.stringify({ error: 'Insufficient privileges' }),
+        JSON.stringify({ error: 'Insufficient privileges - super admin required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -65,9 +68,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Prevent deletion of super admin accounts
-    const SUPER_ADMIN_EMAILS = ['thomas@cfo-team.de'];
-    if (SUPER_ADMIN_EMAILS.includes(userEmail)) {
+    // Check if target user can be deleted (prevent deletion of other super admins)
+    const { data: isDeletable, error: deletableError } = await supabaseAnon
+      .rpc('is_user_deletable', { target_user_uuid: userIdToDelete });
+      
+    if (deletableError || !isDeletable) {
+      console.log(`Cannot delete user ${userEmail}: ${deletableError?.message || 'User is not deletable'}`);
       return new Response(
         JSON.stringify({ error: 'Super admin accounts cannot be deleted to prevent system lockout' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -153,6 +159,21 @@ Deno.serve(async (req) => {
         );
       }
     }
+
+    // Enhanced security logging
+    await supabaseAdmin
+      .rpc('log_security_event_enhanced', {
+        p_action: 'user_deleted',
+        p_target_user_id: userAccountData.supabase_user_uuid,
+        p_details: {
+          deleted_user_email: userEmail,
+          deleted_user_uuid: userIdToDelete,
+          deletion_method: deletionMessage,
+          deleted_by_email: user.email
+        },
+        p_ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+        p_user_agent: req.headers.get('user-agent')
+      });
 
     console.log(`User ${userEmail} (${userIdToDelete}) deleted successfully by ${user.email}. ${deletionMessage}`);
 

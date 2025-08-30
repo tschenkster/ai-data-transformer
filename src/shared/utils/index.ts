@@ -8,3 +8,4 @@ export {
   type ProductionReadinessResult
 } from './validation';
 export { slugifyToKey, capitalize, camelToKebab, kebabToCamel } from './string-utils';
+export { InputValidator, type ValidationOptions } from './inputValidation';

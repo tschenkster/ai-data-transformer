@@ -1,5 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { UserAccount, UserFilters } from '@/features/user-management/types';
+import { InputValidator } from '@/shared/utils/inputValidation';
+import { ErrorHandler } from '@/shared/utils/errorHandling';
 
 export class UserService {
   static async fetchUsers(isSuperAdmin: boolean, userUuid?: string): Promise<UserAccount[]> {
@@ -46,22 +48,49 @@ export class UserService {
     userUuid: string,
     updates: { firstName: string; lastName: string }
   ): Promise<void> {
-    const { error } = await supabase
-      .from('user_accounts')
-      .update({
-        first_name: updates.firstName,
-        last_name: updates.lastName
-      })
-      .eq('user_uuid', userUuid);
+    try {
+      // Validate and sanitize inputs
+      const validatedUuid = InputValidator.validateUuid(userUuid, 'User UUID');
+      const firstName = InputValidator.validateText(updates.firstName, 'First name', {
+        maxLength: 50,
+        required: false
+      });
+      const lastName = InputValidator.validateText(updates.lastName, 'Last name', {
+        maxLength: 50,
+        required: false
+      });
 
-    if (error) throw error;
+      const { error } = await supabase
+        .from('user_accounts')
+        .update({
+          first_name: firstName,
+          last_name: lastName
+        })
+        .eq('user_uuid', validatedUuid);
+
+      if (error) throw error;
+    } catch (validationError) {
+      ErrorHandler.logError('UserService.updateUser', validationError);
+      throw validationError;
+    }
   }
 
   static async deleteUser(userUuid: string): Promise<void> {
+    // Fetch user details for proper deletion request
+    const { data: userAccount, error: fetchError } = await supabase
+      .from('user_accounts')
+      .select('user_uuid, email')
+      .eq('user_uuid', userUuid)
+      .single();
+
+    if (fetchError || !userAccount) {
+      throw new Error(`User account not found: ${fetchError?.message || 'Unknown error'}`);
+    }
+
     const { error } = await supabase.functions.invoke('delete-user', {
       body: { 
-        userUuid: userUuid,
-        forceDelete: true,
+        userAccountUuid: userAccount.user_uuid,
+        userEmail: userAccount.email,
         reason: 'Deleted by administrator'
       }
     });
@@ -70,15 +99,27 @@ export class UserService {
   }
 
   static filterUsers(users: UserAccount[], filters: UserFilters): UserAccount[] {
-    return users.filter(user => {
-      const matchesSearch = filters.search === '' || 
-        user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-        `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase().includes(filters.search.toLowerCase());
+    try {
+      // Sanitize search input to prevent XSS
+      const sanitizedSearch = InputValidator.validateSearchQuery(filters.search);
       
-      const matchesStatus = filters.status === 'all' || user.user_status === filters.status;
-      
-      return matchesSearch && matchesStatus;
-    });
+      return users.filter(user => {
+        const matchesSearch = sanitizedSearch === '' || 
+          user.email.toLowerCase().includes(sanitizedSearch.toLowerCase()) ||
+          `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase().includes(sanitizedSearch.toLowerCase());
+        
+        const matchesStatus = filters.status === 'all' || user.user_status === filters.status;
+        
+        return matchesSearch && matchesStatus;
+      });
+    } catch (error) {
+      ErrorHandler.logWarning('UserService.filterUsers', 'Search filter validation failed', error);
+      // Return unfiltered users if search validation fails
+      return users.filter(user => {
+        const matchesStatus = filters.status === 'all' || user.user_status === filters.status;
+        return matchesStatus;
+      });
+    }
   }
 
   static calculateUserStats(users: UserAccount[]) {
