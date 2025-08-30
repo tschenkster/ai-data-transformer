@@ -9,3 +9,4 @@ export {
 } from './validation';
 export { slugifyToKey, capitalize, camelToKebab, kebabToCamel } from './string-utils';
 export { InputValidator, type ValidationOptions } from './inputValidation';
+export { FileSecurityValidator, type FileSecurityOptions } from './fileSecurityUtils';
