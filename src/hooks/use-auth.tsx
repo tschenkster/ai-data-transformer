@@ -405,13 +405,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Log failed login attempt
         await supabase.rpc('enhanced_log_security_event', {
           p_action: 'failed_login_attempt',
-          p_details: {
+          p_additional_data: {
             email,
             ip_address: ipAddress,
             user_agent: userAgent,
             timestamp: new Date().toISOString()
           },
-          p_identifier: email
+          p_ip_address: ipAddress,
+          p_user_agent: userAgent
         });
 
         toast({
@@ -424,11 +425,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await supabase.rpc('enhanced_log_security_event', {
           p_action: 'login_success',
           p_target_user_id: user?.id || null,
-          p_details: {
+          p_additional_data: {
             ip_address: ipAddress,
             user_agent: userAgent,
             timestamp: new Date().toISOString()
-          }
+          },
+          p_ip_address: ipAddress,
+          p_user_agent: userAgent
         });
       }
 
@@ -498,7 +501,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.rpc('enhanced_log_security_event', {
         p_action: action,
         p_target_user_id: targetUserId || null,
-        p_details: details || null
+        p_additional_data: details || null
       });
     } catch (error) {
       console.error('Failed to log security event:', error);

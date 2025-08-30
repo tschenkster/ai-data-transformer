@@ -101,12 +101,10 @@ export class EnhancedSecurityService {
         { maxLength: 100, required: true }
       );
 
-      const { error } = await supabase.rpc('log_security_event_enhanced', {
+      const { error } = await supabase.rpc('log_security_event', {
         p_action: sanitizedAction,
         p_target_user_id: eventDetails.targetUserId || null,
-        p_details: eventDetails.additionalData || {},
-        p_ip_address: eventDetails.ipAddress || null,
-        p_user_agent: eventDetails.userAgent || null
+        p_additional_data: eventDetails.additionalData || {}
       });
 
       if (error) {

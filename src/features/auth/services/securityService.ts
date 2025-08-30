@@ -81,8 +81,8 @@ export const SecurityService = {
       const { error } = await supabase.rpc('enhanced_log_security_event', {
         p_action: event.action,
         p_target_user_id: event.target_user_id || null,
-        p_details: event.details || null,
-        p_identifier: event.details?.identifier || null
+        p_additional_data: event.details || null,
+        p_ip_address: event.details?.identifier || null
       });
 
       if (error) {

@@ -902,19 +902,20 @@ export type Database = {
       }
       enhanced_check_rate_limit: {
         Args: {
-          p_identifier: string
+          p_identifier?: string
           p_max_attempts?: number
           p_operation_type: string
           p_window_minutes?: number
         }
-        Returns: boolean
+        Returns: Json
       }
       enhanced_log_security_event: {
         Args: {
           p_action: string
-          p_details?: Json
-          p_identifier?: string
+          p_additional_data?: Json
+          p_ip_address?: string
           p_target_user_id?: string
+          p_user_agent?: string
         }
         Returns: string
       }
@@ -1259,7 +1260,11 @@ export type Database = {
         Returns: undefined
       }
       log_security_event: {
-        Args: { p_action: string; p_details?: Json; p_target_user_id?: string }
+        Args: {
+          p_action: string
+          p_additional_data?: Json
+          p_target_user_id?: string
+        }
         Returns: string
       }
       log_security_event_enhanced: {
