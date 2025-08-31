@@ -10,7 +10,7 @@ export function SystemToolsBreadcrumb({ toolId, toolTitle }: SystemToolsBreadcru
   return (
     <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
       <Link 
-        to="/home" 
+        to="/start" 
         className="flex items-center hover:text-foreground transition-colors"
       >
         <Home className="h-4 w-4" />

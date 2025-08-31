@@ -19,7 +19,7 @@ export default function EntityManagementPage() {
   );
 
   const adminCrumbs = [
-    { path: '/home', label: 'Home' },
+    { path: '/start', label: 'Start' },
     { path: '/admin', label: 'System Administration' },
     { path: '/admin/entity-management', label: 'Entity Management' }
   ];

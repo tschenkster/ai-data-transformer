@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthRoute } from '@/features/auth';
 
 // Page imports
-import Home from '@/pages/Home';
+import Start from '@/pages/Start';
 import Dashboard from '@/pages/Dashboard';
 import Admin from '@/pages/Admin';
 import UserProfileManagement from '@/pages/UserProfileManagement';
@@ -29,9 +29,9 @@ import NotFound from '@/pages/NotFound';
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/home" element={
+      <Route path="/start" element={
         <AuthRoute>
-          <Home />
+          <Start />
         </AuthRoute>
       } />
       <Route path="/dashboard" element={
@@ -143,10 +143,10 @@ export function AppRoutes() {
       <Route path="/memory" element={<Navigate to="/admin/memory-maintenance" replace />} />
 
       {/* Redirect auth paths when already authenticated */}
-      <Route path="/auth" element={<Navigate to="/home" replace />} />
-      <Route path="/auth/callback" element={<Navigate to="/home" replace />} />
+      <Route path="/auth" element={<Navigate to="/start" replace />} />
+      <Route path="/auth/callback" element={<Navigate to="/start" replace />} />
       
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/" element={<Navigate to="/start" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

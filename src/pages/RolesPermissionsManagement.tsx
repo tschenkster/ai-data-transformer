@@ -19,7 +19,7 @@ export default function RolesPermissionsManagement() {
   );
 
   const adminCrumbs = [
-    { path: '/home', label: 'Home' },
+    { path: '/start', label: 'Start' },
     { path: '/admin', label: 'System Administration' },
     { path: '/admin/roles-permissions-management', label: 'Roles & Permissions Management' }
   ];
