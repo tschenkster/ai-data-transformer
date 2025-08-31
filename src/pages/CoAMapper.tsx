@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 
 export default function CoAMapperPage() {
   const breadcrumbItems = [
-    { path: '/home', label: 'Home' },
+    { path: '/start', label: 'Start' },
     { path: '/coa-mapper', label: 'CoA Mapper', icon: MapPin }
   ];
 

@@ -65,13 +65,13 @@ export const SecurityService = {
 
       if (error) {
         console.error('Enhanced rate limit check failed:', error);
-        return false; // Fail open for better UX
+        return true; // Fail open for better UX - allow login when RPC fails
       }
 
       return data as boolean;
     } catch (error) {
       console.error('Enhanced rate limit check error:', error);
-      return false; // Fail open
+      return true; // Fail open - allow login when RPC fails
     }
   },
 

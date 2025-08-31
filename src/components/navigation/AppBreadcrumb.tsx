@@ -23,8 +23,8 @@ interface AppBreadcrumbProps {
 }
 
 const DEFAULT_ROUTES: Record<string, BreadcrumbConfig> = {
-  '/': { path: '/', label: 'Home', icon: Home },
-  '/home': { path: '/home', label: 'Home', icon: Home },
+  '/': { path: '/', label: 'Start', icon: Home },
+  '/start': { path: '/start', label: 'Start', icon: Home },
   '/dashboard': { path: '/dashboard', label: 'Dashboard' },
   '/admin': { path: '/admin', label: 'System Administration' },
   '/admin/user-profile-management': { path: '/admin/user-profile-management', label: 'User Profile Management' },
@@ -49,7 +49,7 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbConfig[] {
   const breadcrumbs: BreadcrumbConfig[] = [];
   
   // Always start with home
-  breadcrumbs.push(DEFAULT_ROUTES['/home'] || { path: '/home', label: 'Home', icon: Home });
+  breadcrumbs.push(DEFAULT_ROUTES['/start'] || { path: '/start', label: 'Start', icon: Home });
   
   // Build path segments
   let currentPath = '';

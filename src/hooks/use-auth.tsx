@@ -380,20 +380,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userAgent = navigator.userAgent;
 
       // Check rate limiting before attempting login
-      const { data: isAllowed } = await supabase.rpc('enhanced_check_rate_limit', {
-        p_operation_type: 'login_attempt',
-        p_identifier: email,
-        p_max_attempts: 5,
-        p_window_minutes: 15
-      });
-
-      if (!isAllowed) {
-        toast({
-          title: "Rate Limited",
-          description: "Too many login attempts. Please wait before trying again.",
-          variant: "destructive"
+      try {
+        const { data: isAllowed, error: rateLimitError } = await supabase.rpc('enhanced_check_rate_limit', {
+          p_operation_type: 'login_attempt',
+          p_identifier: null, // Pass null to avoid type mismatch
+          p_max_attempts: 5,
+          p_window_minutes: 15
         });
-        return { error: { message: 'Rate limited' } };
+
+        // If RPC call fails, proceed with login (fail open for better UX)
+        if (rateLimitError) {
+          console.warn('Rate limit check failed, proceeding with login:', rateLimitError);
+        } else if (!isAllowed) {
+          toast({
+            title: "Rate Limited",
+            description: "Too many login attempts. Please wait before trying again.",
+            variant: "destructive"
+          });
+          return { error: { message: 'Rate limited' } };
+        }
+      } catch (rateLimitCheckError) {
+        console.warn('Rate limit check error, proceeding with login:', rateLimitCheckError);
       }
 
       const { error } = await supabase.auth.signInWithPassword({

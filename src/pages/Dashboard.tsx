@@ -188,7 +188,7 @@ export default function Dashboard() {
   );
 
   const adminCrumbs = [
-    { path: '/home', label: 'Home' },
+    { path: '/start', label: 'Start' },
     { path: '/admin', label: 'System Administration' },
     { path: '/dashboard', label: 'Dashboard' }
   ];

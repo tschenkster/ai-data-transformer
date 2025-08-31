@@ -28,7 +28,7 @@ export function SystemToolsLayout({
   };
 
   const breadcrumbItems = [
-    { path: '/home', label: 'Home' },
+    { path: '/start', label: 'Start' },
     { path: '/admin', label: 'System Administration' },
     { path: '/admin/system-tools', label: 'System Tools' },
     { path: toolPaths[toolId] || `/admin/system-tools/${toolId}`, label: toolTitle }

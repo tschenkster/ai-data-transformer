@@ -28,7 +28,7 @@ export default function Auth() {
 
   // Redirect if user is already logged in and approved
   if (user && isApproved) {
-    navigate('/home');
+    navigate('/start');
     return null;
   }
 
@@ -41,7 +41,7 @@ export default function Auth() {
     setLoading(false);
     
     if (!error) {
-      navigate('/home');
+      navigate('/start');
     }
   };
 

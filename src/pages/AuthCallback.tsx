@@ -75,7 +75,7 @@ export default function AuthCallback() {
           setStatus('success');
           setMessage('Email confirmed successfully! Redirecting to your dashboard...');
           setTimeout(() => {
-            navigate('/home');
+            navigate('/start');
           }, 1200);
         } else {
           setStatus('error');

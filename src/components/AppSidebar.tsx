@@ -243,11 +243,11 @@ export function AppSidebar() {
       
       {/* Primary Navigation */}
       <div className="space-y-2">
-        <NavLink to="/home" className={() => getNavClass('/home')}>
+        <NavLink to="/start" className={() => getNavClass('/start')}>
           <div className="flex items-center gap-3 p-3 rounded-lg">
-            <Home className={`h-5 w-5 ${isActive('/home') ? "text-primary" : ""}`} />
+            <Home className={`h-5 w-5 ${isActive('/start') ? "text-primary" : ""}`} />
             <div className="flex flex-col">
-              <span className="font-medium">Home</span>
+              <span className="font-medium">Start</span>
               <span className="text-xs text-muted-foreground">Welcome dashboard</span>
             </div>
           </div>
@@ -348,9 +348,9 @@ export function AppSidebar() {
           <SidebarMenu className="space-y-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild size="lg" className="h-10">
-                <NavLink to="/home" className={() => getNavClass('/home')}>
+                <NavLink to="/start" className={() => getNavClass('/start')}>
                   <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
-                    isActive('/home') 
+                    isActive('/start') 
                       ? "bg-primary text-primary-foreground shadow-sm" 
                       : "bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   }`}>
