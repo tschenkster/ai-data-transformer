@@ -10,12 +10,16 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { AppRoutes } from "@/app/routes/app-routes";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import Homepage from "./pages/Homepage";
+import Pricing from "./pages/Pricing";
+import Register from "./pages/Register";
+import Convert from "./pages/Convert";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
-function AuthenticatedRoutes() {
+function AppContent() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -29,35 +33,40 @@ function AuthenticatedRoutes() {
     );
   }
 
-  // Auth route doesn't need sidebar
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="*" element={<Navigate to="/auth" replace />} />
-      </Routes>
-    );
-  }
-
-  // Authenticated routes with sidebar
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full">
-        {/* Global header with sidebar trigger */}
-        <header className="h-12 flex items-center border-b bg-background px-4 md:hidden">
-          <SidebarTrigger className="mr-2" />
-          <h1 className="text-lg font-semibold">Data Transformer</h1>
-        </header>
-        
-        <div className="flex flex-1 w-full">
-          <AppSidebar />
-          <main className="flex-1 overflow-auto">
-            <AppRoutes />
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<Homepage />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/convert" element={<Convert />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      
+      {/* Protected routes */}
+      {user ? (
+        <Route path="/*" element={
+          <SidebarProvider>
+            <div className="min-h-screen flex flex-col w-full">
+              {/* Global header with sidebar trigger */}
+              <header className="h-12 flex items-center border-b bg-background px-4 md:hidden">
+                <SidebarTrigger className="mr-2" />
+                <h1 className="text-lg font-semibold">Data Transformer</h1>
+              </header>
+              
+              <div className="flex flex-1 w-full">
+                <AppSidebar />
+                <main className="flex-1 overflow-auto">
+                  <AppRoutes />
+                </main>
+              </div>
+            </div>
+          </SidebarProvider>
+        } />
+      ) : (
+        <Route path="/*" element={<Navigate to="/auth" replace />} />
+      )}
+    </Routes>
   );
 }
 
@@ -69,7 +78,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AuthenticatedRoutes />
+            <AppContent />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
