@@ -357,10 +357,10 @@ export function AppSidebar() {
                     <Home className="h-4 w-4" />
                   </div>
                   {open && (
-                    <div className="flex flex-col">
-                      <span className="font-medium">Home</span>
-                      <span className="text-xs text-muted-foreground">Welcome dashboard</span>
-                    </div>
+            <div className="flex flex-col">
+              <span className="font-medium">Start</span>
+              <span className="text-xs text-muted-foreground">Welcome dashboard</span>
+            </div>
                   )}
                 </NavLink>
               </SidebarMenuButton>
