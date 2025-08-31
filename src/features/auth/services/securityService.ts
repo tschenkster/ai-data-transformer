@@ -57,10 +57,10 @@ export const SecurityService = {
   async checkRateLimit({ operation_type, identifier, max_attempts = 5, window_minutes = 15 }: RateLimitCheck): Promise<boolean> {
     try {
       const { data, error } = await supabase.rpc('enhanced_check_rate_limit', {
-        p_operation_type: operation_type,
-        p_identifier: identifier,
-        p_max_attempts: max_attempts,
-        p_window_minutes: window_minutes
+        operation_type: operation_type,
+        identifier: identifier,
+        max_attempts: max_attempts,
+        window_minutes: window_minutes
       });
 
       if (error) {

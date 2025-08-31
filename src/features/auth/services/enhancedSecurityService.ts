@@ -104,7 +104,7 @@ export class EnhancedSecurityService {
       const { error } = await supabase.rpc('log_security_event', {
         p_action: sanitizedAction,
         p_target_user_id: eventDetails.targetUserId || null,
-        p_additional_data: eventDetails.additionalData || {}
+        p_details: eventDetails.additionalData || {}
       });
 
       if (error) {
@@ -139,10 +139,10 @@ export class EnhancedSecurityService {
         : '';
 
       const { data, error } = await supabase.rpc('enhanced_check_rate_limit', {
-        p_operation_type: sanitizedOperation,
-        p_identifier: sanitizedIdentifier,
-        p_max_attempts: finalConfig.maxAttempts,
-        p_window_minutes: finalConfig.windowMinutes
+        operation_type: sanitizedOperation,
+        identifier: sanitizedIdentifier,
+        max_attempts: finalConfig.maxAttempts,
+        window_minutes: finalConfig.windowMinutes
       });
 
       if (error) {

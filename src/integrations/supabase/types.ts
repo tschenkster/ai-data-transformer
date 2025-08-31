@@ -879,15 +879,6 @@ export type Database = {
           entity_name: string
         }[]
       }
-      check_rate_limit: {
-        Args: {
-          identifier: string
-          max_attempts?: number
-          operation_type: string
-          window_minutes?: number
-        }
-        Returns: boolean
-      }
       cleanup_old_documentation_files: {
         Args: { p_keep_count?: number }
         Returns: number
@@ -902,21 +893,29 @@ export type Database = {
       }
       enhanced_check_rate_limit: {
         Args: {
-          p_identifier?: string
-          p_max_attempts?: number
-          p_operation_type: string
-          p_window_minutes?: number
+          identifier: string
+          max_attempts?: number
+          operation_type: string
+          window_minutes?: number
         }
-        Returns: Json
+        Returns: boolean
       }
       enhanced_log_security_event: {
-        Args: {
-          p_action: string
-          p_additional_data?: Json
-          p_ip_address?: string
-          p_target_user_id?: string
-          p_user_agent?: string
-        }
+        Args:
+          | {
+              p_action: string
+              p_additional_data?: Json
+              p_ip_address?: string
+              p_target_user_id?: string
+              p_user_agent?: string
+            }
+          | {
+              p_action: string
+              p_details?: Json
+              p_ip_address?: unknown
+              p_target_user_id?: string
+              p_user_agent?: string
+            }
         Returns: string
       }
       extract_structure_id_from_line_item_id: {
@@ -1260,22 +1259,8 @@ export type Database = {
         Returns: undefined
       }
       log_security_event: {
-        Args: {
-          p_action: string
-          p_additional_data?: Json
-          p_target_user_id?: string
-        }
-        Returns: string
-      }
-      log_security_event_enhanced: {
-        Args: {
-          p_action: string
-          p_details?: Json
-          p_ip_address?: unknown
-          p_target_user_id?: string
-          p_user_agent?: string
-        }
-        Returns: string
+        Args: { p_action: string; p_details?: Json; p_target_user_id?: string }
+        Returns: undefined
       }
       log_structure_change: {
         Args: {
@@ -1327,7 +1312,9 @@ export type Database = {
         Returns: boolean
       }
       validate_user_input: {
-        Args: { input_text: string; max_length?: number }
+        Args:
+          | { input_data: Json; validation_rules: Json }
+          | { input_text: string; max_length?: number }
         Returns: string
       }
     }

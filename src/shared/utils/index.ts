@@ -10,3 +10,11 @@ export {
 export { slugifyToKey, capitalize, camelToKebab, kebabToCamel } from './string-utils';
 export { InputValidator, type ValidationOptions } from './inputValidation';
 export { FileSecurityValidator, type FileSecurityOptions } from './fileSecurityUtils';
+export { 
+  EnhancedValidator, 
+  CommonSchemas,
+  type ValidationRule,
+  type ValidationSchema,
+  type ValidationResult as EnhancedValidationResult
+} from './enhancedValidation';
+export { SecurityHeadersManager, type SecurityHeaders } from './securityHeaders';

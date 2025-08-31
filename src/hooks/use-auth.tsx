@@ -382,10 +382,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check rate limiting before attempting login
       try {
         const { data: isAllowed, error: rateLimitError } = await supabase.rpc('enhanced_check_rate_limit', {
-          p_operation_type: 'login_attempt',
-          p_identifier: null, // Pass null to avoid type mismatch
-          p_max_attempts: 5,
-          p_window_minutes: 15
+          operation_type: 'login_attempt',
+          identifier: null, // Pass null to avoid type mismatch
+          max_attempts: 5,
+          window_minutes: 15
         });
 
         // If RPC call fails, proceed with login (fail open for better UX)
