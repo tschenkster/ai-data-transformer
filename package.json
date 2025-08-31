@@ -54,6 +54,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-unicorn": "^60.0.0",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.23.12",
     "glob": "^11.0.3",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",

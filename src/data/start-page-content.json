@@ -1,0 +1,106 @@
+{
+  "content": [
+    {
+      "content_uuid": "1",
+      "week_cycle": 1,
+      "variant_key": "joke_cashflow_r1",
+      "type": "joke",
+      "title_en": "Cash Flow Reality Check",
+      "title_de": "Cashflow Realitäts-Check",
+      "body_en": "Our cash flow has trust issues — it never shows up when expected.",
+      "body_de": "Unser Cashflow hat Vertrauensprobleme – er kommt nie, wenn man mit ihm rechnet.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "2",
+      "week_cycle": 1,
+      "variant_key": "quote_ai_spreadsheets",
+      "type": "quote",
+      "title_en": "Daily Motivation",
+      "title_de": "Tägliche Motivation",
+      "body_en": "Keep calm and let AI handle your spreadsheets.",
+      "body_de": "Bleib locker – die KI kümmert sich um deine Tabellen.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "3",
+      "week_cycle": 1,
+      "variant_key": "joke_csv_semicolon",
+      "type": "joke",
+      "title_en": "CSV Drama",
+      "title_de": "CSV Drama",
+      "body_en": "When the CSV delimiter is a semicolon and a lifestyle choice.",
+      "body_de": "Wenn das Semikolon im CSV auch eine Lebenseinstellung ist.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "4",
+      "week_cycle": 2,
+      "variant_key": "joke_excel_relationship",
+      "type": "joke",
+      "title_en": "Excel Therapy",
+      "title_de": "Excel Therapie",
+      "body_en": "Excel and I have a complicated relationship. It's always showing me errors I didn't know I had.",
+      "body_de": "Excel und ich haben eine komplizierte Beziehung. Es zeigt mir immer Fehler, von denen ich nicht wusste, dass ich sie habe.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "5",
+      "week_cycle": 2,
+      "variant_key": "quote_vlookup_wisdom",
+      "type": "quote",
+      "title_en": "Ancient Wisdom",
+      "title_de": "Alte Weisheit",
+      "body_en": "VLOOKUP: Because sometimes looking left just isn't an option.",
+      "body_de": "VLOOKUP: Weil manchmal nach links schauen einfach keine Option ist.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "6",
+      "week_cycle": 3,
+      "variant_key": "joke_pdf_negotiations",
+      "type": "joke",
+      "title_en": "PDF Diplomacy",
+      "title_de": "PDF Diplomatie",
+      "body_en": "I don't always negotiate with PDFs, but when I do, they never cooperate.",
+      "body_de": "Ich verhandle nicht immer mit PDFs, aber wenn ich es tue, kooperieren sie nie.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "7",
+      "week_cycle": 3,
+      "variant_key": "quote_datev_mystery",
+      "type": "quote",
+      "title_en": "DATEV Mysteries",
+      "title_de": "DATEV Mysterien",
+      "body_en": "DATEV files: Where data goes to hide and formatting goes to die.",
+      "body_de": "DATEV-Dateien: Wo Daten sich verstecken und Formatierung stirbt.",
+      "weight": 1,
+      "is_active": true
+    },
+    {
+      "content_uuid": "8",
+      "week_cycle": 4,
+      "variant_key": "joke_reconciliation",
+      "type": "joke",
+      "title_en": "Account Reconciliation",
+      "title_de": "Kontoabstimmung",
+      "body_en": "Account reconciliation is like a puzzle, except half the pieces are missing and the box shows a different picture.",
+      "body_de": "Kontoabstimmung ist wie ein Puzzle, nur dass die Hälfte der Teile fehlt und die Schachtel ein anderes Bild zeigt.",
+      "weight": 1,
+      "is_active": true
+    }
+  ],
+  "fallback": {
+    "title_en": "Good Morning!",
+    "title_de": "Guten Morgen!",
+    "body_en": "Today's forecast: 0% broken spreadsheets.",
+    "body_de": "Heute mit 0 % kaputten Tabellen."
+  }
+}
