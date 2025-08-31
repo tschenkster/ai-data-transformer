@@ -46,7 +46,7 @@ const MemoryMaintenance = () => {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-6">
-              In the meantime, continue using the CoA Translator and Mapper for your account mapping needs.
+              In the meantime, continue using the CoA Translator for your account translation needs.
             </p>
           </CardContent>
         </Card>

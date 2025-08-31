@@ -470,7 +470,6 @@ export class CodebaseScanner {
       'user-management': '# User Administration',
       'report-structures': '# Report Building & Management',
       'coa-translation': '# Chart of Accounts Translation',
-      'coa-mapping': '# Chart of Accounts Mapping',
       'data-security': '# Security & Access Control',
       'imports': '# Data Import Pipeline',
       'shared-pipeline': '# Reusable import infrastructure',

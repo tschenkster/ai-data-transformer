@@ -130,10 +130,6 @@
 │   │   │   ├─ utils/                    # Utilities
 │   │   │   │   └─ passwordValidation.ts
 │   │   │   └─ index.ts
-│   │   ├─ coa-mapping/                    # Chart of Accounts Mapping
-│   │   │   ├─ components/                    # Components
-│   │   │   │   └─ CoAMapper.tsx
-│   │   │   └─ index.ts
 │   │   ├─ coa-translation/                    # Chart of Accounts Translation
 │   │   │   ├─ components/                    # Components
 │   │   │   │   └─ CoATranslator.tsx
@@ -323,9 +319,6 @@
 - **Structure**: ✅ Index file
 - **Completeness**: `████████░░` 75%
 
-### coa-mapping (50% complete)
-- **Structure**: ✅ Index file
-- **Completeness**: `█████░░░░░` 50%
 
 ### coa-translation (100% complete)
 - **Structure**: ✅ Index file

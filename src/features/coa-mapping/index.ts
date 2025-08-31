@@ -1,1 +1,0 @@
-export { CoAMapper } from './components/CoAMapper';
