@@ -129,26 +129,11 @@ export default function SystemTools() {
               <div>
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-xl">{tool.title}</CardTitle>
-                  <Badge variant="outline" className="text-xs">
-                    {tool.category}
-                  </Badge>
                 </div>
                 {tool.status === 'coming-soon' && (
                   <Badge variant="outline" className="mt-1 bg-orange-50 text-orange-700 border-orange-200">
                     Coming Soon
                   </Badge>
-                )}
-                {tool.status === 'active' && tool.lastUsed && (
-                  <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Last used {tool.lastUsed}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Activity className="h-3 w-3" />
-                      {tool.usageCount} uses
-                    </div>
-                  </div>
                 )}
               </div>
             </div>
@@ -182,62 +167,12 @@ export default function SystemTools() {
     >
       <div className="space-y-6">
 
-        {/* Tabbed Interface */}
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all">All Tools</TabsTrigger>
-            <TabsTrigger value="documentation">Documentation</TabsTrigger>
-            <TabsTrigger value="optimization">Optimization</TabsTrigger>
-            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
-            <TabsTrigger value="recent">Recent</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {systemTools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="documentation" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {toolCategories.documentation.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="optimization" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {toolCategories.optimization.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="monitoring" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {toolCategories.monitoring.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="recent" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {activeTools
-                .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
-                .map((tool) => <ToolCard key={tool.id} tool={tool} />)
-              }
-            </div>
-          </TabsContent>
-        </Tabs>
-
-
-        {/* Support Section */}
-        <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-dashed">
-          <h3 className="font-semibold mb-2 flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Need a new system tool?
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            System tools are designed to help Super Administrators manage and maintain the platform. 
-            If you need additional tools for specific administrative tasks, please contact the development team.
-          </p>
+        {/* Tool Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {systemTools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
         </div>
+
+
       </div>
     </CompactPageLayout>
   );
