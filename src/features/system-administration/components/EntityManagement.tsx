@@ -523,10 +523,10 @@ export function EntityManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Entity ID</TableHead>
-                  <TableHead>Legal Entity</TableHead>
                   <TableHead>Group ID</TableHead>
                   <TableHead>Group Name</TableHead>
+                  <TableHead>Entity ID</TableHead>
+                  <TableHead>Legal Entity</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -534,10 +534,10 @@ export function EntityManagement() {
               <TableBody>
                 {entities.map((entity) => (
                   <TableRow key={entity.entity_uuid}>
-                    <TableCell className="font-mono text-sm">{entity.entity_id}</TableCell>
-                    <TableCell className="font-medium">{entity.entity_name}</TableCell>
                     <TableCell className="font-mono text-sm">{entity.entity_group_id}</TableCell>
                     <TableCell>{entity.entity_group_name || 'Unknown'}</TableCell>
+                    <TableCell className="font-mono text-sm">{entity.entity_id}</TableCell>
+                    <TableCell className="font-medium">{entity.entity_name}</TableCell>
                     <TableCell>
                       <Badge variant={entity.is_active ? "default" : "secondary"}>
                         {entity.is_active ? "Active" : "Inactive"}
