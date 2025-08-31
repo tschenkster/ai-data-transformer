@@ -49,8 +49,9 @@ export function Hero() {
           <Button
             onClick={handleCTAClick}
             size="lg"
+            disabled
             className="inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base md:text-lg font-semibold"
-            aria-label="Start DATEV file conversion"
+            aria-label="Start DATEV file conversion (coming soon)"
           >
             Click here to convert a DATEV file!
           </Button>
