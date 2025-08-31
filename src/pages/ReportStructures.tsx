@@ -2,11 +2,15 @@ import { ReportStructureManager } from '@/features/report-structures';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { ErrorBoundaryWithRecovery } from '@/components/ErrorBoundaryWithRecovery';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Settings } from 'lucide-react';
+import { Plus, Upload, Settings, Languages } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useEffect } from 'react';
+import { MultilingualSelector } from '@/components/MultilingualSelector';
+import { useLanguagePreference } from '@/hooks/useTranslations';
 
 export default function ReportStructures() {
+  const { language, changeLanguage } = useLanguagePreference();
+
   useEffect(() => {
     console.log('ReportStructures page mounted');
     
@@ -30,6 +34,14 @@ export default function ReportStructures() {
 
   const pageActions = (
     <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mr-2">
+        <Languages className="w-4 h-4 text-muted-foreground" />
+        <MultilingualSelector
+          currentLanguage={language}
+          onLanguageChange={changeLanguage}
+          size="sm"
+        />
+      </div>
       <Button variant="outline" size="sm">
         <Settings className="h-4 w-4 mr-2" />
         Settings

@@ -393,11 +393,25 @@ export default function ReportStructureManager() {
                       <TableCell>{structure.created_by_user_name}</TableCell>
                       <TableCell>{formatDate(structure.created_at)}</TableCell>
                       <TableCell>
-                        <ActionButtons 
-                          actions={getActionsForStructure(structure)}
-                          title=""
-                          className="space-y-0"
-                        />
+          <ActionButtons 
+            actions={[
+              ...getActionsForStructure(structure),
+              ...(isSuperAdmin ? [{
+                label: 'Manage Translations',
+                icon: Languages,
+                onClick: () => {
+                  // TODO: Open translation editor for this structure
+                  toast({
+                    title: "Translation Management",
+                    description: "Coming soon - manage translations for this structure",
+                  });
+                },
+                variant: 'outline' as const
+              }] : [])
+            ]}
+            title=""
+            className="space-y-0"
+          />
                       </TableCell>
                     </TableRow>
                   ))}
