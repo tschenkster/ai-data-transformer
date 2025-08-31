@@ -95,18 +95,6 @@ export default function SystemTools() {
     { path: '/admin/system-tools', label: 'System Tools' }
   ];
 
-  const pageActions = (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm">
-        <Wrench className="h-4 w-4 mr-2" />
-        Maintenance
-      </Button>
-      <Button size="sm">
-        <Plus className="h-4 w-4 mr-2" />
-        New Tool
-      </Button>
-    </div>
-  );
 
   const activeTools = systemTools.filter(tool => tool.status === 'active');
   const comingSoonTools = systemTools.filter(tool => tool.status === 'coming-soon');
@@ -170,9 +158,6 @@ export default function SystemTools() {
           </div>
         </CardHeader>
         <CardContent>
-          <CardDescription className="text-sm leading-relaxed">
-            {tool.description}
-          </CardDescription>
           {tool.status === 'active' && (
             <Button 
               variant="outline" 
@@ -194,40 +179,8 @@ export default function SystemTools() {
     <CompactPageLayout 
       currentPage="System Tools"
       breadcrumbItems={breadcrumbItems}
-      actions={pageActions}
     >
       <div className="space-y-6">
-        {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">{activeTools.length}</div>
-              <div className="text-sm text-muted-foreground">Active Tools</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">{comingSoonTools.length}</div>
-              <div className="text-sm text-muted-foreground">Coming Soon</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{activeTools.reduce((sum, tool) => sum + (tool.usageCount || 0), 0)}</div>
-              <div className="text-sm text-muted-foreground">Total Usage</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">98.5%</div>
-              <div className="text-sm text-muted-foreground">Uptime</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <p className="text-muted-foreground text-lg">
-          Advanced system management tools for Super Administrators. Select a tool to get started.
-        </p>
 
         {/* Tabbed Interface */}
         <Tabs defaultValue="all" className="w-full">
@@ -273,38 +226,6 @@ export default function SystemTools() {
           </TabsContent>
         </Tabs>
 
-        {/* Roadmap Section */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Development Roadmap
-            </CardTitle>
-            <CardDescription>
-              Upcoming system tools and features in development
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <h4 className="font-medium">Q1 2025</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Database Performance Analyzer</li>
-                  <li>• Query optimization recommendations</li>
-                  <li>• Real-time monitoring dashboard</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">Q2 2025</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• File Structure Organizer</li>
-                  <li>• Automated code refactoring</li>
-                  <li>• Custom organization rules</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Support Section */}
         <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-dashed">
