@@ -239,6 +239,7 @@ export type Database = {
           report_structure_name: string
           report_structure_uuid: string
           sort_order: number
+          source_language_code: string | null
           tags: string[] | null
           updated_at: string | null
           updated_by: string | null
@@ -277,6 +278,7 @@ export type Database = {
           report_structure_name: string
           report_structure_uuid: string
           sort_order?: number
+          source_language_code?: string | null
           tags?: string[] | null
           updated_at?: string | null
           updated_by?: string | null
@@ -315,6 +317,7 @@ export type Database = {
           report_structure_name?: string
           report_structure_uuid?: string
           sort_order?: number
+          source_language_code?: string | null
           tags?: string[] | null
           updated_at?: string | null
           updated_by?: string | null
@@ -355,6 +358,70 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "report_structures"
             referencedColumns: ["report_structure_uuid"]
+          },
+          {
+            foreignKeyName: "report_line_items_source_language_code_fkey"
+            columns: ["source_language_code"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+        ]
+      }
+      report_line_items_translations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          field_key: string
+          language_code: string
+          report_line_item_translation_id: number
+          report_line_item_translation_uuid: string
+          report_line_item_uuid: string
+          source: string
+          translated_text: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          field_key: string
+          language_code: string
+          report_line_item_translation_id?: never
+          report_line_item_translation_uuid?: string
+          report_line_item_uuid: string
+          source?: string
+          translated_text?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          field_key?: string
+          language_code?: string
+          report_line_item_translation_id?: never
+          report_line_item_translation_uuid?: string
+          report_line_item_uuid?: string
+          source?: string
+          translated_text?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_report_line_items_translations_item"
+            columns: ["report_line_item_uuid"]
+            isOneToOne: false
+            referencedRelation: "report_line_items"
+            referencedColumns: ["report_line_item_uuid"]
+          },
+          {
+            foreignKeyName: "fk_report_line_items_translations_language"
+            columns: ["language_code"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
           },
         ]
       }
@@ -443,6 +510,7 @@ export type Database = {
           report_structure_id: number
           report_structure_name: string
           report_structure_uuid: string
+          source_language_code: string | null
           tags: string[] | null
           updated_at: string
           version: number
@@ -465,6 +533,7 @@ export type Database = {
           report_structure_id?: never
           report_structure_name: string
           report_structure_uuid?: string
+          source_language_code?: string | null
           tags?: string[] | null
           updated_at?: string
           version?: number
@@ -487,6 +556,7 @@ export type Database = {
           report_structure_id?: never
           report_structure_name?: string
           report_structure_uuid?: string
+          source_language_code?: string | null
           tags?: string[] | null
           updated_at?: string
           version?: number
@@ -505,6 +575,70 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "entities"
             referencedColumns: ["entity_uuid"]
+          },
+          {
+            foreignKeyName: "report_structures_source_language_code_fkey"
+            columns: ["source_language_code"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+        ]
+      }
+      report_structures_translations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          field_key: string
+          language_code: string
+          report_structure_translation_id: number
+          report_structure_translation_uuid: string
+          report_structure_uuid: string
+          source: string
+          translated_text: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          field_key: string
+          language_code: string
+          report_structure_translation_id?: never
+          report_structure_translation_uuid?: string
+          report_structure_uuid: string
+          source?: string
+          translated_text?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          field_key?: string
+          language_code?: string
+          report_structure_translation_id?: never
+          report_structure_translation_uuid?: string
+          report_structure_uuid?: string
+          source?: string
+          translated_text?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_report_structures_translations_language"
+            columns: ["language_code"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+          {
+            foreignKeyName: "fk_report_structures_translations_structure"
+            columns: ["report_structure_uuid"]
+            isOneToOne: false
+            referencedRelation: "report_structures"
+            referencedColumns: ["report_structure_uuid"]
           },
         ]
       }
@@ -617,6 +751,33 @@ export type Database = {
           security_rate_limit_uuid?: string
           updated_at?: string
           window_start_at?: string
+        }
+        Relationships: []
+      }
+      system_languages: {
+        Row: {
+          created_at: string
+          is_default: boolean
+          is_enabled: boolean
+          language_code: string
+          language_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          language_code: string
+          language_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          language_code?: string
+          language_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
