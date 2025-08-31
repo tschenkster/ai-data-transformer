@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { CompactPageLayout } from "@/components/layout/CompactPageLayout";
-import { Database, FileSpreadsheet, Settings, BarChart3, ArrowRight, Plus, Wrench, Activity, Clock, TrendingUp, Users } from "lucide-react";
+import { Database, FileSpreadsheet, Settings, BarChart3, ArrowRight, Plus, Wrench, Activity, Clock, TrendingUp, Users, Languages } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SystemTool {
@@ -41,6 +41,17 @@ export default function SystemTools() {
   }
 
   const systemTools: SystemTool[] = [
+    {
+      id: 'multilingual-management',
+      title: 'Multilingual Management',
+      description: 'Manage translations, migrate data to multilingual system, and configure language settings.',
+      icon: Languages,
+      path: '/admin/multilingual-management',
+      status: 'active',
+      category: 'documentation',
+      lastUsed: 'New',
+      usageCount: 0
+    },
     {
       id: 'database-docs',
       title: 'Database Structure Documentation',

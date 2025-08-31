@@ -8,6 +8,7 @@ import Admin from '@/pages/Admin';
 import UserProfileManagement from '@/pages/UserProfileManagement';
 import RolesPermissionsManagement from '@/pages/RolesPermissionsManagement';
 import EntityManagementPage from '@/pages/EntityManagementPage';
+import MultilingualManagement from '@/pages/MultilingualManagement';
 import ReportStructures from '@/pages/ReportStructures';
 import CoATranslator from '@/pages/CoATranslator';
 import CoAMapper from '@/pages/CoAMapper';
@@ -53,6 +54,11 @@ export function AppRoutes() {
       <Route path="/admin/entity-management" element={
         <AuthRoute requireAdmin>
           <EntityManagementPage />
+        </AuthRoute>
+      } />
+      <Route path="/admin/multilingual-management" element={
+        <AuthRoute requireSuperAdmin>
+          <MultilingualManagement />
         </AuthRoute>
       } />
       <Route path="/admin/report-configuration" element={
