@@ -1048,6 +1048,15 @@ export type Database = {
         Args: { p_structure_id: number }
         Returns: Json
       }
+      create_translation_entries: {
+        Args: {
+          p_entity_type: string
+          p_entity_uuid: string
+          p_source_language?: string
+          p_translations: Json
+        }
+        Returns: undefined
+      }
       delete_entity_group_safe: {
         Args: { p_entity_group_uuid: string; p_force_delete?: boolean }
         Returns: Json
@@ -1240,6 +1249,15 @@ export type Database = {
           table_schema: string
           table_type: string
         }[]
+      }
+      get_translation: {
+        Args: {
+          p_entity_type: string
+          p_entity_uuid: string
+          p_field_key: string
+          p_language_code?: string
+        }
+        Returns: string
       }
       get_translation_sessions_by_status: {
         Args: {
@@ -1444,6 +1462,10 @@ export type Database = {
           p_structure_uuid: string
         }
         Returns: string
+      }
+      migrate_existing_translations: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       reorder_line_item_with_hierarchy: {
         Args: {
