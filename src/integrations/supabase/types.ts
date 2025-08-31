@@ -887,6 +887,14 @@ export type Database = {
         Args: { p_structure_id: number }
         Returns: Json
       }
+      delete_entity_group_safe: {
+        Args: { p_entity_group_uuid: string; p_force_delete?: boolean }
+        Returns: Json
+      }
+      delete_entity_safe: {
+        Args: { p_entity_uuid: string; p_force_delete?: boolean }
+        Returns: Json
+      }
       detect_suspicious_activity: {
         Args: { p_time_window_minutes?: number; p_user_id: string }
         Returns: boolean

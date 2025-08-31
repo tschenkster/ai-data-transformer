@@ -37,6 +37,19 @@ interface Entity {
   created_at: string;
 }
 
+// Type for RPC response
+interface DeleteResponse {
+  success: boolean;
+  has_dependencies?: boolean;
+  dependency_count?: number;
+  entity_count?: number;
+  access_count?: number;
+  entity_name?: string;
+  entity_group_name?: string;
+  message?: string;
+  error?: string;
+}
+
 export function EntityManagement() {
   const { isSuperAdmin, userAccount, currentEntity, isEntityAdmin } = useAuth();
   const { toast } = useToast();
@@ -49,6 +62,20 @@ export function EntityManagement() {
   const [isEditGroupOpen, setIsEditGroupOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
   const [editingGroup, setEditingGroup] = useState<EntityGroup | null>(null);
+  const [forceDeleteDialog, setForceDeleteDialog] = useState<{
+    open: boolean;
+    type: 'entity' | 'entity_group';
+    uuid: string;
+    name: string;
+    message: string;
+    dependencyInfo?: any;
+  }>({
+    open: false,
+    type: 'entity',
+    uuid: '',
+    name: '',
+    message: ''
+  });
 
   // Form states
   const [groupForm, setGroupForm] = useState({
@@ -262,22 +289,42 @@ export function EntityManagement() {
     }
   };
 
-  const deleteEntity = async (entityUuid: string, entityName: string) => {
+  const deleteEntity = async (entityUuid: string, forceDelete: boolean = false) => {
     try {
-      const { error } = await supabase
-        .from('entities')
-        .delete()
-        .eq('entity_uuid', entityUuid);
+      const { data, error } = await supabase.rpc('delete_entity_safe', {
+        p_entity_uuid: entityUuid,
+        p_force_delete: forceDelete
+      });
 
       if (error) throw error;
+
+      const result = data as unknown as DeleteResponse;
       
+      if (!result.success) {
+        if (result.has_dependencies && !forceDelete) {
+          // Show force delete dialog
+          setForceDeleteDialog({
+            open: true,
+            type: 'entity',
+            uuid: entityUuid,
+            name: result.entity_name || '',
+            message: result.message || '',
+            dependencyInfo: result
+          });
+          return;
+        } else {
+          throw new Error(result.error || 'Failed to delete entity');
+        }
+      }
+
       toast({
         title: "Success",
-        description: `Entity "${entityName}" deleted successfully`,
+        description: result.message,
       });
       
       fetchData();
     } catch (error: any) {
+      console.error('Error deleting entity:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete entity",
@@ -286,27 +333,58 @@ export function EntityManagement() {
     }
   };
 
-  const deleteEntityGroup = async (groupUuid: string, groupName: string) => {
+  const deleteEntityGroup = async (entityGroupUuid: string, forceDelete: boolean = false) => {
     try {
-      const { error } = await supabase
-        .from('entity_groups')
-        .delete()
-        .eq('entity_group_uuid', groupUuid);
+      const { data, error } = await supabase.rpc('delete_entity_group_safe', {
+        p_entity_group_uuid: entityGroupUuid,
+        p_force_delete: forceDelete
+      });
 
       if (error) throw error;
-      
+
+      const result = data as unknown as DeleteResponse;
+
+      if (!result.success) {
+        if (result.has_dependencies && !forceDelete) {
+          // Show force delete dialog
+          setForceDeleteDialog({
+            open: true,
+            type: 'entity_group',
+            uuid: entityGroupUuid,
+            name: result.entity_group_name || '',
+            message: result.message || '',
+            dependencyInfo: result
+          });
+          return;
+        } else {
+          throw new Error(result.error || 'Failed to delete entity group');
+        }
+      }
+
       toast({
         title: "Success",
-        description: `Entity group "${groupName}" deleted successfully`,
+        description: result.message,
       });
       
       fetchData();
     } catch (error: any) {
+      console.error('Error deleting entity group:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete entity group",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleForceDelete = async () => {
+    const { type, uuid } = forceDeleteDialog;
+    setForceDeleteDialog(prev => ({ ...prev, open: false }));
+    
+    if (type === 'entity') {
+      await deleteEntity(uuid, true);
+    } else {
+      await deleteEntityGroup(uuid, true);
     }
   };
 
@@ -494,7 +572,7 @@ export function EntityManagement() {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => deleteEntity(entity.entity_uuid, entity.entity_name)}
+                                  onClick={() => deleteEntity(entity.entity_uuid)}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
                                   Delete
@@ -662,9 +740,9 @@ export function EntityManagement() {
                                <AlertDialogFooter>
                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
                                  <AlertDialogAction
-                                   onClick={() => deleteEntityGroup(group.entity_group_uuid, group.entity_group_name)}
-                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                 >
+                                  onClick={() => deleteEntityGroup(group.entity_group_uuid)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
                                    Delete
                                  </AlertDialogAction>
                                </AlertDialogFooter>
@@ -717,6 +795,50 @@ export function EntityManagement() {
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Force Delete Dialog */}
+        <AlertDialog open={forceDeleteDialog.open} onOpenChange={(open) => 
+          setForceDeleteDialog(prev => ({ ...prev, open }))
+        }>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Force Delete Required</AlertDialogTitle>
+              <AlertDialogDescription>
+                <div className="space-y-2">
+                  <p>{forceDeleteDialog.message}</p>
+                  {forceDeleteDialog.dependencyInfo && (
+                    <div className="p-3 bg-muted rounded-md">
+                      <p className="text-sm font-medium">This will permanently remove:</p>
+                      <ul className="text-sm mt-2 space-y-1">
+                        {forceDeleteDialog.type === 'entity_group' ? (
+                          <>
+                            {forceDeleteDialog.dependencyInfo.entity_count > 0 && (
+                              <li>• {forceDeleteDialog.dependencyInfo.entity_count} entities</li>
+                            )}
+                            {forceDeleteDialog.dependencyInfo.access_count > 0 && (
+                              <li>• {forceDeleteDialog.dependencyInfo.access_count} user access grants</li>
+                            )}
+                          </>
+                        ) : (
+                          <li>• {forceDeleteDialog.dependencyInfo.dependency_count} user access grants</li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleForceDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Force Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
