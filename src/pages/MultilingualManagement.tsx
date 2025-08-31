@@ -3,17 +3,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Languages, Database, Bot, CheckCircle, AlertCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Languages, Database, Bot, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { MultilingualSelector } from '@/components/MultilingualSelector';
 import { TranslationEditor } from '@/components/TranslationEditor';
 import { TranslationService } from '@/services/translationService';
 import { useLanguagePreference } from '@/hooks/useTranslations';
 import { useToast } from '@/hooks/use-toast';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function MultilingualManagement() {
   const [migrationStatus, setMigrationStatus] = useState<any>(null);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [isGeneratingTranslations, setIsGeneratingTranslations] = useState(false);
+  const [translationProgress, setTranslationProgress] = useState(0);
+  const [translationStatus, setTranslationStatus] = useState<any>(null);
   const [translationEditorOpen, setTranslationEditorOpen] = useState(false);
   const { language, changeLanguage } = useLanguagePreference();
   const { toast } = useToast();
@@ -25,12 +30,18 @@ export default function MultilingualManagement() {
 
   const runMigration = async () => {
     setIsMigrating(true);
+    setMigrationStatus(null);
     try {
-      const result = await TranslationService.migrateExistingData();
-      setMigrationStatus(result);
+      const { data, error } = await supabase.functions.invoke('bulk-translation-migration', {
+        body: { operation: 'migrate' }
+      });
+
+      if (error) throw error;
+
+      setMigrationStatus(data.result);
       toast({
         title: "Migration Complete",
-        description: result.message,
+        description: `Successfully migrated ${data.result.structures_migrated || 0} structures and ${data.result.line_items_migrated || 0} line items`,
       });
     } catch (error: any) {
       toast({
@@ -44,19 +55,47 @@ export default function MultilingualManagement() {
   };
 
   const generateMissingTranslations = async () => {
+    setIsGeneratingTranslations(true);
+    setTranslationProgress(0);
+    setTranslationStatus(null);
+    
     try {
-      // This would be implemented to find entities with missing translations
-      // and generate them automatically
       toast({
-        title: "Feature Coming Soon",
-        description: "Auto-generation of missing translations will be available soon",
+        title: "Starting Translation Generation",
+        description: "Generating English translations for all German content...",
       });
+
+      const { data, error } = await supabase.functions.invoke('bulk-translation-migration', {
+        body: { operation: 'generate_translations' }
+      });
+
+      if (error) throw error;
+
+      setTranslationStatus(data.result);
+      setTranslationProgress(100);
+      
+      toast({
+        title: "Translation Generation Complete",
+        description: `Generated ${data.result.total_processed} translations (${data.result.structures_processed} structures, ${data.result.line_items_processed} line items)`,
+      });
+
+      // Show errors if any
+      if (data.result.errors && data.result.errors.length > 0) {
+        console.warn('Translation errors:', data.result.errors);
+        toast({
+          title: "Some Translations Had Errors",
+          description: `${data.result.errors.length} items had translation errors. Check console for details.`,
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Translation Generation Failed",
         description: error.message || "Failed to generate translations",
         variant: "destructive",
       });
+    } finally {
+      setIsGeneratingTranslations(false);
     }
   };
 
@@ -162,14 +201,80 @@ export default function MultilingualManagement() {
               Automatically generate English translations for all content using AI
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {translationStatus ? (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p className="font-medium">Translation generation completed!</p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">Structures:</span>
+                        <Badge variant="secondary" className="ml-2">
+                          {translationStatus.structures_processed}
+                        </Badge>
+                      </div>
+                      <div>
+                        <span className="font-medium">Line Items:</span>
+                        <Badge variant="secondary" className="ml-2">
+                          {translationStatus.line_items_processed}
+                        </Badge>
+                      </div>
+                    </div>
+                    {translationStatus.errors && translationStatus.errors.length > 0 && (
+                      <div className="text-sm text-amber-600">
+                        <span className="font-medium">Errors:</span>
+                        <Badge variant="destructive" className="ml-2">
+                          {translationStatus.errors.length}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Generate English translations for all existing German content. 
+                  This will create AI-powered translations for report structures and line items.
+                  {!migrationStatus && (
+                    <span className="text-amber-600 block mt-1">
+                      Note: Run data migration first to populate the translation tables.
+                    </span>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {isGeneratingTranslations && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Generating translations...</span>
+                  <span>{translationProgress}%</span>
+                </div>
+                <Progress value={translationProgress} className="w-full" />
+              </div>
+            )}
+            
             <Button 
               onClick={generateMissingTranslations}
+              disabled={isGeneratingTranslations || !migrationStatus}
               variant="outline"
               className="w-full"
             >
-              <Bot className="h-4 w-4 mr-2" />
-              Generate Missing Translations
+              {isGeneratingTranslations ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating Translations...
+                </>
+              ) : (
+                <>
+                  <Bot className="h-4 w-4 mr-2" />
+                  Generate Missing Translations
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
