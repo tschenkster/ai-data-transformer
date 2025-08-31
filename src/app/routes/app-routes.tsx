@@ -142,8 +142,7 @@ export function AppRoutes() {
       <Route path="/journal-import" element={<Navigate to="/data/journal-import" replace />} />
       <Route path="/memory" element={<Navigate to="/admin/memory-maintenance" replace />} />
 
-      {/* Redirect auth paths when already authenticated */}
-      <Route path="/auth" element={<Navigate to="/start" replace />} />
+      {/* Auth callback redirect */}
       <Route path="/auth/callback" element={<Navigate to="/start" replace />} />
       
       <Route path="/" element={<Navigate to="/start" replace />} />

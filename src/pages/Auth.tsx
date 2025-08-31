@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,14 +22,29 @@ export default function Auth() {
   const [activeTab, setActiveTab] = useState('login');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [signupErrors, setSignupErrors] = useState<string[]>([]);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   const { signIn, signUp, user, isApproved, validatePasswordStrength } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if user is already logged in and approved
-  if (user && isApproved) {
-    navigate('/start');
-    return null;
+  // Handle redirect for authenticated users in useEffect to avoid render-time navigation
+  useEffect(() => {
+    if (user && isApproved && !isRedirecting) {
+      setIsRedirecting(true);
+      navigate('/start');
+    }
+  }, [user, isApproved, navigate, isRedirecting]);
+
+  // Show loading state while redirecting
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Redirecting...</span>
+        </div>
+      </div>
+    );
   }
 
   const handleLogin = async (e: React.FormEvent) => {
