@@ -35,10 +35,6 @@ export default function Start() {
             <QuietStart locale={locale} />
           </div>
 
-          {/* Primary CTA */}
-          <div className="text-center mb-6">
-            <PrimaryCTA locale={locale} />
-          </div>
 
           {/* Controls */}
           <div className="flex justify-center gap-4">
@@ -69,10 +65,6 @@ export default function Start() {
             <ErrorFallback message={fallback} locale={locale} />
           </div>
 
-          {/* Primary CTA */}
-          <div className="text-center mb-6">
-            <PrimaryCTA locale={locale} />
-          </div>
 
           {/* Controls */}
           <div className="flex justify-center gap-4">
@@ -123,10 +115,6 @@ export default function Start() {
           </div>
         )}
 
-        {/* Primary CTA */}
-        <div className="text-center mb-6">
-          <PrimaryCTA locale={locale} />
-        </div>
 
         {/* Controls */}
         <div className="flex justify-center gap-4 flex-wrap">
