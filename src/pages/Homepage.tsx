@@ -72,7 +72,7 @@ const Homepage = () => {
                 <Badge variant="secondary" className="px-4 py-2 bg-primary/10 text-primary">Perfect For</Badge>
                 <h2 className="text-xl md:text-2xl text-muted-foreground">CFOs of Startups with 10–100 Employees</h2>
                 <p className="text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-                  You need board-ready insights, BUT you&apos;re stuck with useless DATEV outputs &amp; Excel sheets that break every time you breathe on them and you haven&apos;t built your Finance tech stack yet .
+                  You need board-ready insights quickly, but here's the reality you're facing every month.
                 </p>
               </div>
             </div>
@@ -84,7 +84,7 @@ const Homepage = () => {
               <div className="max-w-6xl mx-auto space-y-16">
                 <div className="text-center animate-fade-in space-y-4">
                   <Badge variant="destructive" className="px-4 py-2">Current Reality</Badge>
-                  <h2 className="text-4xl md:text-5xl font-bold text-foreground">The Startup CFO Struggle</h2>
+                  <h2 className="text-4xl md:text-5xl font-bold text-foreground">The Startup CFO's Challenge</h2>
                   <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                     Every month, the same painful routine. Let's break the cycle.
                   </p>
@@ -99,17 +99,17 @@ const Homepage = () => {
                         <div className="p-3 bg-destructive/10 rounded-xl group-hover:bg-destructive/20 transition-colors flex-shrink-0">
                           <AlertTriangle className="h-7 w-7" />
                         </div>
-                        <div>
-                          <div className="font-bold">DATEV reports = useless for decisions</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">Compliance ≠ Insights</div>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <p className="text-muted-foreground leading-relaxed mb-4">
-                        Raw DATEV exports are built for compliance, not insights. You get endless rows of cryptic account codes 
-                        that tell you nothing about your business performance or cash flow trends.
-                      </p>
+                      <div>
+                        <div className="font-bold">Useless DATEV reports</div>
+                        <div className="text-sm text-muted-foreground font-normal mt-2">Compliance ≠ Insights</div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      DATEV exports are designed for compliance, not management. You get PDFs that tell you little 
+                      about business performance or cash flow trends.
+                    </p>
                       <div className="flex items-center gap-2 text-destructive/70">
                         <Clock className="h-4 w-4" />
                         <span className="text-sm">Hours wasted monthly</span>
@@ -124,17 +124,17 @@ const Homepage = () => {
                         <div className="p-3 bg-destructive/10 rounded-xl group-hover:bg-destructive/20 transition-colors flex-shrink-0">
                           <FileSpreadsheet className="h-7 w-7" />
                         </div>
-                        <div>
-                          <div className="font-bold">Drowning in manual Excel work</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">Error-prone & fragile</div>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <p className="text-muted-foreground leading-relaxed mb-4">
-                        Every month, you spend hours manually cleaning, categorizing, and restructuring data just to get 
-                        basic P&L insights. One formula breaks and you're back to square one.
-                      </p>
+                      <div>
+                        <div className="font-bold">Manual Excel grind</div>
+                        <div className="text-sm text-muted-foreground font-normal mt-2">Error-Prone & Fragile</div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      Each month you spend hours cleaning, categorizing, and restructuring data just to build a basic P&L. 
+                      Broken formulas and endless copy-paste eat up valuable time without adding real value.
+                    </p>
                       <div className="flex items-center gap-2 text-destructive/70">
                         <AlertTriangle className="h-4 w-4" />
                         <span className="text-sm">High error risk</span>
@@ -149,17 +149,17 @@ const Homepage = () => {
                         <div className="p-3 bg-destructive/10 rounded-xl group-hover:bg-destructive/20 transition-colors flex-shrink-0">
                           <Users className="h-7 w-7" />
                         </div>
-                        <div>
-                          <div className="font-bold">Stuck in "Excel hell"</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">Doesn't scale</div>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <p className="text-muted-foreground leading-relaxed mb-4">
-                        Your "financial reporting system" is a collection of fragile spreadsheets that only you understand. 
-                        Scaling your finance operations feels impossible when everything breaks with growth.
-                      </p>
+                      <div>
+                        <div className="font-bold">No real finance tech stack yet</div>
+                        <div className="text-sm text-muted-foreground font-normal mt-2">In Transition</div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      You've outgrown simple bookkeeping, but a full ERP/BI/FP&A setup is not in place. 
+                      Excel is holding things together, barely.
+                    </p>
                       <div className="flex items-center gap-2 text-destructive/70">
                         <TrendingUp className="h-4 w-4" />
                         <span className="text-sm">Growth blocked</span>
@@ -167,39 +167,25 @@ const Homepage = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-l-4 border-l-destructive hover:shadow-2xl transition-all duration-500 group bg-gradient-to-br from-destructive/5 to-transparent">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/10 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500"></div>
-                    <CardHeader className="relative z-10">
-                      <CardTitle className="flex items-start gap-4 text-destructive text-xl">
-                        <div className="p-3 bg-destructive/10 rounded-xl group-hover:bg-destructive/20 transition-colors flex-shrink-0">
-                          <DollarSign className="h-7 w-7" />
-                        </div>
-                        <div>
-                          <div className="font-bold">No internal finance infrastructure yet</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">Stuck in the middle</div>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="relative z-10">
-                      <p className="text-muted-foreground leading-relaxed mb-4">
-                        You're not ready for enterprise-grade solutions, but you've outgrown basic bookkeeping. 
-                        You need something that bridges the gap without breaking the bank or requiring a data team.
-                      </p>
-                      <div className="flex items-center gap-2 text-destructive/70">
-                        <Target className="h-4 w-4" />
-                        <span className="text-sm">Need the right fit</span>
-                      </div>
-                    </CardContent>
-                  </Card>
                 </div>
 
-                {/* Pain Points Summary */}
+                {/* Before → After Snapshot */}
                 <div className="text-center bg-destructive/5 rounded-2xl p-8 border border-destructive/20">
-                  <h3 className="text-2xl font-bold text-destructive mb-4">The Result?</h3>
-                  <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                    You're making critical business decisions based on outdated, unreliable data while spending 
-                    80% of your time on manual data wrestling instead of strategic finance work.
-                  </p>
+                  <h3 className="text-2xl font-bold text-destructive mb-4">Before → After Snapshot</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div>
+                      <h4 className="font-semibold text-destructive mb-2">Before</h4>
+                      <p className="text-sm text-muted-foreground">
+                        DATEV dumps → endless Excel cleanup → fragile Excel models → limited visibility
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-primary mb-2">After</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Clean, structured data in a database → reliable reporting → CFO focus on strategy and growth, not spreadsheet maintenance
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,7 +197,7 @@ const Homepage = () => {
               <div className="max-w-6xl mx-auto space-y-16">
                 <div className="text-center animate-fade-in space-y-4">
                   <Badge className="px-4 py-2 bg-primary text-primary-foreground">The Solution</Badge>
-                  <h2 className="text-4xl md:text-5xl font-bold text-foreground">Your New Finance Workflow</h2>
+                  <h2 className="text-4xl md:text-5xl font-bold text-foreground">An AI-Powered Finance Workflow</h2>
                   <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                     Transform chaos into clarity with our AI-powered platform designed specifically for startup CFOs.
                   </p>
@@ -224,8 +210,8 @@ const Homepage = () => {
                       <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
                         <span className="text-2xl font-bold text-primary-foreground">1</span>
                       </div>
-                      <h3 className="text-lg font-semibold">Upload DATEV Export</h3>
-                      <p className="text-muted-foreground text-sm">Drop your messy DATEV file and watch the magic happen</p>
+                      <h3 className="text-lg font-semibold">Upload</h3>
+                      <p className="text-muted-foreground text-sm">Your messy DATEV export — one click to get started</p>
                     </div>
                     <div className="hidden md:block absolute top-10 right-0 transform translate-x-1/2">
                       <ArrowRight className="h-6 w-6 text-primary" />
@@ -237,8 +223,8 @@ const Homepage = () => {
                       <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
                         <span className="text-2xl font-bold text-primary-foreground">2</span>
                       </div>
-                      <h3 className="text-lg font-semibold">AI Transformation</h3>
-                      <p className="text-muted-foreground text-sm">Our AI categorizes and structures your data automatically</p>
+                      <h3 className="text-lg font-semibold">AI Standardizes</h3>
+                      <p className="text-muted-foreground text-sm">Automated cleanup and categorization of your data</p>
                     </div>
                     <div className="hidden md:block absolute top-10 right-0 transform translate-x-1/2">
                       <ArrowRight className="h-6 w-6 text-primary" />
@@ -249,8 +235,8 @@ const Homepage = () => {
                     <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
                       <span className="text-2xl font-bold text-primary-foreground">3</span>
                     </div>
-                    <h3 className="text-lg font-semibold">Get Insights</h3>
-                    <p className="text-muted-foreground text-sm">Access clean, actionable financial data in seconds</p>
+                    <h3 className="text-lg font-semibold">Store in Database</h3>
+                    <p className="text-muted-foreground text-sm">Data saved in a reliable, scalable, and consistent database</p>
                   </div>
                 </div>
 
@@ -264,19 +250,19 @@ const Homepage = () => {
                           <Zap className="h-7 w-7" />
                         </div>
                         <div>
-                          <div className="font-bold">From DATEV chaos to clarity</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">AI-powered transformation</div>
+                          <div className="font-bold">Insights in minutes</div>
+                          <div className="text-sm text-muted-foreground font-normal mt-2">Instant transformation</div>
                         </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <p className="text-muted-foreground leading-relaxed mb-4">
-                        Upload your DATEV exports and watch AI instantly transform cryptic account codes into meaningful 
-                        business categories. Get P&L insights in minutes, not hours.
+                        Go from raw accounting exports to clean financial insights instantly. No more waiting hours 
+                        for manual data cleanup and processing.
                       </p>
                       <div className="flex items-center gap-2 text-primary/70">
                         <Clock className="h-4 w-4" />
-                        <span className="text-sm">30 seconds avg processing</span>
+                        <span className="text-sm">Minutes, not hours</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -289,15 +275,15 @@ const Homepage = () => {
                           <Database className="h-7 w-7" />
                         </div>
                         <div>
-                          <div className="font-bold">SQL database as your finance backbone</div>
+                          <div className="font-bold">Database as backbone</div>
                           <div className="text-sm text-muted-foreground font-normal mt-2">Built to scale</div>
                         </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <p className="text-muted-foreground leading-relaxed mb-4">
-                        Your cleaned data lives in a proper database, not fragile spreadsheets. Scale your reporting 
-                        as your startup grows without rebuilding everything from scratch.
+                        Data lives in a scalable, reliable system, not fragile Excel spreadsheets. 
+                        Your finance infrastructure grows with your business.
                       </p>
                       <div className="flex items-center gap-2 text-primary/70">
                         <Shield className="h-4 w-4" />
@@ -314,15 +300,15 @@ const Homepage = () => {
                           <BarChart3 className="h-7 w-7" />
                         </div>
                         <div>
-                          <div className="font-bold">Flexible reporting that grows with you</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">Custom insights, no limits</div>
+                          <div className="font-bold">Standardized reporting</div>
+                          <div className="text-sm text-muted-foreground font-normal mt-2">Ready-made templates</div>
                         </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <p className="text-muted-foreground leading-relaxed mb-4">
-                        Create custom P&L structures, compare periods, and build the exact reports your board wants to see. 
-                        No more "let me get back to you on that" moments.
+                        Use ready-made templates for P&L, balance sheet, and cash flow, or design custom structures 
+                        to fit your business perfectly.
                       </p>
                       <div className="flex items-center gap-2 text-primary/70">
                         <Target className="h-4 w-4" />
@@ -339,19 +325,19 @@ const Homepage = () => {
                           <CheckCircle className="h-7 w-7" />
                         </div>
                         <div>
-                          <div className="font-bold">Purpose-built for startup CFOs</div>
-                          <div className="text-sm text-muted-foreground font-normal mt-2">Startup-ready, not enterprise-heavy</div>
+                          <div className="font-bold">More time for strategy</div>
+                          <div className="text-sm text-muted-foreground font-normal mt-2">Focus on what matters</div>
                         </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
                       <p className="text-muted-foreground leading-relaxed mb-4">
-                        No complex data engineering required. No expensive consultants. Just upload, transform, 
-                        and get the insights you need to make confident financial decisions.
+                        Close faster and redirect hours from cleanup to analysis and decision-making. 
+                        Spend time on strategy, not spreadsheet maintenance.
                       </p>
                       <div className="flex items-center gap-2 text-primary/70">
                         <Zap className="h-4 w-4" />
-                        <span className="text-sm">Ready in minutes</span>
+                        <span className="text-sm">Strategic focus</span>
                       </div>
                     </CardContent>
                   </Card>
