@@ -10,9 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Plus, Edit } from 'lucide-react';
+import { Building2, Plus, Edit, Trash2 } from 'lucide-react';
 
 interface EntityGroup {
   entity_group_uuid: string;
@@ -261,6 +262,54 @@ export function EntityManagement() {
     }
   };
 
+  const deleteEntity = async (entityUuid: string, entityName: string) => {
+    try {
+      const { error } = await supabase
+        .from('entities')
+        .delete()
+        .eq('entity_uuid', entityUuid);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: `Entity "${entityName}" deleted successfully`,
+      });
+      
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete entity",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteEntityGroup = async (groupUuid: string, groupName: string) => {
+    try {
+      const { error } = await supabase
+        .from('entity_groups')
+        .delete()
+        .eq('entity_group_uuid', groupUuid);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: `Entity group "${groupName}" deleted successfully`,
+      });
+      
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete entity group",
+        variant: "destructive",
+      });
+    }
+  };
+
   const openEditDialog = (entity: Entity) => {
     setEditingEntity(entity);
     setEntityForm({
@@ -418,13 +467,42 @@ export function EntityManagement() {
                     </TableCell>
                     <TableCell>
                       {isSuperAdmin && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(entity)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(entity)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Entity</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{entity.entity_name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteEntity(entity.entity_uuid, entity.entity_name)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>
@@ -556,15 +634,44 @@ export function EntityManagement() {
                           {group.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditGroupDialog(group)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+                       <TableCell>
+                         <div className="flex items-center gap-2">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => openEditGroupDialog(group)}
+                           >
+                             <Edit className="h-4 w-4" />
+                           </Button>
+                           <AlertDialog>
+                             <AlertDialogTrigger asChild>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                               >
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                             </AlertDialogTrigger>
+                             <AlertDialogContent>
+                               <AlertDialogHeader>
+                                 <AlertDialogTitle>Delete Entity Group</AlertDialogTitle>
+                                 <AlertDialogDescription>
+                                   Are you sure you want to delete "{group.entity_group_name}"? This action cannot be undone and may affect associated entities.
+                                 </AlertDialogDescription>
+                               </AlertDialogHeader>
+                               <AlertDialogFooter>
+                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                 <AlertDialogAction
+                                   onClick={() => deleteEntityGroup(group.entity_group_uuid, group.entity_group_name)}
+                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                 >
+                                   Delete
+                                 </AlertDialogAction>
+                               </AlertDialogFooter>
+                             </AlertDialogContent>
+                           </AlertDialog>
+                         </div>
+                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
