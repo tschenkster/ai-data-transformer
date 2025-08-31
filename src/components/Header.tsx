@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LanguageSelector } from '@/components/LanguageSelector';
+import { MultilingualSelector } from '@/components/MultilingualSelector';
 import { Database } from 'lucide-react';
 
-const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-];
-
 export function Header() {
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [selectedLanguage, setSelectedLanguage] = useState('de');
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -73,12 +68,10 @@ export function Header() {
               </Link>
             </nav>
 
-            <LanguageSelector
-              languages={languages}
-              value={selectedLanguage}
-              onChange={handleLanguageChange}
-              placeholder="Select language"
-              className="w-32"
+            <MultilingualSelector
+              currentLanguage={selectedLanguage}
+              onLanguageChange={handleLanguageChange}
+              size="sm"
             />
           </div>
         </div>

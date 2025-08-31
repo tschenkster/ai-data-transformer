@@ -10,11 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X } from 'lucide-react';
+import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X, Languages } from 'lucide-react';
 import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
 import ReportStructureViewer from './ReportStructureViewer';
 import ReportStructureModifier from './ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
+import { MultilingualSelector } from '@/components/MultilingualSelector';
+import { useLanguagePreference } from '@/hooks/useTranslations';
+import { ReportStructureService } from '../services/reportStructureService';
 
 interface ReportStructure {
   report_structure_id: number;
@@ -62,6 +65,7 @@ interface ReportLineItem {
 export default function ReportStructureManager() {
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
+  const { language, changeLanguage } = useLanguagePreference();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
@@ -72,13 +76,7 @@ export default function ReportStructureManager() {
 
   const fetchStructures = async () => {
     try {
-      const { data, error } = await supabase
-        .from('report_structures')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
+      const data = await ReportStructureService.fetchStructures(language);
       setStructures(data || []);
       const active = data?.find(s => s.is_active) || null;
       setActiveStructure(active);
@@ -125,7 +123,7 @@ export default function ReportStructureManager() {
   useEffect(() => {
     fetchStructures();
     checkStructuresWithMappings();
-  }, []);
+  }, [language]);
 
   const setActiveStructureHandler = async (structureId: number) => {
     try {
@@ -318,26 +316,37 @@ export default function ReportStructureManager() {
 
   return (
     <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="overview">
-          <Database className="w-4 h-4 mr-2" />
-          List Report Structures
-        </TabsTrigger>
-        <TabsTrigger value="upload">
-          <Upload className="w-4 h-4 mr-2" />
-          Upload New Structure
-        </TabsTrigger>
-        <TabsTrigger value="viewer">
-          <Eye className="w-4 h-4 mr-2" />
-          View Structure
-        </TabsTrigger>
-        {isSuperAdmin && (
-          <TabsTrigger value="modifier">
-            <Edit className="w-4 h-4 mr-2" />
-            Modify Structure
+      <div className="flex items-center justify-between mb-4">
+        <TabsList>
+          <TabsTrigger value="overview">
+            <Database className="w-4 h-4 mr-2" />
+            List Report Structures
           </TabsTrigger>
-        )}
-      </TabsList>
+          <TabsTrigger value="upload">
+            <Upload className="w-4 h-4 mr-2" />
+            Upload New Structure
+          </TabsTrigger>
+          <TabsTrigger value="viewer">
+            <Eye className="w-4 h-4 mr-2" />
+            View Structure
+          </TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="modifier">
+              <Edit className="w-4 h-4 mr-2" />
+              Modify Structure
+            </TabsTrigger>
+          )}
+        </TabsList>
+        
+        <div className="flex items-center gap-2">
+          <Languages className="w-4 h-4 text-muted-foreground" />
+          <MultilingualSelector
+            currentLanguage={language}
+            onLanguageChange={changeLanguage}
+            size="sm"
+          />
+        </div>
+      </div>
 
       <TabsContent value="overview" className="space-y-4">
         <Card>

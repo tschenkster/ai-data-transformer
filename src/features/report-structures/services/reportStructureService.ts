@@ -1,15 +1,43 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ReportStructure, ProcessStructureData } from '@/features/report-structures/types';
+import { TranslationService } from '@/services/translationService';
 
 export class ReportStructureService {
-  static async fetchStructures(): Promise<ReportStructure[]> {
+  static async fetchStructures(languageCode?: string): Promise<ReportStructure[]> {
     const { data, error } = await supabase
       .from('report_structures')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    if (!data || !languageCode) return data || [];
+
+    // Fetch translations for each structure
+    const structuresWithTranslations = await Promise.all(
+      data.map(async (structure) => {
+        try {
+          const translatedName = await TranslationService.getTranslation(
+            'report_structure',
+            structure.report_structure_uuid,
+            'report_structure_name',
+            languageCode
+          );
+          
+          return {
+            ...structure,
+            report_structure_name: translatedName.startsWith('[missing:') 
+              ? structure.report_structure_name 
+              : translatedName
+          };
+        } catch (error) {
+          console.error('Translation fetch failed for structure:', structure.report_structure_uuid, error);
+          return structure;
+        }
+      })
+    );
+
+    return structuresWithTranslations;
   }
 
   static async setActiveStructure(structureId: number): Promise<void> {

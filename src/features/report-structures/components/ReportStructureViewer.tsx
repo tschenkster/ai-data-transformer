@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 import { useToast } from '@/hooks/use-toast';
-import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database } from 'lucide-react';
+import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database, Languages } from 'lucide-react';
+import { MultilingualSelector } from '@/components/MultilingualSelector';
+import { useLanguagePreference } from '@/hooks/useTranslations';
+import { TranslationService } from '@/services/translationService';
 
 interface ReportStructure {
   report_structure_id: number;
@@ -70,6 +73,7 @@ export default function ReportStructureViewer({
   onStructureChange 
 }: ReportStructureViewerProps) {
   const { toast } = useToast();
+  const { language, changeLanguage } = useLanguagePreference();
   const [selectedStructure, setSelectedStructure] = useState<string>('');
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<ReportLineItem[]>([]);
@@ -77,6 +81,7 @@ export default function ReportStructureViewer({
   const [loading, setLoading] = useState(false);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [translatedItems, setTranslatedItems] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (activeStructure) {
@@ -106,7 +111,45 @@ export default function ReportStructureViewer({
 
   useEffect(() => {
     buildTreeData();
-  }, [filteredItems, expandedNodes]);
+  }, [filteredItems, expandedNodes, translatedItems]);
+
+  useEffect(() => {
+    // Load translations when language changes
+    if (lineItems.length > 0) {
+      loadTranslations();
+    }
+  }, [language, lineItems]);
+
+  const loadTranslations = async () => {
+    if (!language || language === 'original') return;
+
+    const translations = new Map<string, string>();
+    
+    // Load translations for line items in batches
+    const batchSize = 20;
+    for (let i = 0; i < lineItems.length; i += batchSize) {
+      const batch = lineItems.slice(i, i + batchSize);
+      
+      await Promise.all(batch.map(async (item) => {
+        try {
+          const translatedDesc = await TranslationService.getTranslation(
+            'report_line_item',
+            item.report_line_item_uuid,
+            'report_line_item_description',
+            language
+          );
+          
+          if (translatedDesc && !translatedDesc.startsWith('[missing:')) {
+            translations.set(item.report_line_item_uuid, translatedDesc);
+          }
+        } catch (error) {
+          console.error('Translation fetch failed for item:', item.report_line_item_uuid, error);
+        }
+      }));
+    }
+    
+    setTranslatedItems(translations);
+  };
 
   const fetchLineItems = async (structureId: number) => {
     setLoading(true);
@@ -190,6 +233,12 @@ export default function ReportStructureViewer({
   };
 
   const getItemDisplayName = (item: ReportLineItem) => {
+    // Check for translated version first
+    const translatedName = translatedItems.get(item.report_line_item_uuid);
+    if (translatedName && !translatedName.startsWith('[missing:')) {
+      return translatedName;
+    }
+
     // Use report_line_item_description as primary display field
     if (item.report_line_item_description) {
       return item.report_line_item_description;
@@ -319,6 +368,15 @@ export default function ReportStructureViewer({
               className="pl-10"
             />
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Languages className="w-4 h-4 text-muted-foreground" />
+          <MultilingualSelector
+            currentLanguage={language}
+            onLanguageChange={changeLanguage}
+            size="sm"
+          />
         </div>
       </div>
 
