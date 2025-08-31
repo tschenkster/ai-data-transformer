@@ -5,41 +5,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Download, FileText, AlertCircle } from 'lucide-react';
-import { syncLatestDocumentation, type SyncResult } from '@/utils/documentationSync';
+import { fetchLatestDbStructureDocs, type SyncResult } from '@/utils/documentationSync';
 import Footer from '@/components/Footer';
 
 export default function DocumentationSync() {
   const { isSuperAdmin } = useAuth();
   const { toast } = useToast();
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSync, setLastSync] = useState<SyncResult | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const [lastFetch, setLastFetch] = useState<SyncResult | null>(null);
 
-  const handleSync = async () => {
-    setIsSyncing(true);
+  const handleFetch = async () => {
+    setIsFetching(true);
     try {
-      const result = await syncLatestDocumentation();
-      setLastSync(result);
+      const result = await fetchLatestDbStructureDocs();
+      setLastFetch(result);
       
       if (result.success) {
         toast({
-          title: "Documentation Synced",
-          description: `Successfully downloaded ${result.filename} to docs/database/`,
+          title: "Documentation Fetched",
+          description: `Successfully downloaded ${result.filename}`,
         });
       } else {
         toast({
-          title: "Sync Failed",
-          description: result.error || "Failed to sync documentation",
+          title: "Fetch Failed",
+          description: result.error || "Failed to fetch documentation",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Sync Error",
-        description: error.message || "Unexpected error during sync",
+        title: "Fetch Error",
+        description: error.message || "Unexpected error during fetch",
         variant: "destructive",
       });
     } finally {
-      setIsSyncing(false);
+      setIsFetching(false);
     }
   };
 
@@ -50,7 +50,7 @@ export default function DocumentationSync() {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Access denied. Only Super Administrators can access documentation synchronization.
+              Access denied. Only Super Administrators can fetch database structure documentation.
             </AlertDescription>
           </Alert>
         </div>
@@ -63,9 +63,9 @@ export default function DocumentationSync() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Documentation Synchronization</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Database Structure Documentation</h1>
           <p className="text-muted-foreground">
-            Sync the latest database documentation from storage to local docs folder.
+            Fetch the latest database structure documentation from storage and download it locally.
           </p>
         </div>
 
@@ -73,37 +73,37 @@ export default function DocumentationSync() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Database Documentation Sync
+              Fetch Database Structure Docs
             </CardTitle>
             <CardDescription>
-              Download the latest database structure documentation from Supabase Storage and save it to the docs/database/ folder.
+              Download the latest database structure documentation from Supabase Storage as a local file.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
-              onClick={handleSync}
-              disabled={isSyncing}
+              onClick={handleFetch}
+              disabled={isFetching}
               className="flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
-              {isSyncing ? 'Syncing Documentation...' : 'Sync Latest Documentation'}
+              {isFetching ? 'Fetching Documentation...' : 'Fetch Latest Documentation'}
             </Button>
 
-            {lastSync && (
+            {lastFetch && (
               <div className="mt-4">
-                {lastSync.success ? (
+                {lastFetch.success ? (
                   <Alert>
                     <FileText className="h-4 w-4" />
                     <AlertDescription>
-                      <strong>Success:</strong> Downloaded {lastSync.filename} 
-                      {lastSync.size && ` (${(lastSync.size / 1024).toFixed(1)} KB)`}
+                      <strong>Success:</strong> Downloaded {lastFetch.filename} 
+                      {lastFetch.size && ` (${(lastFetch.size / 1024).toFixed(1)} KB)`}
                     </AlertDescription>
                   </Alert>
                 ) : (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      <strong>Error:</strong> {lastSync.error}
+                      <strong>Error:</strong> {lastFetch.error}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -115,8 +115,8 @@ export default function DocumentationSync() {
               <ul className="list-disc list-inside space-y-1">
                 <li>Fetches the most recent DATABASE-STRUCTURE_[date]_v[num].md file</li>
                 <li>Downloads it from Supabase Storage</li>
-                <li>Saves it to your local docs/database/ folder</li>
-                <li>Logs the sync operation for audit purposes</li>
+                <li>Triggers a browser download of the documentation file</li>
+                <li>Logs the fetch operation for audit purposes</li>
               </ul>
             </div>
           </CardContent>

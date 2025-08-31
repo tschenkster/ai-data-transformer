@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Starting documentation sync process...');
+    console.log('Starting database structure documentation fetch process...');
 
     // Initialize Supabase clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -143,15 +143,15 @@ Deno.serve(async (req) => {
     const fileContent = await fileData.text();
     console.log(`Downloaded file content (${fileContent.length} characters)`);
 
-    // Log the sync operation (user-scoped so auth.uid() is recorded)
+    // Log the fetch operation (user-scoped so auth.uid() is recorded)
     await supabaseUser.rpc('log_security_event', {
-      p_action: 'documentation_sync',
+      p_action: 'db_structure_docs_fetched',
       p_target_user_id: user.id,
       p_details: {
         filename: latestFile.name,
         file_size: fileData.size,
-        sync_timestamp: new Date().toISOString(),
-        operation: 'download_to_local_docs'
+        fetch_timestamp: new Date().toISOString(),
+        operation: 'download_db_structure_docs'
       }
     });
 
@@ -161,8 +161,8 @@ Deno.serve(async (req) => {
         filename: latestFile.name,
         size: fileData.size,
         content: fileContent,
-        synced_at: new Date().toISOString(),
-        message: `Successfully synced ${latestFile.name} to local documentation`
+        fetched_at: new Date().toISOString(),
+        message: `Successfully fetched ${latestFile.name} from storage`
       }),
       { 
         status: 200, 
@@ -171,11 +171,11 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Unexpected error in documentation sync:', error);
+    console.error('Unexpected error in database structure docs fetch:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Internal server error during documentation sync',
+        error: 'Internal server error during database structure docs fetch',
         details: error.message 
       }),
       { 

@@ -85,29 +85,27 @@ const syncAllDocsToProject = async (): Promise<SyncResult> => {
   }
 };
 
-// Sync latest database documentation from storage to local project
-const syncLatestDocumentation = async (): Promise<SyncResult> => {
+// Fetch latest database structure documentation from storage for download
+const fetchLatestDbStructureDocs = async (): Promise<SyncResult> => {
   try {
-    const { data, error } = await supabase.functions.invoke('sync-documentation', {
-      body: { action: 'sync' }
-    });
+    const { data, error } = await supabase.functions.invoke('fetch-latest-db-structure-docs');
 
     if (error) {
-      console.error('Error syncing documentation:', error);
+      console.error('Error fetching database structure docs:', error);
       return {
         success: false,
-        error: error.message || 'Failed to sync documentation'
+        error: error.message || 'Failed to fetch database structure documentation'
       };
     }
 
     if (!data.success) {
       return {
         success: false,
-        error: data.error || 'Sync operation failed'
+        error: data.error || 'Fetch operation failed'
       };
     }
 
-    // Save the content to local file in docs/database/
+    // Download the content as a local file
     if (data.content && data.filename) {
       try {
         // Create a blob from the content
@@ -140,10 +138,10 @@ const syncLatestDocumentation = async (): Promise<SyncResult> => {
 
     return data;
   } catch (error) {
-    console.error('Unexpected error during sync:', error);
+    console.error('Unexpected error during fetch:', error);
     return {
       success: false,
-      error: error.message || 'Unexpected error during documentation sync'
+      error: error.message || 'Unexpected error during database structure docs fetch'
     };
   }
 };
@@ -164,4 +162,6 @@ const writeDocumentationToFile = async (filename: string, content: string): Prom
 };
 
 // Export all functions
-export { syncAllDocsToProject, syncLatestDocumentation, writeDocumentationToFile };
+export { syncAllDocsToProject, fetchLatestDbStructureDocs, writeDocumentationToFile };
+// Keep old name for backward compatibility during transition
+export { fetchLatestDbStructureDocs as syncLatestDocumentation };
