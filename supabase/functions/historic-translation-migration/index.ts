@@ -69,14 +69,14 @@ serve(async (req) => {
       case 'migrate_ui_translations':
         if (dry_run) {
           // Just assess what would be changed
-           const { data: assessment, error } = await supabaseClient.rpc('assess_translation_data_completeness');
+           const { data: assessment, error } = await userClient.rpc('assess_translation_data_completeness');
            if (error) throw error;
            const uiMissing = assessment?.tables?.ui_translations
              ? (assessment.tables.ui_translations.missing_original_lang ?? 0) + (assessment.tables.ui_translations.missing_original_text ?? 0)
              : (assessment?.ui_translations?.null_values ?? 0);
            result = { dry_run: true, would_affect: uiMissing };
         } else {
-          const { data, error } = await supabaseClient.rpc('migrate_ui_translations_null_values');
+          const { data, error } = await userClient.rpc('migrate_ui_translations_null_values');
           if (error) throw error;
           result = data;
         }
@@ -84,14 +84,14 @@ serve(async (req) => {
 
       case 'migrate_report_structures_translations':
         if (dry_run) {
-          const { data: assessment, error } = await supabaseClient.rpc('assess_translation_data_completeness');
+          const { data: assessment, error } = await userClient.rpc('assess_translation_data_completeness');
           if (error) throw error;
           const structuresMissing = assessment?.tables?.report_structures_translations
             ? (assessment.tables.report_structures_translations.missing_original_lang ?? 0) + (assessment.tables.report_structures_translations.missing_original_text ?? 0)
             : (assessment?.report_structures_translations?.null_values ?? 0);
           result = { dry_run: true, would_affect: structuresMissing };
         } else {
-          const { data, error } = await supabaseClient.rpc('migrate_report_structures_translations_null_values');
+          const { data, error } = await userClient.rpc('migrate_report_structures_translations_null_values');
           if (error) throw error;
           result = data;
         }
@@ -99,14 +99,14 @@ serve(async (req) => {
 
       case 'migrate_line_items_translations':
         if (dry_run) {
-          const { data: assessment, error } = await supabaseClient.rpc('assess_translation_data_completeness');
+          const { data: assessment, error } = await userClient.rpc('assess_translation_data_completeness');
           if (error) throw error;
           const lineItemsMissing = assessment?.tables?.report_line_items_translations
             ? (assessment.tables.report_line_items_translations.missing_original_lang ?? 0) + (assessment.tables.report_line_items_translations.missing_original_text ?? 0)
             : (assessment?.report_line_items_translations?.null_values ?? 0);
           result = { dry_run: true, would_affect: lineItemsMissing };
         } else {
-          const { data, error } = await supabaseClient.rpc('migrate_report_line_items_translations_null_values');
+          const { data, error } = await userClient.rpc('migrate_report_line_items_translations_null_values');
           if (error) throw error;
           result = data;
         }
