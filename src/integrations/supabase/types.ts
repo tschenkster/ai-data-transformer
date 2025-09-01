@@ -884,6 +884,7 @@ export type Database = {
           locked_until: string | null
           password_changed_at: string | null
           phone_number: string | null
+          preferred_content_language: string | null
           preferred_ui_language: string | null
           supabase_user_uuid: string
           timezone: string | null
@@ -905,6 +906,7 @@ export type Database = {
           locked_until?: string | null
           password_changed_at?: string | null
           phone_number?: string | null
+          preferred_content_language?: string | null
           preferred_ui_language?: string | null
           supabase_user_uuid: string
           timezone?: string | null
@@ -926,6 +928,7 @@ export type Database = {
           locked_until?: string | null
           password_changed_at?: string | null
           phone_number?: string | null
+          preferred_content_language?: string | null
           preferred_ui_language?: string | null
           supabase_user_uuid?: string
           timezone?: string | null

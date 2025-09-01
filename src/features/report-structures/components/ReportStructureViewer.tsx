@@ -8,8 +8,8 @@ import { Badge } from '@/components/ui/badge';
 
 import { useToast } from '@/hooks/use-toast';
 import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database, Languages } from 'lucide-react';
-import { MultilingualSelector } from '@/components/MultilingualSelector';
-import { useLanguagePreference } from '@/hooks/useTranslations';
+import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
+import { useContentLanguagePreference } from '@/hooks/useContentLanguagePreference';
 import { TranslationService } from '@/services/translationService';
 
 interface ReportStructure {
@@ -73,7 +73,7 @@ export default function ReportStructureViewer({
   onStructureChange 
 }: ReportStructureViewerProps) {
   const { toast } = useToast();
-  const { language, changeLanguage } = useLanguagePreference();
+  const { language, changeLanguage } = useContentLanguagePreference();
   const [selectedStructure, setSelectedStructure] = useState<string>('');
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<ReportLineItem[]>([]);
@@ -372,11 +372,9 @@ export default function ReportStructureViewer({
 
         <div className="flex items-center gap-2">
           <Languages className="w-4 h-4 text-muted-foreground" />
-          <MultilingualSelector
-            currentLanguage={language}
-            onLanguageChange={changeLanguage}
-            size="sm"
-          />
+          <div className="min-w-[120px]">
+            <ContentLanguageSelector showLabel={false} size="sm" />
+          </div>
         </div>
       </div>
 

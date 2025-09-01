@@ -1,6 +1,6 @@
 import { UserProfileDisplay } from '@/features/user-management';
 import { UserLanguageSelector } from '@/components/UserLanguageSelector';
-import { MultilingualSelector } from '@/components/MultilingualSelector';
+import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Languages } from 'lucide-react';
@@ -50,12 +50,7 @@ export default function AccountProfile() {
                 <p className="text-xs text-muted-foreground mb-2">
                   Language for report structures, line items, and data content
                 </p>
-                <MultilingualSelector
-                  currentLanguage="de" 
-                  onLanguageChange={(lang) => console.log('Content language changed to:', lang)}
-                  showLabel={false}
-                  size="default"
-                />
+                <ContentLanguageSelector showLabel={false} />
               </div>
             </CardContent>
           </Card>

@@ -15,7 +15,7 @@ import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
 import ReportStructureViewer from './ReportStructureViewer';
 import ReportStructureModifier from './ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
-import { useLanguagePreference } from '@/hooks/useTranslations';
+import { useContentLanguagePreference } from '@/hooks/useContentLanguagePreference';
 import { ReportStructureService } from '../services/reportStructureService';
 
 interface ReportStructure {
@@ -64,7 +64,7 @@ interface ReportLineItem {
 export default function ReportStructureManager() {
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
-  const { language } = useLanguagePreference();
+  const { language } = useContentLanguagePreference();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);

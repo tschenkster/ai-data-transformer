@@ -11,6 +11,7 @@ import { AppRoutes } from "@/app/routes/app-routes";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import { ContentLanguageProvider } from "@/contexts/ContentLanguageProvider";
 import Homepage from "./pages/Homepage";
 import Pricing from "./pages/Pricing";
 import Register from "./pages/Register";
@@ -80,7 +81,9 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <LanguageProvider>
-              <AppContent />
+              <ContentLanguageProvider>
+                <AppContent />
+              </ContentLanguageProvider>
             </LanguageProvider>
           </AuthProvider>
         </BrowserRouter>
