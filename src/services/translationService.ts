@@ -102,7 +102,7 @@ export class TranslationService {
 
     let query = supabase
       .from(tableName as any)
-      .select('field_key, translated_text, language_code_target')
+      .select('source_field_name, translated_text, language_code_target')
       .eq(uuidField, entityUuid);
 
     if (languageCode) {
@@ -115,7 +115,7 @@ export class TranslationService {
     const translations: Record<string, string> = {};
     if (data) {
       data.forEach((item: any) => {
-        const key = languageCode ? item.field_key : `${item.field_key}_${item.language_code_target}`;
+        const key = languageCode ? item.source_field_name : `${item.source_field_name}_${item.language_code_target}`;
         translations[key] = item.translated_text || '';
       });
     }

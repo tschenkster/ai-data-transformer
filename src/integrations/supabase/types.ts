@@ -1378,8 +1378,8 @@ export type Database = {
         Args: {
           p_entity_type: string
           p_entity_uuid: string
-          p_field_key: string
           p_language_code?: string
+          p_source_field_name: string
         }
         Returns: string
       }

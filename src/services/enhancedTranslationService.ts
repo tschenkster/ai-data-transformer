@@ -30,7 +30,7 @@ export class EnhancedTranslationService {
     const { data, error } = await supabase.rpc('get_translation_with_fallback', {
       p_entity_type: entityType,
       p_entity_uuid: entityUuid,
-      p_field_key: fieldKey,
+      p_source_field_name: fieldKey,
       p_language_code: languageCode
     });
 
@@ -70,7 +70,7 @@ export class EnhancedTranslationService {
 
     let query = supabase
       .from(tableName as any)
-      .select('field_key, translated_text')
+      .select('source_field_name, translated_text')
       .eq(uuidField, entityUuid);
 
     if (languageCode) {
@@ -87,7 +87,7 @@ export class EnhancedTranslationService {
     if (!data) return {};
 
     return data.reduce((acc: Record<string, string>, translation: any) => {
-      acc[translation.field_key] = translation.translated_text || '';
+      acc[translation.source_field_name] = translation.translated_text || '';
       return acc;
     }, {});
   }
@@ -117,7 +117,7 @@ export class EnhancedTranslationService {
           [uuidField]: entityUuid,
           language_code_original: sourceLanguage,
           language_code_target: langCode,
-          field_key: fieldKey,
+          source_field_name: fieldKey,
           original_text: translations[fieldKey][sourceLanguage] || '',
           translated_text: translatedText,
           source: langCode === sourceLanguage ? 'import' : 'ai'
@@ -128,7 +128,7 @@ export class EnhancedTranslationService {
     const { error } = await supabase
       .from(tableName as any)
       .upsert(insertData, {
-        onConflict: `${uuidField},language_code_target,field_key`
+        onConflict: `${uuidField},language_code_target,source_field_name`
       });
 
     if (error) {
@@ -173,7 +173,7 @@ export class EnhancedTranslationService {
     const { error } = await supabase
       .from(tableName as any)
       .upsert(insertData, {
-        onConflict: `${uuidField},language_code_target,field_key`
+        onConflict: `${uuidField},language_code_target,source_field_name`
       });
 
     if (error) {
