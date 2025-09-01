@@ -372,7 +372,6 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
-          field_key: string
           language_code_original: string | null
           language_code_target: string
           original_text: string | null
@@ -380,6 +379,7 @@ export type Database = {
           report_line_item_translation_uuid: string
           report_line_item_uuid: string
           source: string
+          source_field_name: string
           translated_text: string | null
           updated_at: string
           updated_by: string | null
@@ -387,7 +387,6 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
-          field_key: string
           language_code_original?: string | null
           language_code_target: string
           original_text?: string | null
@@ -395,6 +394,7 @@ export type Database = {
           report_line_item_translation_uuid?: string
           report_line_item_uuid: string
           source?: string
+          source_field_name: string
           translated_text?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -402,7 +402,6 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
-          field_key?: string
           language_code_original?: string | null
           language_code_target?: string
           original_text?: string | null
@@ -410,6 +409,7 @@ export type Database = {
           report_line_item_translation_uuid?: string
           report_line_item_uuid?: string
           source?: string
+          source_field_name?: string
           translated_text?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -602,7 +602,6 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
-          field_key: string
           language_code_original: string | null
           language_code_target: string
           original_text: string | null
@@ -610,6 +609,7 @@ export type Database = {
           report_structure_translation_uuid: string
           report_structure_uuid: string
           source: string
+          source_field_name: string
           translated_text: string | null
           updated_at: string
           updated_by: string | null
@@ -617,7 +617,6 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
-          field_key: string
           language_code_original?: string | null
           language_code_target: string
           original_text?: string | null
@@ -625,6 +624,7 @@ export type Database = {
           report_structure_translation_uuid?: string
           report_structure_uuid: string
           source?: string
+          source_field_name: string
           translated_text?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -632,7 +632,6 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
-          field_key?: string
           language_code_original?: string | null
           language_code_target?: string
           original_text?: string | null
@@ -640,6 +639,7 @@ export type Database = {
           report_structure_translation_uuid?: string
           report_structure_uuid?: string
           source?: string
+          source_field_name?: string
           translated_text?: string | null
           updated_at?: string
           updated_by?: string | null
