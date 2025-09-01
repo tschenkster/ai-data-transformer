@@ -32,29 +32,56 @@ export function TranslationDataAssessment() {
       // Cast the data to the expected structure
       const assessmentData = data as any;
 
-      const stats = [
-        {
-          table_name: 'ui_translations',
-          total_records: assessmentData.tables?.ui_translations?.total_records || 0,
-          missing_original_lang: assessmentData.tables?.ui_translations?.missing_original_lang || 0,
-          missing_original_text: assessmentData.tables?.ui_translations?.missing_original_text || 0,
-          completeness_percentage: assessmentData.tables?.ui_translations?.completeness_percentage || 100
-        },
-        {
-          table_name: 'report_structures_translations',
-          total_records: assessmentData.tables?.report_structures_translations?.total_records || 0,
-          missing_original_lang: assessmentData.tables?.report_structures_translations?.missing_original_lang || 0,
-          missing_original_text: assessmentData.tables?.report_structures_translations?.missing_original_text || 0,
-          completeness_percentage: assessmentData.tables?.report_structures_translations?.completeness_percentage || 100
-        },
-        {
-          table_name: 'report_line_items_translations',
-          total_records: assessmentData.tables?.report_line_items_translations?.total_records || 0,
-          missing_original_lang: assessmentData.tables?.report_line_items_translations?.missing_original_lang || 0,
-          missing_original_text: assessmentData.tables?.report_line_items_translations?.missing_original_text || 0,
-          completeness_percentage: assessmentData.tables?.report_line_items_translations?.completeness_percentage || 100
-        }
-      ];
+      // Normalize API response (support both new and legacy shapes)
+      const mapFromTablesShape = (tables: any): TableStats[] => {
+        const get = (k: string) => tables?.[k] ?? {};
+        const mapOne = (k: string): TableStats => {
+          const t = get(k);
+          const total = t.total_records ?? 0;
+          const missLang = t.missing_original_lang ?? 0;
+          const missText = t.missing_original_text ?? 0;
+          const pct = t.completeness_percentage ?? (total ? Math.round(((total - Math.max(missLang, missText)) * 100) / total) : 100);
+          return {
+            table_name: k,
+            total_records: total,
+            missing_original_lang: missLang,
+            missing_original_text: missText,
+            completeness_percentage: Math.round(pct)
+          };
+        };
+        return [
+          mapOne('ui_translations'),
+          mapOne('report_structures_translations'),
+          mapOne('report_line_items_translations'),
+        ];
+      };
+
+      const mapFromFlatShape = (flat: any): TableStats[] => {
+        const get = (k: string) => flat?.[k] ?? {};
+        const mapOne = (k: string): TableStats => {
+          const t = get(k);
+          const total = t.total_records ?? 0;
+          const missing = t.null_values ?? 0; // Legacy field name
+          const pct = t.completion_rate ?? (total ? Math.round(((total - missing) * 100) / total) : 100);
+          return {
+            table_name: k,
+            total_records: total,
+            // We only had a single missing bucket before – map it to both for display purposes
+            missing_original_lang: missing,
+            missing_original_text: missing,
+            completeness_percentage: Math.round(pct)
+          };
+        };
+        return [
+          mapOne('ui_translations'),
+          mapOne('report_structures_translations'),
+          mapOne('report_line_items_translations'),
+        ];
+      };
+
+      const stats = assessmentData?.tables
+        ? mapFromTablesShape(assessmentData.tables)
+        : mapFromFlatShape(assessmentData);
 
       setTableStats(stats);
     } catch (error) {
