@@ -1,6 +1,9 @@
 import { UserProfileDisplay } from '@/features/user-management';
 import { UserLanguageSelector } from '@/components/UserLanguageSelector';
+import { MultilingualSelector } from '@/components/MultilingualSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Languages } from 'lucide-react';
 import { useLanguageContext } from '@/components/LanguageProvider';
 import Footer from '@/components/Footer';
 
@@ -16,22 +19,43 @@ export default function AccountProfile() {
         </div>
 
         <div className="grid gap-6 max-w-4xl">
-          {/* Language Preference Section */}
+          {/* Language Preferences Section */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('LANGUAGE_PREFERENCES', 'Language Preferences')}</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Languages className="h-5 w-5" />
+                Language Preferences
+              </CardTitle>
               <CardDescription>
-                {t('LANGUAGE_PREFERENCES_DESC', 'Choose your preferred language for the user interface')}
+                Configure your language preferences for different parts of the application
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">
-                    {t('INTERFACE_LANGUAGE', 'Interface Language')}
-                  </label>
-                  <UserLanguageSelector showLabel={false} />
-                </div>
+            <CardContent className="space-y-6">
+              {/* UI Language */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t('INTERFACE_LANGUAGE', 'Interface Language')}
+                </Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Language for menus, buttons, and interface elements
+                </p>
+                <UserLanguageSelector showLabel={false} />
+              </div>
+              
+              {/* Content Language */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Content Language
+                </Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Language for report structures, line items, and data content
+                </p>
+                <MultilingualSelector
+                  currentLanguage="de" 
+                  onLanguageChange={(lang) => console.log('Content language changed to:', lang)}
+                  showLabel={false}
+                  size="default"
+                />
               </div>
             </CardContent>
           </Card>
