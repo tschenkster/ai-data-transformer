@@ -27,9 +27,12 @@ import {
   Edit,
   Pause,
   Plus,
-  Download
+  Download,
+  Languages
 } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { MultilingualSelector } from '@/components/MultilingualSelector';
+import { useLanguagePreference } from '@/hooks/useTranslations';
 
 interface UserAccount {
   user_uuid: string;
@@ -48,6 +51,7 @@ interface UserAccount {
 export default function UserProfileManagement() {
   const { user, userAccount, isSuperAdmin, isEntityAdmin, logSecurityEvent } = useAuth();
   const { toast } = useToast();
+  const { language, changeLanguage } = useLanguagePreference();
   
   // State for data
   const [users, setUsers] = useState<UserAccount[]>([]);
@@ -374,6 +378,25 @@ export default function UserProfileManagement() {
       actions={pageActions}
     >
       <div className="space-y-6">
+        {/* Language Selection */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              Current Language Settings
+            </CardTitle>
+            <CardDescription>
+              Select your preferred language for viewing content
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MultilingualSelector
+              currentLanguage={language}
+              onLanguageChange={changeLanguage}
+              showLabel={true}
+            />
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

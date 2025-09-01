@@ -131,25 +131,6 @@ export default function MultilingualManagement() {
       currentPage="Multilingual Management"
     >
       <div className="space-y-6">
-        {/* Language Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Languages className="h-5 w-5" />
-              Current Language Settings
-            </CardTitle>
-            <CardDescription>
-              Select your preferred language for viewing content
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <MultilingualSelector
-              currentLanguage={language}
-              onLanguageChange={changeLanguage}
-              showLabel={true}
-            />
-          </CardContent>
-        </Card>
 
         {/* Migration Status */}
         <Card>
