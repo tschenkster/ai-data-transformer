@@ -200,18 +200,6 @@ export default function Dashboard() {
       actions={dashboardActions}
     >
       <div className="space-y-8">
-        {/* Welcome Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 border">
-          <div className="relative z-10">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">
-              Welcome back, {userAccount?.first_name || user?.email?.split('@')[0] || 'User'}! 👋
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Here's what's happening with your platform today.
-            </p>
-          </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl -translate-y-32 translate-x-32" />
-        </div>
 
         {/* Modern Stats Cards - Admin Only */}
         {isAdmin && (

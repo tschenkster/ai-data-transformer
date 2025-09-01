@@ -1,4 +1,5 @@
 import { useStartPage } from '@/hooks/use-start-page';
+import { useAuth } from '@/hooks/use-auth';
 import { HumorCard } from '@/components/start-page/HumorCard';
 import { ShuffleButton } from '@/components/start-page/ShuffleButton';
 import { PrimaryCTA } from '@/components/start-page/PrimaryCTA';
@@ -7,6 +8,7 @@ import { QuietStart } from '@/components/start-page/QuietStart';
 import { QuietToggle } from '@/components/start-page/QuietToggle';
 
 export default function Start() {
+  const { user, userAccount } = useAuth();
   const {
     state,
     items,
@@ -98,11 +100,17 @@ export default function Start() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
-        {/* Top greeting */}
-        <div className="text-center mb-8">
-          <p className="text-sm text-muted-foreground">
-            Welcome back 👋 — spreadsheets are safe with us today.
-          </p>
+        {/* Welcome Header */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 border mb-8">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Welcome back, {userAccount?.first_name || user?.email?.split('@')[0] || 'User'}! 👋
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Here's what's happening with your platform today.
+            </p>
+          </div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl -translate-y-32 translate-x-32" />
         </div>
 
         {/* Humor card */}
