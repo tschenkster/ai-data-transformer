@@ -35,25 +35,9 @@ export function useUITranslations(languageCode?: string) {
   const loadUITranslations = async (lang: string) => {
     setLoading(true);
     try {
-      // Load common UI translations
-      const commonKeys = [
-        'NAV_HOME', 'NAV_DASHBOARD', 'NAV_REPORTS', 'NAV_STRUCTURES', 'NAV_ADMIN',
-        'BTN_SAVE', 'BTN_CANCEL', 'BTN_DELETE', 'BTN_EDIT', 'BTN_CREATE',
-        'LABEL_LANGUAGE', 'LABEL_STATUS', 'LABEL_CREATED', 'LABEL_UPDATED'
-      ];
-
-      const translationPromises = commonKeys.map(async (key) => {
-        const translation = await EnhancedTranslationService.getUITranslation(key, lang);
-        return { key, translation };
-      });
-
-      const results = await Promise.all(translationPromises);
-      const translationsMap = results.reduce((acc, { key, translation }) => {
-        acc[key] = translation;
-        return acc;
-      }, {} as UITranslations);
-
-      setTranslations(translationsMap);
+      // Load ALL UI translations for the language using batch loading
+      const allTranslations = await EnhancedTranslationService.getAllUITranslationsForLanguage(lang);
+      setTranslations(allTranslations);
     } catch (error) {
       console.error('Failed to load UI translations:', error);
       toast({
@@ -67,7 +51,14 @@ export function useUITranslations(languageCode?: string) {
   };
 
   const t = (key: string, fallback?: string): string => {
-    return translations[key] || fallback || key;
+    const translation = translations[key];
+    
+    // Development-only warning for missing translation keys
+    if (process.env.NODE_ENV === 'development' && !translation && !fallback) {
+      console.warn(`🌐 Missing translation for key: "${key}" in language "${languageCode || userLanguage}"`);
+    }
+    
+    return translation || fallback || key;
   };
 
   const changeLanguage = async (newLanguage: string) => {

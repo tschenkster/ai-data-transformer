@@ -43,13 +43,30 @@ export class EnhancedTranslationService {
   }
 
   /**
-   * Get UI translation
+   * Get UI translation with proper fallback for specific field
    */
   static async getUITranslation(
     uiKey: string,
     languageCode = 'de'
   ): Promise<string> {
-    return this.getTranslationWithFallback('ui', uiKey, 'text', languageCode);
+    const { data, error } = await supabase
+      .from('ui_translations')
+      .select('translated_text')
+      .eq('ui_key', uiKey)
+      .eq('language_code_target', languageCode)
+      .eq('source_field_name', 'text')
+      .single();
+
+    if (error || !data?.translated_text) {
+      // Fallback to English if target language translation not found
+      if (languageCode !== 'en') {
+        return this.getUITranslation(uiKey, 'en');
+      }
+      // Final fallback: return the key itself
+      return uiKey;
+    }
+
+    return data.translated_text;
   }
 
   /**
