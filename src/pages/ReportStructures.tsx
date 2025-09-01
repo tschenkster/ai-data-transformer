@@ -5,13 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Plus, Upload, Settings } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useEffect } from 'react';
-import { LanguageQuerySelector } from '@/features/multilingual/components/LanguageQuerySelector';
-import { useLanguageQuery } from '@/features/multilingual/hooks/useLanguageQuery';
 import { useUITranslations } from '@/hooks/useUITranslations';
 
 export default function ReportStructures() {
-  const { activeLanguage } = useLanguageQuery();
-  const { t } = useUITranslations(activeLanguage);
+  const { t } = useUITranslations('en');
 
   useEffect(() => {
     console.log('ReportStructures page mounted');
@@ -36,11 +33,6 @@ export default function ReportStructures() {
 
   const pageActions = (
     <div className="flex items-center gap-2">
-      <LanguageQuerySelector 
-        showLabel={false}
-        size="sm"
-        className="mr-2"
-      />
       <Button variant="outline" size="sm">
         <Settings className="h-4 w-4 mr-2" />
         {t('BTN_SETTINGS', 'Settings')}

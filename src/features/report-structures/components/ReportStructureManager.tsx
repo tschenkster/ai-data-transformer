@@ -10,12 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X, Languages } from 'lucide-react';
+import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X } from 'lucide-react';
 import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
 import ReportStructureViewer from './ReportStructureViewer';
 import ReportStructureModifier from './ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
-import { MultilingualSelector } from '@/components/MultilingualSelector';
 import { useLanguagePreference } from '@/hooks/useTranslations';
 import { ReportStructureService } from '../services/reportStructureService';
 
@@ -65,7 +64,7 @@ interface ReportLineItem {
 export default function ReportStructureManager() {
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
-  const { language, changeLanguage } = useLanguagePreference();
+  const { language } = useLanguagePreference();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
@@ -337,15 +336,6 @@ export default function ReportStructureManager() {
             </TabsTrigger>
           )}
         </TabsList>
-        
-        <div className="flex items-center gap-2">
-          <Languages className="w-4 h-4 text-muted-foreground" />
-          <MultilingualSelector
-            currentLanguage={language}
-            onLanguageChange={changeLanguage}
-            size="sm"
-          />
-        </div>
       </div>
 
       <TabsContent value="overview" className="space-y-4">
@@ -394,21 +384,7 @@ export default function ReportStructureManager() {
                       <TableCell>{formatDate(structure.created_at)}</TableCell>
                       <TableCell>
           <ActionButtons 
-            actions={[
-              ...getActionsForStructure(structure),
-              ...(isSuperAdmin ? [{
-                label: 'Manage Translations',
-                icon: Languages,
-                onClick: () => {
-                  // TODO: Open translation editor for this structure
-                  toast({
-                    title: "Translation Management",
-                    description: "Coming soon - manage translations for this structure",
-                  });
-                },
-                variant: 'outline' as const
-              }] : [])
-            ]}
+            actions={getActionsForStructure(structure)}
             title=""
             className="space-y-0"
           />
