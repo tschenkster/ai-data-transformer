@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
 import { useUITranslations } from '@/hooks/useUITranslations';
 
-interface LanguageContextType {
+export interface LanguageContextType {
   currentLanguage: string;
   setCurrentLanguage: (language: string) => void;
   availableLanguages: Array<{
