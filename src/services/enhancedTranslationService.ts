@@ -272,4 +272,27 @@ export class EnhancedTranslationService {
 
     return data.preferred_ui_language;
   }
+
+  /**
+   * Get all UI translations for a specific language
+   * Returns key-value mapping for efficient lookup
+   */
+  static async getAllUITranslationsForLanguage(languageCode: string): Promise<Record<string, string>> {
+    const { data, error } = await supabase
+      .from('ui_translations')
+      .select('ui_key, translated_text')
+      .eq('language_code_target', languageCode);
+
+    if (error) {
+      console.error('Error fetching UI translations:', error);
+      return {};
+    }
+
+    if (!data) return {};
+
+    return data.reduce((acc: Record<string, string>, translation: any) => {
+      acc[translation.ui_key] = translation.translated_text || '';
+      return acc;
+    }, {});
+  }
 }
