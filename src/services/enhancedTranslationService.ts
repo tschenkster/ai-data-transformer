@@ -162,7 +162,7 @@ export class EnhancedTranslationService {
           [uuidField]: entityUuid,
           language_code_original: sourceLanguage,
           language_code_target: lang.language_code,
-          field_key: fieldKey,
+          source_field_name: fieldKey,
           original_text: fieldValue,
           translated_text: lang.language_code === sourceLanguage ? fieldValue : null,
           source: lang.language_code === sourceLanguage ? 'import' : 'ai'
