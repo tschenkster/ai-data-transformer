@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Play, Pause, RotateCcw, CheckCircle2, AlertTriangle, Database } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } = "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface MigrationStep {
   id: string;

@@ -1119,6 +1119,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assess_translation_data_completeness: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       bulk_update_user_status: {
         Args: {
           p_new_status: Database["public"]["Enums"]["user_account_status"]
@@ -1576,6 +1580,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      migrate_report_line_items_translations_null_values: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      migrate_report_structures_translations_null_values: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      migrate_ui_translations_null_values: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       reorder_line_item_with_hierarchy: {
         Args: {
           p_drop_position?: string
@@ -1610,6 +1626,10 @@ export type Database = {
       user_has_entity_access: {
         Args: { p_entity_uuid: string; p_user_uuid: string }
         Returns: boolean
+      }
+      validate_translation_data_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       validate_user_input: {
         Args:

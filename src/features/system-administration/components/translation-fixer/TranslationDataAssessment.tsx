@@ -24,47 +24,37 @@ export function TranslationDataAssessment() {
   const fetchTableStats = async () => {
     setLoading(true);
     try {
-      const queries = [
-        `SELECT 
-          'ui_translations' as table_name,
-          COUNT(*)::int as total_records,
-          COUNT(*) FILTER (WHERE language_code_original IS NULL)::int as missing_original_lang,
-          COUNT(*) FILTER (WHERE original_text IS NULL)::int as missing_original_text
-        FROM ui_translations`,
-        `SELECT 
-          'report_structures_translations' as table_name,
-          COUNT(*)::int as total_records,
-          COUNT(*) FILTER (WHERE language_code_original IS NULL)::int as missing_original_lang,
-          COUNT(*) FILTER (WHERE original_text IS NULL)::int as missing_original_text
-        FROM report_structures_translations`,
-        `SELECT 
-          'report_line_items_translations' as table_name,
-          COUNT(*)::int as total_records,
-          COUNT(*) FILTER (WHERE language_code_original IS NULL)::int as missing_original_lang,
-          COUNT(*) FILTER (WHERE original_text IS NULL)::int as missing_original_text
-        FROM report_line_items_translations`
+      // Use the assessment function we created
+      const { data, error } = await supabase.rpc('assess_translation_data_completeness');
+      
+      if (error) throw error;
+
+      // Cast the data to the expected structure
+      const assessmentData = data as any;
+
+      const stats = [
+        {
+          table_name: 'ui_translations',
+          total_records: assessmentData.tables?.ui_translations?.total_records || 0,
+          missing_original_lang: assessmentData.tables?.ui_translations?.missing_original_lang || 0,
+          missing_original_text: assessmentData.tables?.ui_translations?.missing_original_text || 0,
+          completeness_percentage: assessmentData.tables?.ui_translations?.completeness_percentage || 100
+        },
+        {
+          table_name: 'report_structures_translations',
+          total_records: assessmentData.tables?.report_structures_translations?.total_records || 0,
+          missing_original_lang: assessmentData.tables?.report_structures_translations?.missing_original_lang || 0,
+          missing_original_text: assessmentData.tables?.report_structures_translations?.missing_original_text || 0,
+          completeness_percentage: assessmentData.tables?.report_structures_translations?.completeness_percentage || 100
+        },
+        {
+          table_name: 'report_line_items_translations',
+          total_records: assessmentData.tables?.report_line_items_translations?.total_records || 0,
+          missing_original_lang: assessmentData.tables?.report_line_items_translations?.missing_original_lang || 0,
+          missing_original_text: assessmentData.tables?.report_line_items_translations?.missing_original_text || 0,
+          completeness_percentage: assessmentData.tables?.report_line_items_translations?.completeness_percentage || 100
+        }
       ];
-
-      const results = await Promise.all(
-        queries.map(query => supabase.rpc('execute_sql_read_only', { query }))
-      );
-
-      const stats = results.map((result, index) => {
-        if (result.error) throw result.error;
-        const data = result.data?.[0];
-        const totalRecords = data?.total_records || 0;
-        const missingLang = data?.missing_original_lang || 0;
-        const missingText = data?.missing_original_text || 0;
-        const totalMissing = Math.max(missingLang, missingText);
-        
-        return {
-          table_name: data?.table_name || ['ui_translations', 'report_structures_translations', 'report_line_items_translations'][index],
-          total_records: totalRecords,
-          missing_original_lang: missingLang,
-          missing_original_text: missingText,
-          completeness_percentage: totalRecords > 0 ? Math.round(((totalRecords - totalMissing) / totalRecords) * 100) : 100
-        };
-      });
 
       setTableStats(stats);
     } catch (error) {
@@ -74,6 +64,31 @@ export function TranslationDataAssessment() {
         description: "Failed to fetch translation table statistics.",
         variant: "destructive"
       });
+      
+      // Set empty stats as fallback
+      setTableStats([
+        {
+          table_name: 'ui_translations',
+          total_records: 0,
+          missing_original_lang: 0,
+          missing_original_text: 0,
+          completeness_percentage: 100
+        },
+        {
+          table_name: 'report_structures_translations', 
+          total_records: 0,
+          missing_original_lang: 0,
+          missing_original_text: 0,
+          completeness_percentage: 100
+        },
+        {
+          table_name: 'report_line_items_translations',
+          total_records: 0,
+          missing_original_lang: 0,
+          missing_original_text: 0,
+          completeness_percentage: 100
+        }
+      ]);
     } finally {
       setLoading(false);
     }
