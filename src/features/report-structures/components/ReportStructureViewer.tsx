@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database, Languages } from 'lucide-react';
 import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
 import { useContentLanguagePreference } from '@/hooks/useContentLanguagePreference';
-import { TranslationService } from '@/services/translationService';
+import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
 
 interface ReportStructure {
   report_structure_id: number;
@@ -132,14 +132,14 @@ export default function ReportStructureViewer({
       
       await Promise.all(batch.map(async (item) => {
         try {
-          const translatedDesc = await TranslationService.getTranslation(
+          const translatedDesc = await EnhancedTranslationService.getTranslationWithFallback(
             'report_line_item',
             item.report_line_item_uuid,
             'report_line_item_description',
             language
           );
           
-          if (translatedDesc && !translatedDesc.startsWith('[missing:')) {
+          if (translatedDesc && !translatedDesc.startsWith('[missing:') && !translatedDesc.startsWith('[error:')) {
             translations.set(item.report_line_item_uuid, translatedDesc);
           }
         } catch (error) {
