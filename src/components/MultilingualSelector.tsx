@@ -28,8 +28,14 @@ export function MultilingualSelector({
 
   const loadLanguages = async () => {
     try {
-      const data = await TranslationService.getLanguages();
-      setLanguages(data);
+      const { EnhancedTranslationService } = await import('@/services/enhancedTranslationService');
+      const data = await EnhancedTranslationService.getSystemLanguages();
+      setLanguages(data.map(lang => ({
+        language_code: lang.language_code,
+        language_name: lang.language_name,
+        is_default: lang.is_default,
+        is_enabled: lang.is_enabled
+      })));
       
       if (!currentLanguage && data.length > 0) {
         const defaultLang = data.find(lang => lang.is_default)?.language_code || data[0].language_code;

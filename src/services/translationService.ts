@@ -69,6 +69,23 @@ export class TranslationService {
     return data || `[missing:${fieldKey}]`;
   }
 
+  // Get translation with language parameter support and enhanced fallback
+  static async getTranslationWithLang(
+    entityType: string,
+    entityUuid: string,
+    fieldKey: string,
+    languageCode?: string
+  ): Promise<string> {
+    // Use dynamic import to avoid circular dependency
+    const { EnhancedTranslationService } = await import('./enhancedTranslationService');
+    return EnhancedTranslationService.getTranslationWithFallback(
+      entityType,
+      entityUuid,
+      fieldKey,
+      languageCode || 'de'
+    );
+  }
+
   // Get all translations for an entity
   static async getEntityTranslations(
     entityType: 'report_structure' | 'report_line_item',
@@ -85,11 +102,11 @@ export class TranslationService {
 
     let query = supabase
       .from(tableName as any)
-      .select('field_key, translated_text, language_code')
+      .select('field_key, translated_text, language_code_target')
       .eq(uuidField, entityUuid);
 
     if (languageCode) {
-      query = query.eq('language_code', languageCode);
+      query = query.eq('language_code_target', languageCode);
     }
 
     const { data, error } = await query;
@@ -98,7 +115,7 @@ export class TranslationService {
     const translations: Record<string, string> = {};
     if (data) {
       data.forEach((item: any) => {
-        const key = languageCode ? item.field_key : `${item.field_key}_${item.language_code}`;
+        const key = languageCode ? item.field_key : `${item.field_key}_${item.language_code_target}`;
         translations[key] = item.translated_text || '';
       });
     }

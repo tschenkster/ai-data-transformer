@@ -373,7 +373,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           field_key: string
-          language_code: string
+          language_code_original: string | null
+          language_code_target: string
+          original_text: string | null
           report_line_item_translation_id: number
           report_line_item_translation_uuid: string
           report_line_item_uuid: string
@@ -386,7 +388,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           field_key: string
-          language_code: string
+          language_code_original?: string | null
+          language_code_target: string
+          original_text?: string | null
           report_line_item_translation_id?: never
           report_line_item_translation_uuid?: string
           report_line_item_uuid: string
@@ -399,7 +403,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           field_key?: string
-          language_code?: string
+          language_code_original?: string | null
+          language_code_target?: string
+          original_text?: string | null
           report_line_item_translation_id?: never
           report_line_item_translation_uuid?: string
           report_line_item_uuid?: string
@@ -418,7 +424,14 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_report_line_items_translations_language"
-            columns: ["language_code"]
+            columns: ["language_code_target"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+          {
+            foreignKeyName: "report_line_items_translations_language_code_original_fkey"
+            columns: ["language_code_original"]
             isOneToOne: false
             referencedRelation: "system_languages"
             referencedColumns: ["language_code"]
@@ -590,7 +603,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           field_key: string
-          language_code: string
+          language_code_original: string | null
+          language_code_target: string
+          original_text: string | null
           report_structure_translation_id: number
           report_structure_translation_uuid: string
           report_structure_uuid: string
@@ -603,7 +618,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           field_key: string
-          language_code: string
+          language_code_original?: string | null
+          language_code_target: string
+          original_text?: string | null
           report_structure_translation_id?: never
           report_structure_translation_uuid?: string
           report_structure_uuid: string
@@ -616,7 +633,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           field_key?: string
-          language_code?: string
+          language_code_original?: string | null
+          language_code_target?: string
+          original_text?: string | null
           report_structure_translation_id?: never
           report_structure_translation_uuid?: string
           report_structure_uuid?: string
@@ -628,7 +647,7 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_report_structures_translations_language"
-            columns: ["language_code"]
+            columns: ["language_code_target"]
             isOneToOne: false
             referencedRelation: "system_languages"
             referencedColumns: ["language_code"]
@@ -639,6 +658,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "report_structures"
             referencedColumns: ["report_structure_uuid"]
+          },
+          {
+            foreignKeyName: "report_structures_translations_language_code_original_fkey"
+            columns: ["language_code_original"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
           },
         ]
       }
@@ -781,6 +807,69 @@ export type Database = {
         }
         Relationships: []
       }
+      ui_translations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          language_code_original: string | null
+          language_code_target: string
+          original_text: string | null
+          source: string
+          source_field_name: string
+          translated_text: string | null
+          ui_key: string
+          ui_translation_id: number
+          ui_translation_uuid: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          language_code_original?: string | null
+          language_code_target: string
+          original_text?: string | null
+          source?: string
+          source_field_name?: string
+          translated_text?: string | null
+          ui_key: string
+          ui_translation_id?: never
+          ui_translation_uuid?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          language_code_original?: string | null
+          language_code_target?: string
+          original_text?: string | null
+          source?: string
+          source_field_name?: string
+          translated_text?: string | null
+          ui_key?: string
+          ui_translation_id?: never
+          ui_translation_uuid?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ui_translations_language_code_original_fkey"
+            columns: ["language_code_original"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+          {
+            foreignKeyName: "ui_translations_language_code_target_fkey"
+            columns: ["language_code_target"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+        ]
+      }
       user_accounts: {
         Row: {
           approved_at: string | null
@@ -795,6 +884,7 @@ export type Database = {
           locked_until: string | null
           password_changed_at: string | null
           phone_number: string | null
+          preferred_ui_language: string | null
           supabase_user_uuid: string
           timezone: string | null
           updated_at: string | null
@@ -815,6 +905,7 @@ export type Database = {
           locked_until?: string | null
           password_changed_at?: string | null
           phone_number?: string | null
+          preferred_ui_language?: string | null
           supabase_user_uuid: string
           timezone?: string | null
           updated_at?: string | null
@@ -835,6 +926,7 @@ export type Database = {
           locked_until?: string | null
           password_changed_at?: string | null
           phone_number?: string | null
+          preferred_ui_language?: string | null
           supabase_user_uuid?: string
           timezone?: string | null
           updated_at?: string | null
@@ -842,7 +934,15 @@ export type Database = {
           user_status?: Database["public"]["Enums"]["user_account_status"]
           user_uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_accounts_preferred_ui_language_fkey"
+            columns: ["preferred_ui_language"]
+            isOneToOne: false
+            referencedRelation: "system_languages"
+            referencedColumns: ["language_code"]
+          },
+        ]
       }
       user_entity_access: {
         Row: {
@@ -1273,6 +1373,15 @@ export type Database = {
           total_accounts: number
           updated_at: string
         }[]
+      }
+      get_translation_with_fallback: {
+        Args: {
+          p_entity_type: string
+          p_entity_uuid: string
+          p_field_key: string
+          p_language_code?: string
+        }
+        Returns: string
       }
       get_user_accessible_entities: {
         Args: { p_user_uuid: string }

@@ -3,41 +3,58 @@ import { ReportStructure, ProcessStructureData } from '@/features/report-structu
 import { TranslationService } from '@/services/translationService';
 
 export class ReportStructureService {
+  /**
+   * Fetch all report structures with optional translation
+   */
   static async fetchStructures(languageCode?: string): Promise<ReportStructure[]> {
     const { data, error } = await supabase
       .from('report_structures')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    
-    if (!data || !languageCode) return data || [];
+    if (error) {
+      throw new Error(`Failed to fetch report structures: ${error.message}`);
+    }
 
-    // Fetch translations for each structure
-    const structuresWithTranslations = await Promise.all(
+    if (!languageCode || !data) {
+      return data || [];
+    }
+
+    // Apply translations using enhanced service
+    const translatedStructures = await Promise.all(
       data.map(async (structure) => {
         try {
-          const translatedName = await TranslationService.getTranslation(
+          // Dynamic import to avoid circular dependency
+          const { EnhancedTranslationService } = await import('@/services/enhancedTranslationService');
+          
+          const translatedName = await EnhancedTranslationService.getTranslationWithFallback(
             'report_structure',
             structure.report_structure_uuid,
             'report_structure_name',
             languageCode
           );
           
+          const translatedDescription = structure.description ? 
+            await EnhancedTranslationService.getTranslationWithFallback(
+              'report_structure',
+              structure.report_structure_uuid,
+              'description',
+              languageCode
+            ) : null;
+          
           return {
             ...structure,
-            report_structure_name: translatedName.startsWith('[missing:') 
-              ? structure.report_structure_name 
-              : translatedName
+            report_structure_name: translatedName?.includes('[missing:') ? structure.report_structure_name : translatedName,
+            description: translatedDescription?.includes('[missing:') ? structure.description : translatedDescription
           };
         } catch (error) {
-          console.error('Translation fetch failed for structure:', structure.report_structure_uuid, error);
+          console.error('Translation error for structure:', structure.report_structure_uuid, error);
           return structure;
         }
       })
     );
 
-    return structuresWithTranslations;
+    return translatedStructures;
   }
 
   static async setActiveStructure(structureId: number): Promise<void> {
