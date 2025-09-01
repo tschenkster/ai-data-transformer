@@ -36,7 +36,14 @@ export default function MultilingualManagement() {
         body: { operation: 'migrate' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Migration error:', error);
+        throw new Error(error.message || 'Failed to migrate existing data');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Migration failed');
+      }
 
       setMigrationStatus(data.result);
       toast({
@@ -44,6 +51,7 @@ export default function MultilingualManagement() {
         description: `Successfully migrated ${data.result.structures_migrated || 0} structures and ${data.result.line_items_migrated || 0} line items`,
       });
     } catch (error: any) {
+      console.error('Migration failed:', error);
       toast({
         title: "Migration Failed",
         description: error.message || "Failed to migrate existing data",
@@ -69,14 +77,23 @@ export default function MultilingualManagement() {
         body: { operation: 'generate_translations' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Translation generation error:', error);
+        throw new Error(error.message || 'Failed to generate translations');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Translation generation failed');
+      }
 
       setTranslationStatus(data.result);
       setTranslationProgress(100);
       
+      const successMessage = `Generated ${data.result.total_processed} translations (${data.result.structures_processed} structures, ${data.result.line_items_processed} line items)`;
+      
       toast({
         title: "Translation Generation Complete",
-        description: `Generated ${data.result.total_processed} translations (${data.result.structures_processed} structures, ${data.result.line_items_processed} line items)`,
+        description: successMessage,
       });
 
       // Show errors if any
@@ -89,9 +106,18 @@ export default function MultilingualManagement() {
         });
       }
     } catch (error: any) {
+      console.error('Translation generation failed:', error);
+      
+      let errorMessage = error.message || "Failed to generate translations";
+      
+      // Check for specific error messages
+      if (errorMessage.includes('OPENAI_API_KEY')) {
+        errorMessage = "OpenAI API key is not configured. Please add it in Supabase Edge Function Secrets.";
+      }
+      
       toast({
-        title: "Translation Generation Failed",
-        description: error.message || "Failed to generate translations",
+        title: "Translation Generation Failed", 
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

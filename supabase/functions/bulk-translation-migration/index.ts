@@ -114,7 +114,6 @@ serve(async (req) => {
                       content: `Translate these German financial report structure names to English:\n${texts.map(t => `${t.field_key}: ${t.text}`).join('\n')}`
                     }
                   ],
-                  temperature: 0.3,
                   max_tokens: 1000,
                 }),
               });
@@ -129,10 +128,12 @@ serve(async (req) => {
                   .filter((line: string) => line.trim() && line.includes(':'))
                   .map((line: string, index: number) => {
                     const [fieldKey, ...textParts] = line.split(':');
+                    const original = texts[index]?.text || '';
                     return {
-                      field_key: fieldKey.trim(),
+                      source_field_name: fieldKey.trim(),
                       lang_code: 'en',
-                      text_value: textParts.join(':').trim()
+                      text_value: textParts.join(':').trim(),
+                      original_text: original
                     };
                   });
 
@@ -145,7 +146,7 @@ serve(async (req) => {
                     const { error: saveError } = await supabase.rpc('create_translation_entries', {
                       p_entity_type: 'report_structure',
                       p_entity_uuid: structure.report_structure_uuid,
-                      p_translations: [translation],
+                      p_translations: JSON.stringify([translation]),
                       p_source_language: 'de'
                     });
 
@@ -198,7 +199,6 @@ serve(async (req) => {
                       content: `Translate these German financial line item descriptions to English:\n${texts.map(t => `${t.field_key}: ${t.text}`).join('\n')}`
                     }
                   ],
-                  temperature: 0.3,
                   max_tokens: 2000,
                 }),
               });
@@ -211,12 +211,14 @@ serve(async (req) => {
                 const translations = translatedContent
                   .split('\n')
                   .filter((line: string) => line.trim() && line.includes(':'))
-                  .map((line: string) => {
+                  .map((line: string, index: number) => {
                     const [fieldKey, ...textParts] = line.split(':');
+                    const original = texts[index]?.text || '';
                     return {
-                      field_key: fieldKey.trim(),
+                      source_field_name: fieldKey.trim(),
                       lang_code: 'en',
-                      text_value: textParts.join(':').trim()
+                      text_value: textParts.join(':').trim(),
+                      original_text: original
                     };
                   });
 
@@ -229,7 +231,7 @@ serve(async (req) => {
                     const { error: saveError } = await supabase.rpc('create_translation_entries', {
                       p_entity_type: 'report_line_item',
                       p_entity_uuid: item.report_line_item_uuid,
-                      p_translations: [translation],
+                      p_translations: JSON.stringify([translation]),
                       p_source_language: 'de'
                     });
 
