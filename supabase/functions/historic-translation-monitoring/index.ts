@@ -23,6 +23,35 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Authenticate user and verify admin privileges
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Verify admin privileges using existing RPC
+    const { data: isAdmin, error: adminError } = await supabaseClient.rpc('is_admin_user_v2');
+    
+    if (adminError || !isAdmin) {
+      return new Response(
+        JSON.stringify({ error: 'Admin privileges required' }),
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
     const { operation, schedule }: RequestBody = await req.json();
     
     console.log(`Historic Translation Monitoring - Operation: ${operation}`);

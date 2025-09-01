@@ -23,6 +23,35 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Authenticate user and verify super admin privileges
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Verify super admin privileges using existing RPC
+    const { data: isSuperAdmin, error: adminError } = await supabaseClient.rpc('is_super_admin_user');
+    
+    if (adminError || !isSuperAdmin) {
+      return new Response(
+        JSON.stringify({ error: 'Super admin privileges required' }),
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
     const { operation, rule_id }: RequestBody = await req.json();
     
     console.log(`Historic Translation Validation - Operation: ${operation}`);
