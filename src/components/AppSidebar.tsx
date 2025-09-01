@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLanguageContext } from "@/hooks/useLanguageContext";
 import { AccountSection } from "./AccountSection";
 import { EntitySelector } from "@/features/system-administration";
 import {
@@ -62,6 +63,7 @@ export function AppSidebar() {
   const { user, userAccount, signOut, isAdmin, isSuperAdmin, availableEntities } = useAuth();
   const { toggleGroup, isGroupCollapsed } = useSidebarState();
   const isMobile = useIsMobile();
+  const { t } = useLanguageContext();
   
   const currentPath = location.pathname;
   
@@ -89,42 +91,42 @@ export function AppSidebar() {
   const navigationGroups: NavigationGroup[] = [
     {
       id: 'admin',
-      title: 'System Administration',  
+      title: t('MENU_SYSTEM_ADMINISTRATION', 'System Administration'),
       collapsible: true,
       permissions: 'admin',
       items: [
         { 
-          title: 'Dashboard', 
+          title: t('MENU_DASHBOARD', 'Dashboard'), 
           url: '/dashboard', 
           icon: BarChart3,
           permissions: 'admin'
         },
         { 
-          title: 'User Profile Management', 
+          title: t('MENU_USER_PROFILE_MANAGEMENT', 'User Profile Management'), 
           url: '/admin/user-profile-management', 
           icon: Users,
           permissions: 'admin'
         },
         { 
-          title: 'Roles & Permissions', 
+          title: t('MENU_ROLES_PERMISSIONS', 'Roles & Permissions'), 
           url: '/admin/roles-permissions-management', 
           icon: Shield,
           permissions: 'admin'
         },
         { 
-          title: 'Entity Management', 
+          title: t('MENU_ENTITY_MANAGEMENT', 'Entity Management'), 
           url: '/admin/entity-management', 
           icon: Settings,
           permissions: 'admin'
         },
         { 
-          title: 'Activity Log', 
+          title: t('MENU_ACTIVITY_LOG', 'Activity Log'), 
           url: '/admin/activity-log', 
           icon: Shield,
           permissions: 'admin'
         },
         { 
-          title: 'System Tools', 
+          title: t('MENU_SYSTEM_TOOLS', 'System Tools'), 
           url: '/admin/system-tools', 
           icon: Settings2,
           permissions: 'superAdmin'
@@ -133,21 +135,21 @@ export function AppSidebar() {
     },
     {
       id: 'data',
-      title: 'Data Import & Transformation',
+      title: t('MENU_DATA_IMPORT_TRANSFORMATION', 'Data Import & Transformation'),
       collapsible: true,
       items: [
-        { title: 'CoA Translator', url: '/data/coa-translator', icon: Languages, permissions: 'admin' },
-        { title: 'CoA Mapper', url: '/data/coa-mapper', icon: Map },
-        { title: 'Trial Balance Import', url: '/data/trial-balance-import', icon: FileSpreadsheet },
-        { title: 'Journal Import', url: '/data/journal-import', icon: BookOpen },
+        { title: t('MENU_COA_TRANSLATOR', 'CoA Translator'), url: '/data/coa-translator', icon: Languages, permissions: 'admin' },
+        { title: t('MENU_COA_MAPPER', 'CoA Mapper'), url: '/data/coa-mapper', icon: Map },
+        { title: t('MENU_TRIAL_BALANCE_IMPORT', 'Trial Balance Import'), url: '/data/trial-balance-import', icon: FileSpreadsheet },
+        { title: t('MENU_JOURNAL_IMPORT', 'Journal Import'), url: '/data/journal-import', icon: BookOpen },
         { 
-          title: 'Report Configuration', 
+          title: t('MENU_REPORT_STRUCTURES', 'Report Configuration'), 
           url: '/admin/report-configuration', 
           icon: Database,
           permissions: 'superAdmin'
         },
         { 
-          title: 'Memory Maintenance', 
+          title: t('MENU_MEMORY_MAINTENANCE', 'Memory Maintenance'), 
           url: '/admin/memory-maintenance', 
           icon: Brain
         }
@@ -155,11 +157,11 @@ export function AppSidebar() {
     },
     {
       id: 'reports',
-      title: 'Data Downloads & Reports',
+      title: t('MENU_REPORTS', 'Data Downloads & Reports'),
       collapsible: true,
       items: [
-        { title: 'Financial Reports', url: '/reports/financial-reports', icon: PieChart },
-        { title: 'SQL Tables', url: '/reports/sql-tables', icon: Table, permissions: 'admin' }
+        { title: t('MENU_FINANCIAL_REPORTS', 'Financial Reports'), url: '/reports/financial-reports', icon: PieChart },
+        { title: t('MENU_SQL_TABLES', 'SQL Tables'), url: '/reports/sql-tables', icon: Table, permissions: 'admin' }
       ]
     }
   ];
@@ -247,8 +249,8 @@ export function AppSidebar() {
           <div className="flex items-center gap-3 p-3 rounded-lg">
             <Home className={`h-5 w-5 ${isActive('/start') ? "text-primary" : ""}`} />
             <div className="flex flex-col">
-              <span className="font-medium">Start</span>
-              <span className="text-xs text-muted-foreground">Welcome dashboard</span>
+              <span className="font-medium">{t('MENU_START', 'Start')}</span>
+              <span className="text-xs text-muted-foreground">{t('WELCOME_DASHBOARD', 'Welcome dashboard')}</span>
             </div>
           </div>
         </NavLink>
@@ -308,7 +310,7 @@ export function AppSidebar() {
           onClick={() => toggleGroup('account')}
           className="w-full justify-between h-auto p-2 font-medium text-sm text-muted-foreground hover:text-foreground"
         >
-          <span>Account</span>
+          <span>{t('MENU_ACCOUNT', 'Account')}</span>
           {isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
         
@@ -358,8 +360,8 @@ export function AppSidebar() {
                   </div>
                   {open && (
             <div className="flex flex-col">
-              <span className="font-medium">Start</span>
-              <span className="text-xs text-muted-foreground">Welcome dashboard</span>
+              <span className="font-medium">{t('MENU_START', 'Start')}</span>
+              <span className="text-xs text-muted-foreground">{t('WELCOME_DASHBOARD', 'Welcome dashboard')}</span>
             </div>
                   )}
                 </NavLink>
@@ -384,7 +386,7 @@ export function AppSidebar() {
               variant="ghost" 
               className="w-full justify-between h-auto p-2 font-medium text-sm text-muted-foreground hover:text-foreground"
             >
-              <span className="truncate">Account</span>
+              <span className="truncate">{t('MENU_ACCOUNT', 'Account')}</span>
               {open && (isGroupCollapsed('account') ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
             </Button>
           </CollapsibleTrigger>

@@ -1,6 +1,7 @@
 import { User, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
+import { useLanguageContext } from '@/hooks/useLanguageContext';
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 
 interface AccountSectionProps {
@@ -11,6 +12,7 @@ interface AccountSectionProps {
 
 export function AccountSection({ open, isActive, getNavClass }: AccountSectionProps) {
   const { userAccount, signOut } = useAuth();
+  const { t } = useLanguageContext();
 
   return (
     <>
@@ -39,7 +41,7 @@ export function AccountSection({ open, isActive, getNavClass }: AccountSectionPr
           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
         >
           <LogOut className="h-4 w-4" />
-          {open && <span>Logout</span>}
+          {open && <span>{t('MENU_LOGOUT', 'Logout')}</span>}
         </SidebarMenuButton>
       </SidebarMenuItem>
     </>
