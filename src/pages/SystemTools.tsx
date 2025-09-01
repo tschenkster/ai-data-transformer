@@ -42,6 +42,17 @@ export default function SystemTools() {
 
   const systemTools: SystemTool[] = [
     {
+      id: 'historic-translation-fixer',
+      title: 'Historic Translation Fixer',
+      description: 'Fix NULL values in translation tables, enforce data integrity, and ensure complete audit trails.',
+      icon: Wrench,
+      path: '/admin/system-tools/historic-translation-fixer',
+      status: 'active',
+      category: 'optimization',
+      lastUsed: 'New',
+      usageCount: 0
+    },
+    {
       id: 'multilingual-management',
       title: 'Multilingual Management',
       description: 'Manage translations, migrate data to multilingual system, and configure language settings.',
