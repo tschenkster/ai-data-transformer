@@ -142,52 +142,39 @@ export default function SystemTools() {
     return (
       <Card 
         key={tool.id} 
-        className={`transition-all duration-200 ${
+        className={`group transition-all duration-200 ${
           tool.status === 'active' 
-            ? 'hover:shadow-lg hover:scale-[1.02] cursor-pointer border-primary/20 hover:border-primary/40' 
-            : 'opacity-75 cursor-not-allowed'
+            ? 'hover:shadow-md cursor-pointer border-border hover:border-primary/50 hover:bg-accent/50' 
+            : 'opacity-60 cursor-not-allowed'
         }`}
         onClick={() => handleToolClick(tool)}
       >
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${
-                tool.status === 'active' 
-                  ? 'bg-primary/10 text-primary' 
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                <IconComponent className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-xl">{tool.title}</CardTitle>
-                </div>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-lg ${
+              tool.status === 'active' 
+                ? 'bg-primary/10 text-primary group-hover:bg-primary/15' 
+                : 'bg-muted text-muted-foreground'
+            }`}>
+              <IconComponent className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-base leading-none">{tool.title}</h3>
                 {tool.status === 'coming-soon' && (
-                  <Badge variant="outline" className="mt-1 bg-orange-50 text-orange-700 border-orange-200">
+                  <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
                     Coming Soon
                   </Badge>
                 )}
               </div>
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                {tool.description}
+              </p>
             </div>
             {tool.status === 'active' && (
-              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
             )}
           </div>
-        </CardHeader>
-        <CardContent>
-          {tool.status === 'active' && (
-            <Button 
-              variant="outline" 
-              className="w-full mt-4"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToolClick(tool);
-              }}
-            >
-              Open Tool
-            </Button>
-          )}
         </CardContent>
       </Card>
     );
