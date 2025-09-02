@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, FileText, Folder } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structures/utils/lineItemUtils';
+import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structure-manager/utils/lineItemUtils';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReportLineItem {

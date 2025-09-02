@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { ReportStructureService } from '@/features/report-structures/services/reportStructureService';
-import { LineItemService } from '@/features/report-structures/services/lineItemService';
-import { ReportStructure, ReportLineItem, ProcessStructureData } from '@/features/report-structures/types';
+import { ReportStructureService } from '@/features/report-structure-manager/services/reportStructureService';
+import { LineItemService } from '@/features/report-structure-manager/services/lineItemService';
+import { ReportStructure, ReportLineItem, ProcessStructureData } from '@/features/report-structure-manager/types';
 
 export function useReportStructures(): {
   structures: ReportStructure[];

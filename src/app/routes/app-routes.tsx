@@ -9,7 +9,7 @@ import UserProfileManagement from '@/pages/UserProfileManagement';
 import RolesPermissionsManagement from '@/pages/RolesPermissionsManagement';
 import EntityManagementPage from '@/pages/EntityManagementPage';
 import MultilingualManagement from '@/pages/MultilingualManagement';
-import ReportStructures from '@/pages/ReportStructures';
+import ReportStructureManager from '@/pages/ReportStructureManager';
 import CoATranslator from '@/pages/CoATranslator';
 import CoAMapper from '@/pages/CoAMapper';
 import TrialBalanceImport from '@/pages/TrialBalanceImport';
@@ -65,7 +65,7 @@ export function AppRoutes() {
       } />
       <Route path="/admin/report-configuration" element={
         <AuthRoute requireSuperAdmin>
-          <ReportStructures />
+          <ReportStructureManager />
         </AuthRoute>
       } />
       <Route path="/admin/memory-maintenance" element={
@@ -153,7 +153,7 @@ export function AppRoutes() {
       {/* Legacy redirects for old routes */}
       <Route path="/admin/user-entity-management" element={<Navigate to="/admin/user-profile-management" replace />} />
       <Route path="/admin/user-entity-management/*" element={<Navigate to="/admin/user-profile-management" replace />} />
-      <Route path="/report-structures" element={<Navigate to="/admin/report-configuration" replace />} />
+      <Route path="/report-structure-manager" element={<Navigate to="/admin/report-configuration" replace />} />
       <Route path="/coa-translator" element={<Navigate to="/data/coa-translator" replace />} />
       <Route path="/coa-mapper" element={<Navigate to="/data/coa-mapper" replace />} />
       <Route path="/trial-balance-import" element={<Navigate to="/data/trial-balance-import" replace />} />

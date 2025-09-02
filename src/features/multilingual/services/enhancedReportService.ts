@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ReportStructure, ReportLineItem } from '@/features/report-structures/types';
+import { ReportStructure, ReportLineItem } from '@/features/report-structure-manager/types';
 import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
 
 /**

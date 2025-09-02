@@ -1,4 +1,4 @@
-import { ReportStructureManager } from '@/features/report-structures';
+import { ReportStructureManager } from '@/features/report-structure-manager';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { ErrorBoundaryWithRecovery } from '@/components/ErrorBoundaryWithRecovery';
 import { Button } from '@/components/ui/button';

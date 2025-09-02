@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserProfileDisplay, UserService } from '@/features/user-management';
-import { ReportStructureCard } from '@/features/report-structures';
+import { ReportStructureCard } from '@/features/report-structure-manager';
 import { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';

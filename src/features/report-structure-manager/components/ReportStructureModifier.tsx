@@ -46,8 +46,8 @@ import {
   Home,
   Settings
 } from 'lucide-react';
-import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/features/report-structures/utils/sortOrderUtils';
-import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structures/utils/lineItemUtils';
+import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/features/report-structure-manager/utils/sortOrderUtils';
+import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structure-manager/utils/lineItemUtils';
 import debugUtils from '@/shared/utils/debugUtils';
 
 interface ReportLineItem {
@@ -1116,7 +1116,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbLink href="/report-structures" className="flex items-center gap-1">
+                    <BreadcrumbLink href="/report-structure-manager" className="flex items-center gap-1">
                       <Settings className="w-4 h-4" />
                       Report Structures
                     </BreadcrumbLink>

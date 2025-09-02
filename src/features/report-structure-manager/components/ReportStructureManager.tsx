@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
-import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structures/utils/lineItemUtils';
+import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structure-manager/utils/lineItemUtils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

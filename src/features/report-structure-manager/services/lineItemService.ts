@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ReportLineItem } from '@/features/report-structures/types';
+import { ReportLineItem } from '@/features/report-structure-manager/types';
 
 export class LineItemService {
   static async fetchLineItems(structureId: number): Promise<ReportLineItem[]> {

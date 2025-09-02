@@ -3,4 +3,4 @@
 // Immutable audit logs, historical views, compliance integration, admin dashboards
 
 export { SecurityAuditLog } from '@/features/data-security/components/SecurityAuditLog';
-export { default as ChangeHistoryTable } from '@/features/report-structures/components/ChangeHistoryTable';
+export { default as ChangeHistoryTable } from '@/features/report-structure-manager/components/ChangeHistoryTable';

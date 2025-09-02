@@ -468,7 +468,7 @@ export class CodebaseScanner {
       'types': '# Type definitions',
       'constants': '# Constants',
       'user-management': '# User Administration',
-      'report-structures': '# Report Building & Management',
+      'report-structure-manager': '# Report Building & Management',
       'coa-translation': '# Chart of Accounts Translation',
       'data-security': '# Security & Access Control',
       'imports': '# Data Import Pipeline',

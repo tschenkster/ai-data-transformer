@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ReportStructure, ProcessStructureData } from '@/features/report-structures/types';
+import { ReportStructure, ProcessStructureData } from '@/features/report-structure-manager/types';
 import { TranslationService } from '@/services/translationService';
 
 export class ReportStructureService {
