@@ -11,7 +11,6 @@ interface ReportStructureData {
   report_line_item_key: string;
   report_line_item_description?: string;
   parent_report_line_item_key?: string;
-  line_item_key?: string; // New field that maps to report_line_item_key in database
   sort_order: number;
   hierarchy_path?: string;
   level_1_line_item_description?: string;
@@ -221,16 +220,13 @@ serve(async (req) => {
     console.log(`Processing ${structureData.length} items preserving original file order (row 2 → sort_order 0, row 3 → sort_order 1, etc.)`);
     
     const lineItems = structureData.map((item: ReportStructureData, index: number) => {
-      // Get the actual line item key - prefer line_item_key if present, fallback to report_line_item_key
-      const actualLineItemKey = item.line_item_key || item.report_line_item_key;
-      
       // Validate required fields
-      if (!actualLineItemKey) {
+      if (!item.report_line_item_key) {
         throw new Error(`Missing line item key at row ${index + 1}`);
       }
 
       const itemUuid = item.report_line_item_uuid || crypto.randomUUID();
-      keyToUuidMap.set(actualLineItemKey, itemUuid);
+      keyToUuidMap.set(item.report_line_item_key, itemUuid);
 
       // Store unmapped column data for this row if available
       const unmappedRowData = unmappedColumns.find((row: any) => row.row_index === index);
@@ -248,7 +244,7 @@ serve(async (req) => {
         report_structure_id: structureId,  // Integer foreign key for performance
         report_structure_uuid: structureUuid,  // UUID foreign key for business logic
         report_structure_name: overwriteMode ? currentStructureName : structureName,
-        report_line_item_key: actualLineItemKey,
+        report_line_item_key: item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         parent_report_line_item_uuid: null, // Will be set in second pass
         is_parent_key_existing: !!item.parent_report_line_item_key && parentKeyStatus !== 'PARENT_KEY_NOT_EXISTING',

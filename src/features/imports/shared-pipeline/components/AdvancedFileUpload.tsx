@@ -72,7 +72,6 @@ interface ReportStructure {
 const REQUIRED_COLUMNS = [
   'report_line_item_key',
   'report_line_item_description', 
-  'line_item_key',
   'parent_report_line_item_key'
 ];
 
@@ -281,26 +280,15 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
                currentScore = 80;
                console.log(`  🔶 PATTERN MATCH: "${header}" -> score: ${currentScore}`);
              }
-           } else if (dbColumn === 'report_line_item_description') {
-             if (normalizedHeader === 'report_line_item_description') {
-               currentScore = 100;
-             } else if (normalizedHeader.includes('description') || normalizedHeader.includes('desc')) {
-               currentScore = 85;
-             } else if (normalizedHeader === 'name' || normalizedHeader === 'title') {
-               currentScore = 70;
-             }
-           } else if (dbColumn === 'line_item_key') {
-             // Exact match first
-             if (normalizedHeader === 'line_item_key') {
-               currentScore = 100;
-             } else if (normalizedHeader === 'report_line_item_key') {
-               currentScore = 95; // This is also a good match since it contains the line item key
-             } else if (normalizedHeader === 'item_key' || normalizedHeader === 'key') {
-               currentScore = 85;
-             } else if (normalizedHeader.includes('key') && !normalizedHeader.includes('parent')) {
-               currentScore = 75;
-             }
-           } else if (dbColumn === 'parent_report_line_item_key') {
+            } else if (dbColumn === 'report_line_item_description') {
+              if (normalizedHeader === 'report_line_item_description') {
+                currentScore = 100;
+              } else if (normalizedHeader.includes('description') || normalizedHeader.includes('desc')) {
+                currentScore = 85;
+              } else if (normalizedHeader === 'name' || normalizedHeader === 'title') {
+                currentScore = 70;
+              }
+            } else if (dbColumn === 'parent_report_line_item_key') {
              if (normalizedHeader === 'parent_report_line_item_key') {
                currentScore = 100;
              } else if (normalizedHeader.includes('parent') && normalizedHeader.includes('key')) {
@@ -368,8 +356,7 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
   };
 
   const validateMappings = () => {
-    const requiredFields = ['report_line_item_key', 'report_line_item_description', 'line_item_key', 'parent_report_line_item_key'];
-    return requiredFields.every(field => 
+    return REQUIRED_COLUMNS.every(field => 
       columnMappings.find(m => m.dbColumn === field)?.mapped && 
       columnMappings.find(m => m.dbColumn === field)?.fileColumn
     );
@@ -514,7 +501,7 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
 
       // Validate parent key references using the ORIGINAL FILE DATA (not mapped data)
       // This is crucial because validation needs to check the raw column values
-      const keyMapping = columnMappings.find(m => m.dbColumn === 'line_item_key');
+      const keyMapping = columnMappings.find(m => m.dbColumn === 'report_line_item_key');
       const parentKeyMapping = columnMappings.find(m => m.dbColumn === 'parent_report_line_item_key');
       
       console.log('🔍 Parent key validation setup:');
