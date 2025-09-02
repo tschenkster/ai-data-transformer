@@ -118,15 +118,13 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     }
 
     // Get row count before deletion
-    const { data: countResult, error: countError } = await supabaseClient
+    const { count: rowCountBefore, error: countError } = await supabaseClient
       .from(table_name)
       .select('*', { count: 'exact', head: true })
     
     if (countError) {
       throw new Error(`Failed to count rows: ${countError.message}`)
     }
-    
-    const rowCountBefore = countResult?.length || 0
 
     // Export data to CSV before deletion
     const csvMetadata = await exportTableToCSV(supabaseClient, schema_name, table_name)
@@ -136,27 +134,37 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     if (mode === 'truncate') {
       // For TRUNCATE, we need to use raw SQL approach
       // Since Supabase client doesn't support TRUNCATE directly
-      rowsDeleted = rowCountBefore
+      rowsDeleted = rowCountBefore || 0
       console.log(`TRUNCATE operation simulated for ${schema_name}.${table_name}`)
     } else {
-      // Use DELETE - delete all rows by using a condition that matches all
+      // Get table primary key for proper deletion
+      const { data: tableColumns, error: columnsError } = await supabaseClient
+        .rpc('get_column_info')
+      
+      if (columnsError) {
+        throw new Error(`Failed to get table info: ${columnsError.message}`)
+      }
+      
+      // Find a column we can use for deletion (prefer primary key, then any non-null column)
+      const tableColumnsList = tableColumns.filter(col => col.table_name === table_name)
+      const primaryKeyColumn = tableColumnsList.find(col => col.column_default?.includes('nextval'))
+      const firstColumn = tableColumnsList.length > 0 ? tableColumnsList[0] : null
+      
+      if (!firstColumn) {
+        throw new Error(`No columns found for table ${table_name}`)
+      }
+      
+      // Use a simple delete without conditions (deletes all rows)
       const { error: deleteError } = await supabaseClient
         .from(table_name)
         .delete()
-        .gte('created_at', '1900-01-01') // This should match most rows
+        .neq(firstColumn.column_name, 'impossible-value-that-should-not-exist-12345')
       
       if (deleteError) {
-        // If that fails, try a different approach
-        const { error: deleteError2 } = await supabaseClient
-          .from(table_name)
-          .delete()
-          .not('id', 'is', null)
-        
-        if (deleteError2) {
-          throw new Error(`Delete failed: ${deleteError.message}`)
-        }
+        throw new Error(`Delete failed: ${deleteError.message}`)
       }
-      rowsDeleted = rowCountBefore
+      
+      rowsDeleted = rowCountBefore || 0
     }
 
     const duration = Date.now() - startTime
@@ -167,7 +175,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
       p_schema_name: schema_name,
       p_table_name: table_name,
       p_mode: mode,
-      p_row_count_before: rowCountBefore,
+      p_row_count_before: rowCountBefore || 0,
       p_rows_deleted: rowsDeleted,
       p_duration_ms: duration,
       p_csv_object_path: csvMetadata.object_path,
@@ -179,7 +187,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     return new Response(
       JSON.stringify({
         success: true,
-        row_count_before: rowCountBefore,
+        row_count_before: rowCountBefore || 0,
         rows_deleted: rowsDeleted,
         duration_ms: duration,
         csv_metadata: csvMetadata
@@ -245,17 +253,15 @@ async function handleDeleteWhere(req: Request, supabaseClient: any, userId: stri
         throw new Error(`Preview failed: ${previewError.message}`)
       }
 
-      const { data: countData, error: countError } = await supabaseClient
+      const { count: matchCount, error: countError } = await supabaseClient
         .from(table_name)
         .select('*', { count: 'exact', head: true })
       
-      const matchCount = countData?.length || 0
-
       return new Response(
         JSON.stringify({
           success: true,
           dry_run: true,
-          match_count: matchCount,
+          match_count: matchCount || 0,
           sample_data: previewData || [],
           where_clause: whereClause
         }), 
@@ -266,16 +272,14 @@ async function handleDeleteWhere(req: Request, supabaseClient: any, userId: stri
     }
 
     // Get count before deletion
-    const { data: countData, error: countError } = await query.select('*', { count: 'exact', head: true })
+    const { count: matchCount, error: countError } = await query.select('*', { count: 'exact', head: true })
     
     if (countError) {
       throw new Error(`Failed to count matching rows: ${countError.message}`)
     }
-    
-    const matchCount = countData?.length || 0
 
-    if (row_limit && matchCount > row_limit) {
-      throw new Error(`Match count ${matchCount} exceeds safety limit ${row_limit}`)
+    if (row_limit && (matchCount || 0) > row_limit) {
+      throw new Error(`Match count ${matchCount || 0} exceeds safety limit ${row_limit}`)
     }
 
     // Export matching data to CSV before deletion

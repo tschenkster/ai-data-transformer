@@ -1584,22 +1584,39 @@ export type Database = {
         Returns: undefined
       }
       log_sql_maintenance_event: {
-        Args: {
-          p_action: string
-          p_csv_object_path?: string
-          p_csv_rows?: number
-          p_csv_sha256?: string
-          p_csv_size_bytes?: number
-          p_duration_ms?: number
-          p_error_message?: string
-          p_mode?: string
-          p_row_count_before?: number
-          p_rows_deleted?: number
-          p_schema_name: string
-          p_status?: string
-          p_table_name: string
-          p_where_predicate?: string
-        }
+        Args:
+          | {
+              p_action: string
+              p_csv_object_path?: string
+              p_csv_rows?: number
+              p_csv_sha256?: string
+              p_csv_size_bytes?: number
+              p_duration_ms?: number
+              p_error_message?: string
+              p_mode?: string
+              p_row_count_before?: number
+              p_rows_deleted?: number
+              p_schema_name: string
+              p_status?: string
+              p_table_name: string
+              p_where_predicate?: string
+            }
+          | {
+              p_action: string
+              p_csv_object_path?: string
+              p_csv_rows?: number
+              p_csv_sha256?: string
+              p_csv_size_bytes?: number
+              p_duration_ms?: number
+              p_error_message?: string
+              p_mode?: string
+              p_row_count_before?: number
+              p_rows_deleted?: number
+              p_schema_name: string
+              p_status?: string
+              p_table_name: string
+              p_where_predicate?: string
+            }
         Returns: string
       }
       log_structure_change: {
