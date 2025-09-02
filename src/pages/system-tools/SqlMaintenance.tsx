@@ -7,6 +7,7 @@ export default function SqlMaintenance() {
       toolId="sql-maintenance"
       toolTitle="SQL Maintenance"
       toolDescription="Clean and maintain database tables with comprehensive safety measures, audit trails, and CSV export functionality for all destructive operations."
+      showNavigation={false}
     >
       <SqlMaintenanceComponent />
     </SystemToolsLayout>
