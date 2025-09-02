@@ -94,12 +94,35 @@ serve(async (req) => {
       currentStructureName = currentStructure.report_structure_name;
       structureUuid = currentStructure.report_structure_uuid;
 
-      // Update existing structure with new version
+      // Detect language of the imported data early for overwrite mode too
+      let sourceLanguage = 'de'; // Default to German
+      try {
+        // Use first non-empty description for language detection
+        const sampleText = structureData.find((item: ReportStructureData) => 
+          item.report_line_item_description && item.report_line_item_description.trim()
+        )?.report_line_item_description;
+        
+        if (sampleText) {
+          const { data: detectionResult, error: detectionError } = await supabase.functions.invoke('detect-language', {
+            body: { text: sampleText }
+          });
+          
+          if (!detectionError && detectionResult?.language) {
+            sourceLanguage = detectionResult.language;
+            console.log(`Detected source language: ${sourceLanguage}`);
+          }
+        }
+      } catch (error) {
+        console.log('Language detection failed, using default (German):', error);
+      }
+
+      // Update existing structure with new version and source language
       const { data: structure, error: updateError } = await supabase
         .from('report_structures')
         .update({
           version: version,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          source_language_code: sourceLanguage // Set source language on structure
         })
         .eq('report_structure_id', structureId)
         .select('report_structure_id, report_structure_uuid')
@@ -139,6 +162,29 @@ serve(async (req) => {
 
       // Create new report structure
       structureUuid = crypto.randomUUID();
+      
+      // Detect language of the imported data early
+      let sourceLanguage = 'de'; // Default to German
+      try {
+        // Use first non-empty description for language detection
+        const sampleText = structureData.find((item: ReportStructureData) => 
+          item.report_line_item_description && item.report_line_item_description.trim()
+        )?.report_line_item_description;
+        
+        if (sampleText) {
+          const { data: detectionResult, error: detectionError } = await supabase.functions.invoke('detect-language', {
+            body: { text: sampleText }
+          });
+          
+          if (!detectionError && detectionResult?.language) {
+            sourceLanguage = detectionResult.language;
+            console.log(`Detected source language: ${sourceLanguage}`);
+          }
+        }
+      } catch (error) {
+        console.log('Language detection failed, using default (German):', error);
+      }
+      
       const { data: structure, error: structureError } = await supabase
         .from('report_structures')
         .insert({
@@ -149,7 +195,8 @@ serve(async (req) => {
           created_by_user_name: userEmail,
           version: 1,
           name_of_import_file: filename,
-          imported_structure_id: importedStructureId || 'Not specified'
+          imported_structure_id: importedStructureId || 'Not specified',
+          source_language_code: sourceLanguage // Set source language on structure
         })
         .select('report_structure_id, report_structure_uuid')
         .single();
@@ -240,27 +287,8 @@ serve(async (req) => {
     
     console.log(`Validated ${lineItems.length} items with unique sort_order values (0-${lineItems.length - 1})`);
 
-    // Detect language of the imported data
-    let sourceLanguage = 'de'; // Default to German
-    try {
-      // Use first non-empty description for language detection
-      const sampleText = lineItems.find(item => 
-        item.report_line_item_description && item.report_line_item_description.trim()
-      )?.report_line_item_description;
-      
-      if (sampleText) {
-        const { data: detectionResult, error: detectionError } = await supabase.functions.invoke('detect-language', {
-          body: { text: sampleText }
-        });
-        
-        if (!detectionError && detectionResult?.language) {
-          sourceLanguage = detectionResult.language;
-          console.log(`Detected source language: ${sourceLanguage}`);
-        }
-      }
-    } catch (error) {
-      console.log('Language detection failed, using default (German):', error);
-    }
+    // sourceLanguage is already detected above, just log it
+    console.log(`Using detected source language: ${sourceLanguage}`);
 
     // Add source language to line items
     lineItems.forEach(item => {
@@ -337,31 +365,11 @@ serve(async (req) => {
         text: overwriteMode ? currentStructureName : structureName
       }];
 
-      // Collect translatable fields from line items
-      const lineItemTexts = lineItems.flatMap(item => {
-        const texts = [];
-        if (item.report_line_item_description) {
-          texts.push({
-            field_key: `${item.report_line_item_key}_description`,
-            text: item.report_line_item_description,
-            entity_uuid: item.report_line_item_uuid
-          });
-        }
-        if (item.hierarchy_path) {
-          texts.push({
-            field_key: `${item.report_line_item_key}_hierarchy_path`,
-            text: item.hierarchy_path,
-            entity_uuid: item.report_line_item_uuid
-          });
-        }
-        return texts;
-      });
-
-      if (structureTexts.length > 0 || lineItemTexts.length > 0) {
-        // Generate translations asynchronously
-        const { data: translationResult, error: translationError } = await supabase.functions.invoke('ai-translation', {
+      // Generate translations for structure first
+      if (structureTexts.length > 0) {
+        const { data: structureTranslationResult, error: structureTranslationError } = await supabase.functions.invoke('ai-translation', {
           body: {
-            texts: [...structureTexts, ...lineItemTexts.slice(0, 50)], // Limit for initial batch
+            texts: structureTexts,
             sourceLanguage,
             targetLanguages: sourceLanguage === 'de' ? ['en'] : ['de'],
             entityType: 'report_structure',
@@ -370,11 +378,57 @@ serve(async (req) => {
           }
         });
 
-        if (translationError) {
-          console.log('Translation generation failed (non-critical):', translationError);
+        if (structureTranslationError) {
+          console.error('Structure translation generation failed:', structureTranslationError);
         } else {
-          console.log('AI translations generated successfully');
+          console.log('Structure AI translations generated successfully');
         }
+      }
+
+      // Generate translations for line items in batches
+      const batchSize = 10; // Smaller batch size for line items
+      for (let i = 0; i < lineItems.length; i += batchSize) {
+        const batch = lineItems.slice(i, i + batchSize);
+        const batchTexts = batch.flatMap(item => {
+          const texts = [];
+          if (item.report_line_item_description) {
+            texts.push({
+              field_key: `${item.report_line_item_key}_description`,
+              text: item.report_line_item_description,
+              entity_uuid: item.report_line_item_uuid
+            });
+          }
+          return texts;
+        });
+
+        if (batchTexts.length > 0) {
+          // Process each line item individually to ensure proper entity mapping
+          for (const textItem of batchTexts) {
+            try {
+              const { data: lineItemTranslationResult, error: lineItemTranslationError } = await supabase.functions.invoke('ai-translation', {
+                body: {
+                  texts: [textItem],
+                  sourceLanguage,
+                  targetLanguages: sourceLanguage === 'de' ? ['en'] : ['de'],
+                  entityType: 'report_line_item',
+                  entityUuid: textItem.entity_uuid,
+                  autoSave: true
+                }
+              });
+
+              if (lineItemTranslationError) {
+                console.error(`Line item translation failed for ${textItem.entity_uuid}:`, lineItemTranslationError);
+              } else {
+                console.log(`Line item translation generated for ${textItem.entity_uuid}`);
+              }
+            } catch (error) {
+              console.error(`Translation error for line item ${textItem.entity_uuid}:`, error);
+            }
+          }
+        }
+        
+        // Brief delay between batches to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     } catch (error) {
       console.log('Translation generation failed (non-critical):', error);
