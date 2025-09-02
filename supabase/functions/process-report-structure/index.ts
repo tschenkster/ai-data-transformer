@@ -73,12 +73,13 @@ serve(async (req) => {
       throw new Error('Invalid structure data provided');
     }
 
-    let structureId: number;
-    let structureUuid: string;
-    let currentStructureName: string;
-    let version: number = 1;
+  let structureId: number;
+  let structureUuid: string;
+  let currentStructureName: string;
+  let version: number = 1;
+  let sourceLanguage = 'de'; // Initialize sourceLanguage at the top level
 
-    if (overwriteMode && targetStructureId) {
+  if (overwriteMode && targetStructureId) {
       // Get current structure info and increment version
       const { data: currentStructure, error: fetchError } = await supabase
         .from('report_structures')
@@ -97,7 +98,7 @@ serve(async (req) => {
       structureUuid = currentStructure.report_structure_uuid;
 
       // Detect language of the imported data early for overwrite mode too
-      let sourceLanguage = 'de'; // Default to German
+      sourceLanguage = 'de'; // Reset default to German
       try {
         // Use first non-empty description for language detection
         const sampleText = structureData.find((item: ReportStructureData) => 
@@ -166,7 +167,7 @@ serve(async (req) => {
       structureUuid = crypto.randomUUID();
       
       // Detect language of the imported data early
-      let sourceLanguage = 'de'; // Default to German
+      sourceLanguage = 'de'; // Reset default to German
       try {
         // Use first non-empty description for language detection
         const sampleText = structureData.find((item: ReportStructureData) => 

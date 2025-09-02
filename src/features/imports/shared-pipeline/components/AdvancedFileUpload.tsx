@@ -348,7 +348,12 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
     const keyColumn = keyMapping.fileColumn;
     const parentKeyColumn = parentKeyMapping.fileColumn;
     
+    console.log('🔍 Starting parent key validation...');
+    console.log(`Key column: "${keyColumn}", Parent column: "${parentKeyColumn}"`);
+    console.log('Sample data:', data.slice(0, 3));
+    
     if (!keyColumn || !parentKeyColumn) {
+      console.log('❌ Missing column mappings for validation');
       return {
         validParents: 0,
         invalidParents: 0,
@@ -357,24 +362,33 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
       };
     }
 
-    // Build set of all available keys
+    // Build set of all available keys (case-insensitive)
     const availableKeys = new Set<string>();
-    data.forEach(row => {
+    data.forEach((row, index) => {
       if (row[keyColumn]) {
-        availableKeys.add(row[keyColumn].toString());
+        const key = row[keyColumn].toString().trim().toLowerCase();
+        availableKeys.add(key);
+        console.log(`✅ Added available key: "${key}" (row ${index + 2})`);
       }
     });
+
+    console.log(`📊 Total available keys: ${availableKeys.size}`);
+    console.log('Available keys:', Array.from(availableKeys));
 
     // Validate parent references
     const validationResults: ParentKeyValidation['validationResults'] = [];
     const missingKeys = new Set<string>();
 
     data.forEach((row, index) => {
-      const lineItemKey = row[keyColumn]?.toString() || '';
-      const parentKey = row[parentKeyColumn]?.toString() || '';
+      const lineItemKey = row[keyColumn]?.toString()?.trim() || '';
+      const parentKey = row[parentKeyColumn]?.toString()?.trim() || '';
       
       if (parentKey) {
-        const isValid = availableKeys.has(parentKey);
+        const parentKeyLower = parentKey.toLowerCase();
+        const isValid = availableKeys.has(parentKeyLower);
+        
+        console.log(`🔎 Validating row ${index + 2}: parent "${parentKey}" (normalized: "${parentKeyLower}") -> ${isValid ? '✅ VALID' : '❌ INVALID'}`);
+        
         validationResults.push({
           line_item_key: lineItemKey,
           parent_key: parentKey,
@@ -384,6 +398,7 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
         
         if (!isValid) {
           missingKeys.add(parentKey);
+          console.log(`❌ Missing parent key: "${parentKey}"`);
         }
       }
     });
@@ -391,12 +406,15 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
     const validParents = validationResults.filter(r => r.is_valid).length;
     const invalidParents = validationResults.filter(r => !r.is_valid).length;
 
-    return {
+    const result = {
       validParents,
       invalidParents,
       missingKeys: Array.from(missingKeys),
       validationResults
     };
+
+    console.log('🎯 Parent key validation completed:', result);
+    return result;
   };
 
   const processFile = async () => {
@@ -463,9 +481,16 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
 
       setUploadProgress(75);
 
-      // Validate parent key references
+      // Validate parent key references using the ORIGINAL FILE DATA (not mapped data)
+      // This is crucial because validation needs to check the raw column values
       const keyMapping = columnMappings.find(m => m.dbColumn === 'line_item_key');
       const parentKeyMapping = columnMappings.find(m => m.dbColumn === 'parent_report_line_item_key');
+      
+      console.log('🔍 Parent key validation setup:');
+      console.log('Key mapping:', keyMapping);
+      console.log('Parent key mapping:', parentKeyMapping);
+      console.log('Sample raw data for validation:', fullData.slice(0, 3));
+      
       const validation = validateParentKeys(fullData, keyMapping!, parentKeyMapping!);
       
       setParentKeyValidation(validation);
