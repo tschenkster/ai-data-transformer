@@ -99,25 +99,31 @@ serve(async (req) => {
       structureUuid = currentStructure.report_structure_uuid;
 
       // Detect language of the imported data early for overwrite mode too
-      sourceLanguage = 'de'; // Reset default to German
+      sourceLanguage = 'en'; // Reset default to English
       try {
-        // Use first non-empty description for language detection
-        const sampleText = structureData.find((item: ReportStructureData) => 
-          item.report_line_item_description && item.report_line_item_description.trim()
-        )?.report_line_item_description;
+        // Extract first 10 line item descriptions for language detection
+        const sampleDescriptions = structureData
+          .map((item: ReportStructureData) => item.report_line_item_description)
+          .filter(Boolean)
+          .slice(0, 10);
         
-        if (sampleText) {
+        if (sampleDescriptions.length > 0) {
           const { data: detectionResult, error: detectionError } = await supabase.functions.invoke('detect-language', {
-            body: { text: sampleText }
+            body: { 
+              lineItems: sampleDescriptions.map((desc, index) => ({
+                key: `item_${index}`,
+                description: desc
+              }))
+            }
           });
           
           if (!detectionError && detectionResult?.language) {
             sourceLanguage = detectionResult.language;
-            console.log(`Detected source language: ${sourceLanguage}`);
+            console.log(`Detected source language: ${sourceLanguage} (confidence: ${detectionResult.confidence})`);
           }
         }
       } catch (error) {
-        console.log('Language detection failed, using default (German):', error);
+        console.log('Language detection failed, using default (English):', error);
       }
 
       // Update existing structure with new version and source language
@@ -169,25 +175,31 @@ serve(async (req) => {
       structureUuid = crypto.randomUUID();
       
       // Detect language of the imported data early
-      sourceLanguage = 'de'; // Reset default to German
+      sourceLanguage = 'en'; // Reset default to English
       try {
-        // Use first non-empty description for language detection
-        const sampleText = structureData.find((item: ReportStructureData) => 
-          item.report_line_item_description && item.report_line_item_description.trim()
-        )?.report_line_item_description;
+        // Extract first 10 line item descriptions for language detection
+        const sampleDescriptions = structureData
+          .map((item: ReportStructureData) => item.report_line_item_description)
+          .filter(Boolean)
+          .slice(0, 10);
         
-        if (sampleText) {
+        if (sampleDescriptions.length > 0) {
           const { data: detectionResult, error: detectionError } = await supabase.functions.invoke('detect-language', {
-            body: { text: sampleText }
+            body: { 
+              lineItems: sampleDescriptions.map((desc, index) => ({
+                key: `item_${index}`,
+                description: desc
+              }))
+            }
           });
           
           if (!detectionError && detectionResult?.language) {
             sourceLanguage = detectionResult.language;
-            console.log(`Detected source language: ${sourceLanguage}`);
+            console.log(`Detected source language: ${sourceLanguage} (confidence: ${detectionResult.confidence})`);
           }
         }
       } catch (error) {
-        console.log('Language detection failed, using default (German):', error);
+        console.log('Language detection failed, using default (English):', error);
       }
       
       const { data: structure, error: structureError } = await supabase

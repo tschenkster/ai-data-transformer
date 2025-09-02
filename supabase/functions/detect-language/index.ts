@@ -7,12 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // Enhanced local language detection with improved English recognition
-function detectLanguageLocally(accounts: any[]) {
+function detectLanguageLocally(texts: string[]) {
   const accountingTerms = {
     // Expanded English terms with common accounting phrases
     en: [
@@ -42,12 +42,12 @@ function detectLanguageLocally(accounts: any[]) {
     it: /[àèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]/
   };
 
-  const combinedText = accounts.map((acc: any) => acc.originalDescription).join(' ').toLowerCase();
+  const combinedText = texts.join(' ').toLowerCase();
   const scores: { [key: string]: number } = {};
 
   // Initialize scores with English having slight preference
   Object.keys(accountingTerms).forEach(lang => {
-    scores[lang] = lang === 'en' ? 1 : 0; // Give English a slight head start
+    scores[lang] = lang === 'en' ? 2 : 0; // Give English a stronger preference
   });
 
   // Check accounting terms with higher weight for exact matches
@@ -92,12 +92,8 @@ function detectLanguageLocally(accounts: any[]) {
   console.log('Language detection scores:', scores, 'Best:', bestLang);
 
   return {
-    detections: accounts.map((acc: any) => ({
-      accountNumber: acc.accountNumber,
-      language: bestLang,
-      confidence: Math.min(maxScore / 10, 0.9)
-    })),
-    overallLanguage: bestLang
+    language: bestLang,
+    confidence: Math.min(maxScore / 10, 0.9)
   };
 }
 
@@ -132,108 +128,175 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { accounts } = await req.json();
+    const requestBody = await req.json();
+    
+    // Extract text data based on different input formats
+    let texts: string[] = [];
+    let detectionItems: any[] = [];
+    
+    if (requestBody.accounts) {
+      // CoA Translator format: { accounts: [{accountNumber, originalDescription}] }
+      texts = requestBody.accounts.map((acc: any) => acc.originalDescription || '').filter(Boolean);
+      detectionItems = requestBody.accounts;
+    } else if (requestBody.lineItems) {
+      // Report Structure Manager format: { lineItems: [{key, description}] }
+      texts = requestBody.lineItems.map((item: any) => item.description || '').filter(Boolean);
+      detectionItems = requestBody.lineItems;
+    } else if (requestBody.texts) {
+      // Generic text array format: { texts: ["text1", "text2"] }
+      texts = requestBody.texts.filter(Boolean);
+      detectionItems = requestBody.texts.map((text: string, index: number) => ({ id: index, text }));
+    } else if (requestBody.text) {
+      // Single text format: { text: "sample text" }
+      texts = [requestBody.text];
+      detectionItems = [{ id: 0, text: requestBody.text }];
+    } else {
+      throw new Error('Invalid input format. Expected accounts, lineItems, texts, or text field.');
+    }
 
-    console.log(`Detecting language for ${accounts.length} accounts`);
+    if (texts.length === 0) {
+      throw new Error('No text content provided for language detection');
+    }
 
-    // Sample first 10 accounts for detection to avoid token limits
-    const sampleAccounts = accounts.slice(0, 10);
+    console.log(`Detecting language for ${texts.length} text items`);
 
-    // Try Claude API with retry logic
+    // Sample first 10 items for detection to avoid token limits
+    const sampleTexts = texts.slice(0, 10);
+    const sampleItems = detectionItems.slice(0, 10);
+
+    // Try OpenAI API with retry logic
     try {
       const result = await retryWithBackoff(async () => {
-        const accountTexts = sampleAccounts.map((acc: any) => acc.originalDescription).join('\n');
+        const combinedTexts = sampleTexts.join('\n');
 
-        const prompt = `Analyze these accounting/financial descriptions to detect their language.
+        const prompt = `Analyze these financial/accounting descriptions to detect their language. Focus on these indicators:
 
-Account descriptions:
-${accountTexts}
+Text samples:
+${combinedTexts}
 
 Language detection rules:
-- German: compound words, umlauts (ä, ö, ü, ß), capitalized nouns
-- French: accents (é, è, à, ç), articles (le, la, les, du, des)  
-- Spanish: ñ, accents (á, é, í, ó, ú), articles (el, la, los, las)
-- Italian: double consonants, endings in -o/-a/-e, articles (il, la, gli, le)
-- English: articles (the, a, an), no special characters
-- Swedish: å, ä, ö characters, compound words, articles (den, det, en, ett)
+- English: "cash", "account", "balance", "total", "current", "assets", "liabilities", articles (the, a, an)
+- German: "kasse", "konto", "bilanz", compound words, umlauts (ä, ö, ü, ß), capitalized nouns
+- French: "caisse", "compte", "bilan", accents (é, è, à, ç), articles (le, la, les)
+- Spanish: "caja", "cuenta", "balance", ñ, accents (á, é, í, ó, ú), articles (el, la, los)
+- Italian: "cassa", "conto", "bilancio", double consonants, articles (il, la, gli)
+- Swedish: "kassa", "konto", "balans", å/ä/ö characters, articles (den, det, en)
 
-CRITICAL: Return ONLY valid JSON with NO explanations, analysis, or additional text.
-
-Required JSON format:
+Respond with ONLY a JSON object in this exact format (no explanations):
 {
-  "detections": [
-    {"accountNumber": "1000", "language": "en", "confidence": 0.95},
-    {"accountNumber": "1100", "language": "en", "confidence": 0.92}
-  ],
-  "overallLanguage": "en"
+  "language": "en",
+  "confidence": 0.95
 }`;
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        if (!openaiApiKey) {
+          throw new Error('OpenAI API key not configured');
+        }
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': anthropicApiKey!,
-            'anthropic-version': '2023-06-01',
+            'Authorization': `Bearer ${openaiApiKey}`,
           },
           body: JSON.stringify({
-            model: 'claude-3-5-haiku-20241022',
-            max_tokens: 1000,
+            model: 'gpt-4o-mini',
             messages: [
+              {
+                role: 'system',
+                content: 'You are a language detection specialist for financial/accounting terminology. Respond only with valid JSON.'
+              },
               {
                 role: 'user',
                 content: prompt
               }
-            ]
+            ],
+            max_tokens: 100,
+            temperature: 0.1
           }),
         });
 
-        // Handle specific error types
-        if (response.status === 529) {
-          throw new Error('Service temporarily unavailable');
-        }
         if (response.status === 429) {
           throw new Error('Rate limit exceeded');
         }
         if (!response.ok) {
-          throw new Error(`Claude API error: ${response.status}`);
+          throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        const content = data.content[0].text;
+        const content = data.choices[0].message.content;
         
-        console.log('Claude response:', content);
+        console.log('OpenAI response:', content);
 
-        // Parse Claude's JSON response with improved extraction
+        // Parse OpenAI's JSON response
         try {
-          return JSON.parse(content);
-        } catch (parseError) {
-          console.error('Direct JSON parse failed, attempting extraction:', parseError);
+          const result = JSON.parse(content);
           
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            return JSON.parse(jsonMatch[0]);
+          // For backwards compatibility, create detections array based on input format
+          if (requestBody.accounts) {
+            return {
+              detections: sampleItems.map((acc: any) => ({
+                accountNumber: acc.accountNumber,
+                language: result.language,
+                confidence: result.confidence
+              })),
+              overallLanguage: result.language
+            };
+          } else {
+            // Return simple format for lineItems, texts, or text input
+            return {
+              language: result.language,
+              confidence: result.confidence
+            };
           }
-          throw new Error('Invalid response format');
+        } catch (parseError) {
+          console.error('JSON parse failed, attempting extraction:', parseError);
+          
+          const jsonMatch = content.match(/\{[\s\S]*?\}/);
+          if (jsonMatch) {
+            const result = JSON.parse(jsonMatch[0]);
+            return requestBody.accounts ? {
+              detections: sampleItems.map((acc: any) => ({
+                accountNumber: acc.accountNumber,
+                language: result.language,
+                confidence: result.confidence
+              })),
+              overallLanguage: result.language
+            } : result;
+          }
+          throw new Error('Invalid OpenAI response format');
         }
       });
 
-      console.log(`Claude API success. Overall language: ${result.overallLanguage}`);
+      console.log(`OpenAI API success. Detected language: ${result.language || result.overallLanguage}`);
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
 
-    } catch (claudeError) {
-      console.error('Claude API failed after retries, using local fallback:', claudeError);
+    } catch (openaiError) {
+      console.error('OpenAI API failed after retries, using local fallback:', openaiError);
       
       // Use local detection as fallback
-      const fallbackResult = detectLanguageLocally(sampleAccounts);
+      const fallbackResult = detectLanguageLocally(sampleTexts);
       
-      console.log(`Local detection fallback. Overall language: ${fallbackResult.overallLanguage}`);
-      return new Response(JSON.stringify({
+      console.log(`Local detection fallback. Language: ${fallbackResult.language}`);
+      
+      // Format result based on input type
+      const result = requestBody.accounts ? {
+        detections: sampleItems.map((acc: any) => ({
+          accountNumber: acc.accountNumber,
+          language: fallbackResult.language,
+          confidence: fallbackResult.confidence
+        })),
+        overallLanguage: fallbackResult.language,
+        fallback: true,
+        openaiError: openaiError.message
+      } : {
         ...fallbackResult,
         fallback: true,
-        claudeError: claudeError.message
-      }), {
+        openaiError: openaiError.message
+      };
+      
+      return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -241,15 +304,10 @@ Required JSON format:
   } catch (error) {
     console.error('Critical error in detect-language function:', error);
     
-    // Last resort fallback
-    const accounts = await req.json().then(body => body.accounts || []).catch(() => []);
+    // Last resort fallback - always default to English
     const fallbackResult = {
-      detections: accounts.slice(0, 10).map((acc: any) => ({
-        accountNumber: acc?.accountNumber || '0000',
-        language: 'en',
-        confidence: 0.3
-      })),
-      overallLanguage: 'en',
+      language: 'en',
+      confidence: 0.3,
       fallback: true,
       error: error.message
     };
