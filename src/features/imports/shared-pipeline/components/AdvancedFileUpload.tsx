@@ -249,52 +249,83 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
       setPreviewData(preview);
       setUploadProgress(50);
       
-      // Initialize reversed column mappings - one entry per required database field
-      const mappings: ColumnMapping[] = REQUIRED_COLUMNS.map(dbColumn => {
-        // Auto-detect the best matching file column for each database field
-        let bestMatch = '';
-        
-        for (const header of preview.headers) {
-          const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
-          
-          // Enhanced pattern matching for each specific field
-          if (dbColumn === 'report_line_item_key') {
-            if (normalizedHeader.includes('report') && (normalizedHeader.includes('key') || normalizedHeader.includes('id')) || 
-                normalizedHeader === 'report_line_item_key' || normalizedHeader === 'report_key' ||
-                normalizedHeader === 'report_item_key' || normalizedHeader === 'report_code') {
-              bestMatch = header;
-              break;
-            }
-          } else if (dbColumn === 'report_line_item_description') {
-            if (normalizedHeader.includes('description') || normalizedHeader.includes('desc') || 
-                normalizedHeader === 'report_line_item_description' || normalizedHeader === 'line_item_description' ||
-                normalizedHeader === 'item_description' || normalizedHeader === 'name' || normalizedHeader === 'title') {
-              bestMatch = header;
-              break;
-            }
-          } else if (dbColumn === 'line_item_key') {
-            if (normalizedHeader.includes('key') || normalizedHeader.includes('id') || 
-                normalizedHeader === 'line_item_key' || normalizedHeader === 'item_key' ||
-                normalizedHeader === 'code' || normalizedHeader === 'identifier') {
-              bestMatch = header;
-              break;
-            }
-          } else if (dbColumn === 'parent_report_line_item_key') {
-            if (normalizedHeader.includes('parent') || normalizedHeader.includes('parent_key') ||
-                normalizedHeader === 'parent_report_line_item_key' || normalizedHeader === 'parent_line_item_key' ||
-                normalizedHeader === 'parent_id' || normalizedHeader === 'parent_code') {
-              bestMatch = header;
-              break;
-            }
-          }
-        }
-        
-        return {
-          dbColumn,
-          fileColumn: bestMatch,
-          mapped: !!bestMatch
-        };
-      });
+       // Initialize reversed column mappings - one entry per required database field
+       const mappings: ColumnMapping[] = REQUIRED_COLUMNS.map(dbColumn => {
+         // Auto-detect the best matching file column for each database field
+         let bestMatch = '';
+         let matchScore = 0; // Higher score = better match
+         
+         console.log(`🔍 Auto-detecting column for database field: ${dbColumn}`);
+         console.log(`Available file columns:`, preview.headers);
+         
+         for (const header of preview.headers) {
+           const normalizedHeader = header.toLowerCase().replace(/[^a-z0-9]/g, '_');
+           let currentScore = 0;
+           
+           // Enhanced pattern matching for each specific field with scoring
+           if (dbColumn === 'report_line_item_key') {
+             // Exact match gets highest priority
+             if (normalizedHeader === 'report_line_item_key') {
+               currentScore = 100;
+               console.log(`  ✅ EXACT MATCH: "${header}" -> score: ${currentScore}`);
+             } else if (header.toLowerCase() === 'report_line_item_key') {
+               currentScore = 95;
+               console.log(`  ✅ CASE-INSENSITIVE EXACT: "${header}" -> score: ${currentScore}`);
+             } else if (normalizedHeader.includes('report_line_item_key')) {
+               currentScore = 90;
+               console.log(`  ✅ CONTAINS FULL KEY: "${header}" -> score: ${currentScore}`);
+             } else if (normalizedHeader === 'report_key' || normalizedHeader === 'report_item_key') {
+               currentScore = 85;
+               console.log(`  ⚡ PARTIAL MATCH: "${header}" -> score: ${currentScore}`);
+             } else if (normalizedHeader.includes('report') && normalizedHeader.includes('key') && !normalizedHeader.includes('parent')) {
+               currentScore = 80;
+               console.log(`  🔶 PATTERN MATCH: "${header}" -> score: ${currentScore}`);
+             }
+           } else if (dbColumn === 'report_line_item_description') {
+             if (normalizedHeader === 'report_line_item_description') {
+               currentScore = 100;
+             } else if (normalizedHeader.includes('description') || normalizedHeader.includes('desc')) {
+               currentScore = 85;
+             } else if (normalizedHeader === 'name' || normalizedHeader === 'title') {
+               currentScore = 70;
+             }
+           } else if (dbColumn === 'line_item_key') {
+             // Exact match first
+             if (normalizedHeader === 'line_item_key') {
+               currentScore = 100;
+             } else if (normalizedHeader === 'report_line_item_key') {
+               currentScore = 95; // This is also a good match since it contains the line item key
+             } else if (normalizedHeader === 'item_key' || normalizedHeader === 'key') {
+               currentScore = 85;
+             } else if (normalizedHeader.includes('key') && !normalizedHeader.includes('parent')) {
+               currentScore = 75;
+             }
+           } else if (dbColumn === 'parent_report_line_item_key') {
+             if (normalizedHeader === 'parent_report_line_item_key') {
+               currentScore = 100;
+             } else if (normalizedHeader.includes('parent') && normalizedHeader.includes('key')) {
+               currentScore = 90;
+             } else if (normalizedHeader.includes('parent')) {
+               currentScore = 80;
+             }
+           }
+           
+           // Update best match if this score is better
+           if (currentScore > matchScore) {
+             matchScore = currentScore;
+             bestMatch = header;
+             console.log(`  🎯 NEW BEST MATCH: "${header}" with score ${currentScore}`);
+           }
+         }
+         
+         console.log(`📝 Final mapping for ${dbColumn}: "${bestMatch}" (score: ${matchScore})`);
+         
+         return {
+           dbColumn,
+           fileColumn: bestMatch,
+           mapped: !!bestMatch
+         };
+       });
 
       setColumnMappings(mappings);
       setUploadProgress(100);
