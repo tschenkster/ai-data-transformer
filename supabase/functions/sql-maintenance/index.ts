@@ -129,42 +129,18 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     // Export data to CSV before deletion
     const csvMetadata = await exportTableToCSV(supabaseClient, schema_name, table_name)
     
-    let rowsDeleted = 0
+    // Use the secure RPC function for actual deletion
+    const { data: rowsDeleted, error: deleteError } = await supabaseClient
+      .rpc('delete_all_rows_secure', {
+        p_schema_name: schema_name,
+        p_table_name: table_name,
+        p_mode: mode,
+        p_restart_identity: restart_identity,
+        p_cascade: cascade
+      })
     
-    if (mode === 'truncate') {
-      // For TRUNCATE, we need to use raw SQL approach
-      // Since Supabase client doesn't support TRUNCATE directly
-      rowsDeleted = rowCountBefore || 0
-      console.log(`TRUNCATE operation simulated for ${schema_name}.${table_name}`)
-    } else {
-      // Get table primary key for proper deletion
-      const { data: tableColumns, error: columnsError } = await supabaseClient
-        .rpc('get_column_info')
-      
-      if (columnsError) {
-        throw new Error(`Failed to get table info: ${columnsError.message}`)
-      }
-      
-      // Find a column we can use for deletion (prefer primary key, then any non-null column)
-      const tableColumnsList = tableColumns.filter(col => col.table_name === table_name)
-      const primaryKeyColumn = tableColumnsList.find(col => col.column_default?.includes('nextval'))
-      const firstColumn = tableColumnsList.length > 0 ? tableColumnsList[0] : null
-      
-      if (!firstColumn) {
-        throw new Error(`No columns found for table ${table_name}`)
-      }
-      
-      // Use a simple delete without conditions (deletes all rows)
-      const { error: deleteError } = await supabaseClient
-        .from(table_name)
-        .delete()
-        .neq(firstColumn.column_name, 'impossible-value-that-should-not-exist-12345')
-      
-      if (deleteError) {
-        throw new Error(`Delete failed: ${deleteError.message}`)
-      }
-      
-      rowsDeleted = rowCountBefore || 0
+    if (deleteError) {
+      throw new Error(`Delete operation failed: ${deleteError.message}`)
     }
 
     const duration = Date.now() - startTime

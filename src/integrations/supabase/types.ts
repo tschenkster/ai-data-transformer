@@ -1168,6 +1168,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      delete_all_rows_secure: {
+        Args: {
+          p_cascade?: boolean
+          p_mode?: string
+          p_restart_identity?: boolean
+          p_schema_name: string
+          p_table_name: string
+        }
+        Returns: number
+      }
       delete_entity_group_safe: {
         Args: { p_entity_group_uuid: string; p_force_delete?: boolean }
         Returns: Json
