@@ -63,7 +63,7 @@ export function AppRoutes() {
           <MultilingualManagement />
         </AuthRoute>
       } />
-      <Route path="/admin/report-configuration" element={
+      <Route path="/admin/report-structure-manager" element={
         <AuthRoute requireSuperAdmin>
           <ReportStructureManager />
         </AuthRoute>
@@ -153,7 +153,8 @@ export function AppRoutes() {
       {/* Legacy redirects for old routes */}
       <Route path="/admin/user-entity-management" element={<Navigate to="/admin/user-profile-management" replace />} />
       <Route path="/admin/user-entity-management/*" element={<Navigate to="/admin/user-profile-management" replace />} />
-      <Route path="/report-structure-manager" element={<Navigate to="/admin/report-configuration" replace />} />
+      <Route path="/report-structure-manager" element={<Navigate to="/admin/report-structure-manager" replace />} />
+      <Route path="/admin/report-configuration" element={<Navigate to="/admin/report-structure-manager" replace />} />
       <Route path="/coa-translator" element={<Navigate to="/data/coa-translator" replace />} />
       <Route path="/coa-mapper" element={<Navigate to="/data/coa-mapper" replace />} />
       <Route path="/trial-balance-import" element={<Navigate to="/data/trial-balance-import" replace />} />

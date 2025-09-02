@@ -1,4 +1,4 @@
-import { ReportStructureManager } from '@/features/report-structure-manager';
+import { ReportStructureManager as ReportStructureManagerComponent } from '@/features/report-structure-manager';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { ErrorBoundaryWithRecovery } from '@/components/ErrorBoundaryWithRecovery';
 import { Button } from '@/components/ui/button';
@@ -7,25 +7,25 @@ import Footer from '@/components/Footer';
 import { useEffect } from 'react';
 import { useUITranslations } from '@/hooks/useUITranslations';
 
-export default function ReportStructures() {
+export default function ReportStructureManager() {
   const { t } = useUITranslations('en');
 
   useEffect(() => {
-    console.log('ReportStructures page mounted');
+    console.log('ReportStructureManager page mounted');
     
     const handlePageShow = () => {
-      console.log('ReportStructures page shown (back/forward navigation)');
+      console.log('ReportStructureManager page shown (back/forward navigation)');
     };
     
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      console.log('ReportStructures page about to unload');
+      console.log('ReportStructureManager page about to unload');
     };
     
     window.addEventListener('pageshow', handlePageShow);
     window.addEventListener('beforeunload', handleBeforeUnload);
     
     return () => {
-      console.log('ReportStructures page unmounting');
+      console.log('ReportStructureManager page unmounting');
       window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -51,11 +51,11 @@ export default function ReportStructures() {
   return (
     <ErrorBoundaryWithRecovery
       onError={(error, errorInfo) => {
-        console.error('ReportStructures page error:', error, errorInfo);
+        console.error('ReportStructureManager page error:', error, errorInfo);
       }}
     >
       <CompactPageLayout 
-        currentPage={t('NAV_STRUCTURES', 'Report Structures')}
+        currentPage={t('NAV_REPORT_STRUCTURE_MANAGER', 'Report Structure Manager')}
         actions={pageActions}
       >
         <ErrorBoundaryWithRecovery
@@ -63,7 +63,7 @@ export default function ReportStructures() {
             console.error('ReportStructureManager error:', error, errorInfo);
           }}
         >
-          <ReportStructureManager />
+          <ReportStructureManagerComponent />
         </ErrorBoundaryWithRecovery>
         
         <Footer />

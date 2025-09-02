@@ -526,6 +526,7 @@ export type Database = {
           source_language_code: string | null
           tags: string[] | null
           updated_at: string
+          uploaded_file_path: string | null
           version: number
         }
         Insert: {
@@ -549,6 +550,7 @@ export type Database = {
           source_language_code?: string | null
           tags?: string[] | null
           updated_at?: string
+          uploaded_file_path?: string | null
           version?: number
         }
         Update: {
@@ -572,6 +574,7 @@ export type Database = {
           source_language_code?: string | null
           tags?: string[] | null
           updated_at?: string
+          uploaded_file_path?: string | null
           version?: number
         }
         Relationships: [

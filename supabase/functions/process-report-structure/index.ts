@@ -53,7 +53,8 @@ serve(async (req) => {
     columnMappings = [],
     importedStructureId,
     parentKeyValidation,
-    structureName
+    structureName,
+    uploadedFilePath
   } = await req.json();
 
     // Initialize Supabase client
@@ -67,6 +68,7 @@ serve(async (req) => {
   console.log(`Overwrite mode: ${overwriteMode}, Target structure: ${targetStructureId}`);
   console.log(`Unmapped columns: ${unmappedColumns.length} rows`);
   console.log(`Column mappings: ${columnMappings.length} mappings`);
+  console.log(`Uploaded file path: ${uploadedFilePath || 'Not provided'}`);
     // Validate input data
     if (!Array.isArray(structureData) || structureData.length === 0) {
       throw new Error('Invalid structure data provided');
@@ -124,7 +126,8 @@ serve(async (req) => {
         .update({
           version: version,
           updated_at: new Date().toISOString(),
-          source_language_code: sourceLanguage // Set source language on structure
+          source_language_code: sourceLanguage, // Set source language on structure
+          uploaded_file_path: uploadedFilePath // Store the uploaded file path
         })
         .eq('report_structure_id', structureId)
         .select('report_structure_id, report_structure_uuid')
@@ -198,7 +201,8 @@ serve(async (req) => {
           version: 1,
           name_of_import_file: filename,
           imported_structure_id: importedStructureId || 'Not specified',
-          source_language_code: sourceLanguage // Set source language on structure
+          source_language_code: sourceLanguage, // Set source language on structure
+          uploaded_file_path: uploadedFilePath // Store the uploaded file path
         })
         .select('report_structure_id, report_structure_uuid')
         .single();

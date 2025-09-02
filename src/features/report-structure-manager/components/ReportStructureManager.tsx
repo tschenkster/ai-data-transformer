@@ -190,6 +190,7 @@ export default function ReportStructureManager() {
     importedStructureId?: string;
     structureName?: string;
     parentKeyValidation: any;
+    uploadedFilePath?: string; // Add uploaded file path
   }) => {
     if (!user) return;
 
@@ -225,6 +226,7 @@ export default function ReportStructureManager() {
           columnMappings: fileData.mappings,
           importedStructureId: fileData.importedStructureId,
           parentKeyValidation: fileData.parentKeyValidation,
+          uploadedFilePath: fileData.uploadedFilePath, // Pass the uploaded file path
         },
       });
 

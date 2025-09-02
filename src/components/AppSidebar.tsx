@@ -143,8 +143,8 @@ export function AppSidebar() {
         { title: t('MENU_TRIAL_BALANCE_IMPORT', 'Trial Balance Import'), url: '/data/trial-balance-import', icon: FileSpreadsheet },
         { title: t('MENU_JOURNAL_IMPORT', 'Journal Import'), url: '/data/journal-import', icon: BookOpen },
         { 
-          title: t('MENU_REPORT_STRUCTURES', 'Report Configuration'), 
-          url: '/admin/report-configuration', 
+          title: t('MENU_REPORT_STRUCTURE_MANAGER', 'Report Structure Manager'), 
+          url: '/admin/report-structure-manager', 
           icon: Database,
           permissions: 'superAdmin'
         },

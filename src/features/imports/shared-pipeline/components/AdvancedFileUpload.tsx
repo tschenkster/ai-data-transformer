@@ -54,6 +54,7 @@ interface FileUploadProps {
     importedStructureId?: string;
     structureName?: string;
     parentKeyValidation: ParentKeyValidation;
+    uploadedFilePath?: string; // Add uploaded file path
   }) => void;
 }
 
@@ -457,6 +458,27 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
         throw new Error('Please select a target structure for overwrite mode');
       }
 
+      // Step 1: Store file in Supabase Storage
+      setUploadProgress(10);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const storedFileName = `report-structure-uploaded-${selectedFile.name}-${timestamp}`;
+      
+      console.log(`Storing file in Supabase Storage: ${storedFileName}`);
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('user-uploads-report-structures')
+        .upload(storedFileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('File storage error:', uploadError);
+        throw new Error(`Failed to store file: ${uploadError.message}`);
+      }
+
+      console.log('File successfully stored in Supabase Storage:', uploadData.path);
+
       setUploadProgress(25);
       const fullData = await processFullFile(selectedFile);
       setUploadProgress(50);
@@ -531,7 +553,8 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
         targetStructureId: overwriteMode ? targetStructureId : undefined,
         importedStructureId: importedStructureId || undefined,
         structureName: overwriteMode ? undefined : newStructureName.trim(),
-        parentKeyValidation: validation
+        parentKeyValidation: validation,
+        uploadedFilePath: uploadData.path // Add the stored file path
       };
 
       setUploadProgress(100);
