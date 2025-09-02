@@ -69,14 +69,19 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Parse request body to check for action field
+    const body = await req.json()
+    
+    // Route based on URL path (legacy) or body.action (new)
     const url = new URL(req.url)
     const path = url.pathname.split('/').pop()
+    const action = body.action
 
     if (req.method === 'POST') {
-      if (path === 'delete-all') {
-        return await handleDeleteAll(req, supabaseClient, user.id)
-      } else if (path === 'delete-where') {
-        return await handleDeleteWhere(req, supabaseClient, user.id)
+      if (path === 'delete-all' || action === 'delete-all') {
+        return await handleDeleteAll(req, supabaseClient, user.id, body)
+      } else if (path === 'delete-where' || action === 'delete-where') {
+        return await handleDeleteWhere(req, supabaseClient, user.id, body)
       }
     }
 
@@ -100,9 +105,9 @@ Deno.serve(async (req) => {
   }
 })
 
-async function handleDeleteAll(req: Request, supabaseClient: any, userId: string) {
-  const body: DeleteAllRequest = await req.json()
-  const { schema_name, table_name, mode, restart_identity = false, cascade = false } = body
+async function handleDeleteAll(req: Request, supabaseClient: any, userId: string, body?: any) {
+  const requestBody: DeleteAllRequest = body || await req.json()
+  const { schema_name, table_name, mode, restart_identity = false, cascade = false } = requestBody
   
   console.log(`Delete all request: ${schema_name}.${table_name}, mode: ${mode}`)
   
@@ -191,9 +196,9 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
   }
 }
 
-async function handleDeleteWhere(req: Request, supabaseClient: any, userId: string) {
-  const body: DeleteWhereRequest = await req.json()
-  const { schema_name, table_name, filter, advanced_predicate, dry_run = false, sample_limit = 50, row_limit } = body
+async function handleDeleteWhere(req: Request, supabaseClient: any, userId: string, body?: any) {
+  const requestBody: DeleteWhereRequest = body || await req.json()
+  const { schema_name, table_name, filter, advanced_predicate, dry_run = false, sample_limit = 50, row_limit } = requestBody
   
   console.log(`Delete where request: ${schema_name}.${table_name}, dry_run: ${dry_run}`)
   

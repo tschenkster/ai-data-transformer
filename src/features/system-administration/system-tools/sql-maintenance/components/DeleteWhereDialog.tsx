@@ -146,8 +146,8 @@ export function DeleteWhereDialog({ open, onOpenChange, table, onComplete }: Del
         request.advanced_predicate = advancedPredicate.trim()
       }
 
-      const { data, error } = await supabase.functions.invoke('sql-maintenance/delete-where', {
-        body: request
+      const { data, error } = await supabase.functions.invoke('sql-maintenance', {
+        body: { action: 'delete-where', ...request }
       })
 
       if (error) throw error
@@ -209,8 +209,8 @@ export function DeleteWhereDialog({ open, onOpenChange, table, onComplete }: Del
         request.advanced_predicate = advancedPredicate.trim()
       }
 
-      const { data, error } = await supabase.functions.invoke('sql-maintenance/delete-where', {
-        body: request
+      const { data, error } = await supabase.functions.invoke('sql-maintenance', {
+        body: { action: 'delete-where', ...request }
       })
 
       if (error) throw error

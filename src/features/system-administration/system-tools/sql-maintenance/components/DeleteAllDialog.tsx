@@ -64,8 +64,8 @@ export function DeleteAllDialog({ open, onOpenChange, table, onComplete }: Delet
         cascade
       }
 
-      const { data, error } = await supabase.functions.invoke('sql-maintenance/delete-all', {
-        body: request
+      const { data, error } = await supabase.functions.invoke('sql-maintenance', {
+        body: { action: 'delete-all', ...request }
       })
 
       if (error) throw error
