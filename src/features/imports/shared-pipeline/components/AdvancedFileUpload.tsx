@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileSpreadsheet, File, Eye, ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
+import { Upload, FileSpreadsheet, File, Eye, ArrowLeft, ArrowRight, Check, X, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -30,6 +30,18 @@ interface PreviewData {
   totalRows: number;
 }
 
+interface ParentKeyValidation {
+  validParents: number;
+  invalidParents: number;
+  missingKeys: string[];
+  validationResults: {
+    line_item_key: string;
+    parent_key: string;
+    is_valid: boolean;
+    row_index: number;
+  }[];
+}
+
 interface FileUploadProps {
   onFileProcessed: (data: { 
     structureData: any[]; 
@@ -41,6 +53,7 @@ interface FileUploadProps {
     targetStructureId?: string;
     importedStructureId?: string;
     structureName?: string;
+    parentKeyValidation: ParentKeyValidation;
   }) => void;
 }
 
@@ -59,7 +72,8 @@ interface ReportStructure {
 const REQUIRED_COLUMNS = [
   'report_line_item_key',
   'report_line_item_description', 
-  'parent_report_line_item_key'
+  'parent_report_line_item_key',
+  'line_item_type'
 ];
 
 // System-generated fields that should not be mapped by users
@@ -89,6 +103,8 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
   const [targetStructureId, setTargetStructureId] = useState<string>('');
   const [importedStructureId, setImportedStructureId] = useState<string>('');
   const [structures, setStructures] = useState<ReportStructure[]>([]);
+  const [parentKeyValidation, setParentKeyValidation] = useState<ParentKeyValidation | null>(null);
+  const [showValidationResults, setShowValidationResults] = useState(false);
 
   // Fetch available structures for overwrite mode
   const fetchStructures = async () => {
@@ -263,6 +279,13 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
               bestMatch = header;
               break;
             }
+          } else if (dbColumn === 'line_item_type') {
+            if (normalizedHeader.includes('type') || normalizedHeader.includes('category') ||
+                normalizedHeader === 'line_item_type' || normalizedHeader === 'item_type' ||
+                normalizedHeader === 'kind' || normalizedHeader === 'classification') {
+              bestMatch = header;
+              break;
+            }
           }
         }
         
@@ -314,7 +337,66 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
   };
 
   const validateMappings = () => {
-    return columnMappings.every(mapping => mapping.mapped && mapping.fileColumn);
+    const requiredFields = ['report_line_item_key', 'report_line_item_description', 'parent_report_line_item_key'];
+    return requiredFields.every(field => 
+      columnMappings.find(m => m.dbColumn === field)?.mapped && 
+      columnMappings.find(m => m.dbColumn === field)?.fileColumn
+    );
+  };
+
+  const validateParentKeys = (data: any[], keyMapping: ColumnMapping, parentKeyMapping: ColumnMapping): ParentKeyValidation => {
+    const keyColumn = keyMapping.fileColumn;
+    const parentKeyColumn = parentKeyMapping.fileColumn;
+    
+    if (!keyColumn || !parentKeyColumn) {
+      return {
+        validParents: 0,
+        invalidParents: 0,
+        missingKeys: [],
+        validationResults: []
+      };
+    }
+
+    // Build set of all available keys
+    const availableKeys = new Set<string>();
+    data.forEach(row => {
+      if (row[keyColumn]) {
+        availableKeys.add(row[keyColumn].toString());
+      }
+    });
+
+    // Validate parent references
+    const validationResults: ParentKeyValidation['validationResults'] = [];
+    const missingKeys = new Set<string>();
+
+    data.forEach((row, index) => {
+      const lineItemKey = row[keyColumn]?.toString() || '';
+      const parentKey = row[parentKeyColumn]?.toString() || '';
+      
+      if (parentKey) {
+        const isValid = availableKeys.has(parentKey);
+        validationResults.push({
+          line_item_key: lineItemKey,
+          parent_key: parentKey,
+          is_valid: isValid,
+          row_index: index
+        });
+        
+        if (!isValid) {
+          missingKeys.add(parentKey);
+        }
+      }
+    });
+
+    const validParents = validationResults.filter(r => r.is_valid).length;
+    const invalidParents = validationResults.filter(r => !r.is_valid).length;
+
+    return {
+      validParents,
+      invalidParents,
+      missingKeys: Array.from(missingKeys),
+      validationResults
+    };
   };
 
   const processFile = async () => {
@@ -381,6 +463,21 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
 
       setUploadProgress(75);
 
+      // Validate parent key references
+      const keyMapping = columnMappings.find(m => m.dbColumn === 'report_line_item_key');
+      const parentKeyMapping = columnMappings.find(m => m.dbColumn === 'parent_report_line_item_key');
+      const validation = validateParentKeys(fullData, keyMapping!, parentKeyMapping!);
+      
+      setParentKeyValidation(validation);
+
+      // Flag items with invalid parent keys
+      mappedData.forEach((item, index) => {
+        const validationResult = validation.validationResults.find(r => r.row_index === index);
+        if (validationResult && !validationResult.is_valid) {
+          item.parent_key_status = 'PARENT_KEY_NOT_EXISTING';
+        }
+      });
+
       const result = {
         structureData: mappedData,
         filename: selectedFile.name,
@@ -390,7 +487,8 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
         overwriteMode,
         targetStructureId: overwriteMode ? targetStructureId : undefined,
         importedStructureId: importedStructureId || undefined,
-        structureName: overwriteMode ? undefined : newStructureName.trim()
+        structureName: overwriteMode ? undefined : newStructureName.trim(),
+        parentKeyValidation: validation
       };
 
       setUploadProgress(100);
@@ -475,15 +573,102 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
             </div>
           )}
 
-          {isProcessing && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Processing file...</span>
-                <span>{uploadProgress}%</span>
+          {parentKeyValidation && parentKeyValidation.invalidParents > 0 && (
+            <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                <div>
+                  <p className="font-medium text-yellow-800">Parent Key Validation Issues</p>
+                  <p className="text-sm text-yellow-600">
+                    {parentKeyValidation.invalidParents} items reference non-existing parent keys
+                  </p>
+                </div>
               </div>
-              <Progress value={uploadProgress} className="w-full" />
+              <Button variant="outline" size="sm" onClick={() => setShowValidationResults(true)}>
+                View Details
+              </Button>
             </div>
           )}
+
+          {/* Validation Results Dialog */}
+          <Dialog open={showValidationResults} onOpenChange={setShowValidationResults}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle>Parent Key Validation Results</DialogTitle>
+                <DialogDescription>
+                  Review parent key validation issues before processing the import.
+                </DialogDescription>
+              </DialogHeader>
+              
+              {parentKeyValidation && (
+                <div className="space-y-4 overflow-auto">
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{parentKeyValidation.validParents}</div>
+                      <div className="text-sm text-muted-foreground">Valid References</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{parentKeyValidation.invalidParents}</div>
+                      <div className="text-sm text-muted-foreground">Invalid References</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{parentKeyValidation.missingKeys.length}</div>
+                      <div className="text-sm text-muted-foreground">Missing Keys</div>
+                    </div>
+                  </div>
+
+                  {parentKeyValidation.missingKeys.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Missing Parent Keys:</h4>
+                      <div className="p-3 bg-red-50 border border-red-200 rounded">
+                        <div className="flex flex-wrap gap-2">
+                          {parentKeyValidation.missingKeys.map(key => (
+                            <Badge key={key} variant="destructive">{key}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Validation Details:</h4>
+                    <div className="border rounded-lg overflow-auto max-h-64">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Row</TableHead>
+                            <TableHead>Line Item Key</TableHead>
+                            <TableHead>Parent Key</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {parentKeyValidation.validationResults
+                            .filter(r => !r.is_valid)
+                            .map((result, index) => (
+                              <TableRow key={index}>
+                                <TableCell>{result.row_index + 2}</TableCell>
+                                <TableCell className="font-mono">{result.line_item_key}</TableCell>
+                                <TableCell className="font-mono">{result.parent_key}</TableCell>
+                                <TableCell>
+                                  <Badge variant="destructive">Missing</Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-4 border-t">
+                <Button onClick={() => setShowValidationResults(false)}>
+                  Close
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
 
@@ -576,9 +761,10 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
                                 <span className="text-red-500 ml-1">*</span>
                               </Label>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {mapping.dbColumn === 'report_line_item_key' && 'Unique identifier for each line item'}
-                                {mapping.dbColumn === 'report_line_item_description' && 'Description or name of the line item'}
-                                {mapping.dbColumn === 'parent_report_line_item_key' && 'Key of the parent item (for hierarchical data)'}
+                                 {mapping.dbColumn === 'report_line_item_key' && 'Unique identifier for each line item'}
+                                 {mapping.dbColumn === 'report_line_item_description' && 'Description or name of the line item'}
+                                 {mapping.dbColumn === 'parent_report_line_item_key' && 'Key of the parent item (for hierarchical data)'}
+                                 {mapping.dbColumn === 'line_item_type' && 'Type or category of the line item (optional)'}
                               </p>
                             </div>
                             <div className="w-8 flex justify-center">

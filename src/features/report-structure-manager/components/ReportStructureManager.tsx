@@ -179,9 +179,9 @@ export default function ReportStructureManager() {
     }
   };
 
-  const handleFileProcessed = async (fileData: { 
-    structureData: any[]; 
-    filename: string; 
+  const handleFileProcessed = async (fileData: {
+    structureData: any[];
+    filename: string;
     totalRows: number;
     mappings: any[];
     unmappedColumns: Record<string, any>[];
@@ -189,6 +189,7 @@ export default function ReportStructureManager() {
     targetStructureId?: string;
     importedStructureId?: string;
     structureName?: string;
+    parentKeyValidation: any;
   }) => {
     if (!user) return;
 
@@ -223,6 +224,7 @@ export default function ReportStructureManager() {
           unmappedColumns: fileData.unmappedColumns,
           columnMappings: fileData.mappings,
           importedStructureId: fileData.importedStructureId,
+          parentKeyValidation: fileData.parentKeyValidation,
         },
       });
 

@@ -52,6 +52,7 @@ serve(async (req) => {
     unmappedColumns = [],
     columnMappings = [],
     importedStructureId,
+    parentKeyValidation,
     structureName
   } = await req.json();
 
@@ -233,6 +234,9 @@ serve(async (req) => {
           Object.entries(unmappedRowData).filter(([key]) => key !== 'row_index')
         ) : null;
 
+      // Check if parent key is flagged as non-existing
+      const parentKeyStatus = item.parent_key_status || null;
+
       return {
         report_line_item_uuid: itemUuid,
         report_line_item_description: item.report_line_item_description || item.hierarchy_path || item.report_line_item_key,
@@ -242,7 +246,7 @@ serve(async (req) => {
         report_line_item_key: item.report_line_item_key,
         parent_report_line_item_key: item.parent_report_line_item_key || null,
         parent_report_line_item_uuid: null, // Will be set in second pass
-        is_parent_key_existing: !!item.parent_report_line_item_key,
+        is_parent_key_existing: !!item.parent_report_line_item_key && parentKeyStatus !== 'PARENT_KEY_NOT_EXISTING',
         sort_order: index, // Preserve original file order: Excel row (index + 2) → sort_order index
         hierarchy_path: item.hierarchy_path || null,
         level_1_line_item_description: item.level_1_line_item_description || null,
@@ -436,6 +440,11 @@ serve(async (req) => {
 
     console.log(`Successfully processed structure with ${lineItems.length} line items preserving original file order`);
     console.log(`Order mapping confirmed: File rows 2-${lineItems.length + 1} → Database sort_order 0-${lineItems.length - 1}`);
+    
+    // Log parent key validation summary
+    if (parentKeyValidation) {
+      console.log(`Parent key validation: ${parentKeyValidation.validParents} valid, ${parentKeyValidation.invalidParents} invalid references`);
+    }
 
     return new Response(
       JSON.stringify({
@@ -449,6 +458,11 @@ serve(async (req) => {
         column_mappings: columnMappings.length,
         file_order_preserved: true,
         order_mapping: `File rows 2-${lineItems.length + 1} → Sort order 0-${lineItems.length - 1}`,
+        parent_key_validation: parentKeyValidation ? {
+          valid_parents: parentKeyValidation.validParents,
+          invalid_parents: parentKeyValidation.invalidParents,
+          missing_keys_count: parentKeyValidation.missingKeys?.length || 0
+        } : null,
         message: `Report structure "${overwriteMode ? currentStructureName : structureName}" processed successfully with original file order preserved`
       }),
       {
