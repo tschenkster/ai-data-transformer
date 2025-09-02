@@ -1357,6 +1357,16 @@ export type Database = {
           table_type: string
         }[]
       }
+      get_table_metadata: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          last_updated: string
+          row_count: number
+          schema_name: string
+          table_name: string
+          table_size_bytes: number
+        }[]
+      }
       get_translation: {
         Args: {
           p_entity_type: string
@@ -1532,6 +1542,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_table_protected: {
+        Args: { p_schema_name: string; p_table_name: string }
+        Returns: boolean
+      }
       is_user_deletable: {
         Args: { target_user_uuid: string }
         Returns: boolean
@@ -1564,6 +1578,25 @@ export type Database = {
       log_security_event: {
         Args: { p_action: string; p_details?: Json; p_target_user_id?: string }
         Returns: undefined
+      }
+      log_sql_maintenance_event: {
+        Args: {
+          p_action: string
+          p_csv_object_path?: string
+          p_csv_rows?: number
+          p_csv_sha256?: string
+          p_csv_size_bytes?: number
+          p_duration_ms?: number
+          p_error_message?: string
+          p_mode?: string
+          p_row_count_before?: number
+          p_rows_deleted?: number
+          p_schema_name: string
+          p_status?: string
+          p_table_name: string
+          p_where_predicate?: string
+        }
+        Returns: string
       }
       log_structure_change: {
         Args: {
