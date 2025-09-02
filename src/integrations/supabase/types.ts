@@ -1151,6 +1151,10 @@ export type Database = {
         Args: { p_keep_count?: number }
         Returns: number
       }
+      compute_hierarchy_fields_for_structure: {
+        Args: { p_structure_uuid: string }
+        Returns: Json
+      }
       convert_line_items_to_concatenated_format: {
         Args: { p_structure_id: number }
         Returns: Json

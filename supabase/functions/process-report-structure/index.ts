@@ -355,12 +355,34 @@ serve(async (req) => {
         if (conversionResult.new_id_range) {
           console.log(`New ID range: ${conversionResult.new_id_range}`);
         }
-      } else {
-        console.error('Conversion failed:', conversionResult.message);
-      }
+    } else {
+      console.error('Conversion failed:', conversionResult.message);
     }
+  }
 
-    // Generate AI translations for the imported data
+  // Compute hierarchy fields for all line items in the structure
+  console.log('Computing hierarchy fields for all line items...');
+  try {
+    const { data: hierarchyResult, error: hierarchyError } = await supabase.rpc(
+      'compute_hierarchy_fields_for_structure',
+      { p_structure_uuid: structureUuid }
+    );
+    
+    if (hierarchyError) {
+      console.error('Hierarchy computation failed:', hierarchyError);
+      throw new Error(`Failed to compute hierarchy fields: ${hierarchyError.message}`);
+    }
+    
+    console.log('Hierarchy fields computed successfully:', hierarchyResult);
+    if (hierarchyResult?.success) {
+      console.log(`Updated hierarchy fields for ${hierarchyResult.affected_count} line items`);
+    }
+  } catch (hierarchyError) {
+    console.error('Critical error computing hierarchy fields:', hierarchyError);
+    throw new Error(`Failed to compute hierarchy fields: ${hierarchyError.message}`);
+  }
+
+  // Generate AI translations for the imported data
     try {
       console.log('Generating AI translations for imported structure...');
       
