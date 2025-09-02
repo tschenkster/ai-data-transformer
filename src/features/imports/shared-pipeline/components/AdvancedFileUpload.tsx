@@ -682,9 +682,30 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
           {previewData && (
             <Tabs defaultValue="preview" className="flex-1 overflow-hidden">
               <TabsList>
-                <TabsTrigger value="preview">Data Preview</TabsTrigger>
-                <TabsTrigger value="mapping">Column Mapping</TabsTrigger>
-                <TabsTrigger value="options">Import Options</TabsTrigger>
+                <TabsTrigger value="preview" className="flex items-center gap-2">
+                  Data Preview
+                  {previewData && <Badge variant="outline" className="text-xs bg-green-100 text-green-800">✓</Badge>}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="mapping" 
+                  className="flex items-center gap-2"
+                >
+                  Column Mapping
+                  {validateMappings() && <Badge variant="outline" className="text-xs bg-green-100 text-green-800">✓</Badge>}
+                  {!validateMappings() && previewData && <Badge variant="outline" className="text-xs bg-amber-100 text-amber-800">!</Badge>}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="options" 
+                  className="flex items-center gap-2"
+                >
+                  Import Options
+                  {((!overwriteMode && newStructureName) || (overwriteMode && targetStructureId)) && 
+                    <Badge variant="outline" className="text-xs bg-green-100 text-green-800">✓</Badge>
+                  }
+                  {validateMappings() && !(!overwriteMode && newStructureName) && !(overwriteMode && targetStructureId) && 
+                    <Badge variant="outline" className="text-xs bg-amber-100 text-amber-800">!</Badge>
+                  }
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="preview" className="overflow-auto">
@@ -829,11 +850,11 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
                   </div>
 
                   <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium flex items-center gap-2">
-                        Mapping Status
+                        Step 1: Column Mapping
                         {validateMappings() ? (
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Complete</Badge>
+                          <Badge className="bg-green-100 text-green-800 border-green-200">✓ Complete</Badge>
                         ) : (
                           <Badge className="bg-amber-100 text-amber-800 border-amber-200">Incomplete</Badge>
                         )}
@@ -843,7 +864,12 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
                       </div>
                     </div>
                     {!validateMappings() && (
-                      <p className="text-amber-700 text-sm mt-2">⚠️ Please map all required fields to proceed</p>
+                      <div className="text-amber-700 text-sm">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span>Please map all required fields to proceed to import options</span>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -851,8 +877,35 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
 
               <TabsContent value="options" className="overflow-auto">
                 <div className="space-y-6">
+                  {/* Import Options Status */}
+                  <div className="p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium flex items-center gap-2">
+                        Step 2: Import Configuration
+                        {((!overwriteMode && newStructureName) || (overwriteMode && targetStructureId)) ? (
+                          <Badge className="bg-green-100 text-green-800 border-green-200">✓ Complete</Badge>
+                        ) : (
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-200">Required</Badge>
+                        )}
+                      </h4>
+                    </div>
+                    {!(!overwriteMode && newStructureName) && !(overwriteMode && targetStructureId) && (
+                      <div className="text-amber-700 text-sm">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span>
+                            {!overwriteMode 
+                              ? "Please enter a structure name to create a new report structure"
+                              : "Please select a target structure to update"
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Import Options</h3>
+                    <h3 className="text-lg font-medium">Choose Import Mode</h3>
                     
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
@@ -950,13 +1003,34 @@ export function AdvancedFileUpload({ onFileProcessed }: FileUploadProps) {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Cancel
             </Button>
-            <Button 
-              onClick={processFile} 
-              disabled={!validateMappings() || (!overwriteMode && !newStructureName) || (overwriteMode && !targetStructureId)}
-            >
-              Import Data
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <div className="flex items-center gap-3">
+              {/* Import readiness indicator */}
+              {(!validateMappings() || (!overwriteMode && !newStructureName) || (overwriteMode && !targetStructureId)) && (
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <span>
+                    {!validateMappings() 
+                      ? "Complete column mapping first"
+                      : !overwriteMode && !newStructureName 
+                      ? "Enter structure name in Import Options"
+                      : "Select target structure in Import Options"
+                    }
+                  </span>
+                </div>
+              )}
+              <Button 
+                onClick={processFile} 
+                disabled={!validateMappings() || (!overwriteMode && !newStructureName) || (overwriteMode && !targetStructureId)}
+                className={
+                  (!validateMappings() || (!overwriteMode && !newStructureName) || (overwriteMode && !targetStructureId))
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }
+              >
+                Import Data
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
