@@ -17,6 +17,7 @@ import ReportStructureModifier from './ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
 import { useContentLanguagePreference } from '@/hooks/useContentLanguagePreference';
 import { ReportStructureService } from '../services/reportStructureService';
+import { TranslationTestButton } from '@/components/admin/TranslationTestButton';
 
 interface ReportStructure {
   report_structure_id: number;
@@ -340,6 +341,12 @@ export default function ReportStructureManager() {
 
       <TabsContent value="overview" className="space-y-4">
         <Card>
+          <CardHeader>
+            <CardTitle>Report Structures</CardTitle>
+            <CardDescription>
+              Manage your report structures and generate missing translations
+            </CardDescription>
+          </CardHeader>
           <CardContent>
             {structures.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -348,55 +355,70 @@ export default function ReportStructureManager() {
                 <p className="text-sm">Upload a CSV or Excel file to create your first structure</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Version</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {structures.map((structure) => (
-                    <TableRow key={structure.report_structure_id}>
-                      <TableCell className="font-mono text-sm">
-                        {structure.report_structure_id}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {structure.report_structure_name}
-                      </TableCell>
-                      <TableCell>{structure.version}</TableCell>
-                      <TableCell>
-                        {structure.is_active ? (
-                          <Badge variant="default">
-                            <Check className="w-3 h-3 mr-1" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">Disabled</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{structure.created_by_user_name}</TableCell>
-                      <TableCell>{formatDate(structure.created_at)}</TableCell>
-                      <TableCell>
-          <ActionButtons 
-            actions={getActionsForStructure(structure)}
-            title=""
-            className="space-y-0"
-          />
-                      </TableCell>
+              <>
+                {/* Translation Test Section */}
+                <div className="mb-6 p-4 border rounded-lg bg-muted/50">
+                  <h3 className="font-semibold text-sm mb-3">Translation Management</h3>
+                  <div className="space-y-2">
+                    {structures.map((structure) => (
+                      <TranslationTestButton
+                        key={structure.report_structure_uuid}
+                        structureUuid={structure.report_structure_uuid}
+                        structureName={structure.report_structure_name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Version</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created By</TableHead>
+                      <TableHead>Created At</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {structures.map((structure) => (
+                      <TableRow key={structure.report_structure_id}>
+                        <TableCell className="font-mono text-sm">
+                          {structure.report_structure_id}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {structure.report_structure_name}
+                        </TableCell>
+                        <TableCell>{structure.version}</TableCell>
+                        <TableCell>
+                          {structure.is_active ? (
+                            <Badge variant="default">
+                              <Check className="w-3 h-3 mr-1" />
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">Disabled</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{structure.created_by_user_name}</TableCell>
+                        <TableCell>{formatDate(structure.created_at)}</TableCell>
+                        <TableCell>
+            <ActionButtons 
+              actions={getActionsForStructure(structure)}
+              title=""
+              className="space-y-0"
+            />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
             )}
           </CardContent>
         </Card>
-
       </TabsContent>
 
       <TabsContent value="upload" className="space-y-4">
