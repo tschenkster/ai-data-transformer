@@ -26,6 +26,7 @@ import CodebaseDocumentation from '@/pages/system-tools/CodebaseDocumentation';
 import FileOrganizer from '@/pages/system-tools/FileOrganizer';
 import PerformanceAnalyzer from '@/pages/system-tools/PerformanceAnalyzer';
 import HistoricTranslationFixer from '@/pages/system-tools/HistoricTranslationFixer';
+import SqlMaintenance from '@/pages/system-tools/SqlMaintenance';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -105,6 +106,11 @@ export function AppRoutes() {
       <Route path="/admin/system-tools/historic-translation-fixer" element={
         <AuthRoute requireSuperAdmin>
           <HistoricTranslationFixer />
+        </AuthRoute>
+      } />
+      <Route path="/admin/system-tools/sql-maintenance" element={
+        <AuthRoute requireSuperAdmin>
+          <SqlMaintenance />
         </AuthRoute>
       } />
       {/* Legacy redirect for old system admin route */}

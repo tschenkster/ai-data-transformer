@@ -8,3 +8,4 @@ export { EntitySelector } from './components/EntitySelector';
 export { SystemToolsLayout } from './components/SystemToolsLayout';
 export { SystemToolsBreadcrumb } from './components/SystemToolsBreadcrumb';
 export { SystemToolsNavigation } from './components/SystemToolsNavigation';
+export { SqlMaintenance } from './system-tools/sql-maintenance';

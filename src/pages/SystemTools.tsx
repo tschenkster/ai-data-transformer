@@ -42,6 +42,17 @@ export default function SystemTools() {
 
   const systemTools: SystemTool[] = [
     {
+      id: 'sql-maintenance',
+      title: 'SQL Maintenance',
+      description: 'Clean and maintain database tables with comprehensive safety measures, audit trails, and CSV export functionality.',
+      icon: Database,
+      path: '/admin/system-tools/sql-maintenance',
+      status: 'active',
+      category: 'optimization',
+      lastUsed: 'New',
+      usageCount: 0
+    },
+    {
       id: 'historic-translation-fixer',
       title: 'Historic Translation Fixer',
       description: 'Fix NULL values in translation tables, enforce data integrity, and ensure complete audit trails.',

@@ -24,7 +24,8 @@ export function SystemToolsLayout({
     'codebase-docs': '/admin/system-tools/codebase-docs',
     'database-docs': '/admin/system-tools/database-docs', 
     'performance-analyzer': '/admin/system-tools/performance',
-    'file-organizer': '/admin/system-tools/file-organizer'
+    'file-organizer': '/admin/system-tools/file-organizer',
+    'sql-maintenance': '/admin/system-tools/sql-maintenance'
   };
 
   const breadcrumbItems = [
