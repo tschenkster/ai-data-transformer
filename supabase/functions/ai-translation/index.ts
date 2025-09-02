@@ -123,16 +123,33 @@ serve(async (req) => {
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        const { error } = await supabase.rpc('create_translation_entries', {
-          p_entity_type: entityType,
-          p_entity_uuid: entityUuid,
-          p_translations: translatedTexts,
-          p_source_language: sourceLanguage
-        });
+        try {
+          // Validate and clean field keys before saving
+          const validTranslations = translatedTexts.filter(t => 
+            t.field_key && t.text_value && t.field_key.length <= 500
+          );
 
-        if (error) {
-          console.error('Error saving translations:', error);
-          throw new Error(`Failed to save translations: ${error.message}`);
+          if (validTranslations.length === 0) {
+            console.warn('No valid translations to save');
+            continue;
+          }
+
+          const { error } = await supabase.rpc('create_translation_entries', {
+            p_entity_type: entityType,
+            p_entity_uuid: entityUuid,
+            p_translations: validTranslations,
+            p_source_language: sourceLanguage
+          });
+
+          if (error) {
+            console.error('Error saving translations:', error);
+            throw new Error(`Failed to save translations: ${error.message}`);
+          }
+
+          console.log(`Successfully saved ${validTranslations.length} translations for ${targetLang}`);
+        } catch (saveError) {
+          console.error('Translation save failed:', saveError);
+          throw saveError;
         }
       }
     }

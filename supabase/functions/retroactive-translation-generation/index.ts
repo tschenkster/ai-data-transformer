@@ -84,10 +84,12 @@ serve(async (req) => {
       for (const item of lineItems) {
         if (item.report_line_item_description) {
           try {
+            // Use a simplified field key to avoid constraint violations
+            const fieldKey = 'description';
             const { data: lineItemTranslationResult, error: lineItemTranslationError } = await supabase.functions.invoke('ai-translation', {
               body: {
                 texts: [{
-                  field_key: `${item.report_line_item_key}_description`,
+                  field_key: fieldKey,
                   text: item.report_line_item_description
                 }],
                 sourceLanguage,

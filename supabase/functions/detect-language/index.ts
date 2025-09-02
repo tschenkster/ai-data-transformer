@@ -11,11 +11,23 @@ const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// Local language detection fallback
+// Enhanced local language detection with improved English recognition
 function detectLanguageLocally(accounts: any[]) {
   const accountingTerms = {
-    en: ['cash', 'bank', 'asset', 'liability', 'equity', 'revenue', 'expense', 'account', 'receivable', 'payable'],
-    de: ['kasse', 'bank', 'vermögen', 'verbindlichkeit', 'eigenkapital', 'umsatz', 'ausgaben', 'konto', 'forderung'],
+    // Expanded English terms with common accounting phrases
+    en: [
+      'cash', 'bank', 'asset', 'liability', 'equity', 'revenue', 'expense', 'account', 'receivable', 'payable',
+      'balance', 'sheet', 'profit', 'loss', 'income', 'statement', 'current', 'non-current', 'total',
+      'assets', 'liabilities', 'accounts', 'inventory', 'property', 'plant', 'equipment', 'retained',
+      'earnings', 'capital', 'stock', 'bonds', 'notes', 'shareholders', 'comprehensive', 'consolidated',
+      'subsidiaries', 'goodwill', 'intangible', 'tangible', 'depreciation', 'amortization', 'provisions',
+      'third', 'party', 'related', 'treasury', 'dividend', 'common', 'preferred'
+    ],
+    de: [
+      'kasse', 'bank', 'vermögen', 'verbindlichkeit', 'eigenkapital', 'umsatz', 'ausgaben', 'konto', 'forderung',
+      'bilanz', 'gewinn', 'verlust', 'anlagevermögen', 'umlaufvermögen', 'rückstellungen', 'abschreibungen',
+      'gesellschaft', 'kapital', 'ergebnis', 'aufwand', 'ertrag', 'stammkapital', 'jahresüberschuss'
+    ],
     fr: ['caisse', 'banque', 'actif', 'passif', 'capitaux', 'revenus', 'charges', 'compte', 'créances'],
     es: ['caja', 'banco', 'activo', 'pasivo', 'patrimonio', 'ingresos', 'gastos', 'cuenta', 'cobrar'],
     sv: ['kassa', 'bank', 'tillgång', 'skuld', 'eget', 'intäkt', 'kostnad', 'konto', 'fordran'],
@@ -33,39 +45,57 @@ function detectLanguageLocally(accounts: any[]) {
   const combinedText = accounts.map((acc: any) => acc.originalDescription).join(' ').toLowerCase();
   const scores: { [key: string]: number } = {};
 
-  // Initialize scores
+  // Initialize scores with English having slight preference
   Object.keys(accountingTerms).forEach(lang => {
-    scores[lang] = 0;
+    scores[lang] = lang === 'en' ? 1 : 0; // Give English a slight head start
   });
 
-  // Check accounting terms
+  // Check accounting terms with higher weight for exact matches
   Object.entries(accountingTerms).forEach(([lang, terms]) => {
     terms.forEach(term => {
       const regex = new RegExp(`\\b${term}\\b`, 'gi');
       const matches = combinedText.match(regex);
       if (matches) {
-        scores[lang] += matches.length * 2;
+        scores[lang] += matches.length * (lang === 'en' ? 3 : 2); // Higher weight for English
       }
     });
   });
 
-  // Check character patterns
+  // Check character patterns (strong indicators for non-English)
   Object.entries(characterPatterns).forEach(([lang, pattern]) => {
     const matches = combinedText.match(pattern);
     if (matches) {
-      scores[lang] += matches.length;
+      scores[lang] += matches.length * 10; // Strong weight for special characters
     }
   });
 
-  const bestLang = Object.entries(scores).reduce((best, [lang, score]) => 
+  // English pattern bonuses
+  const englishPatterns = [
+    /\b(the|and|of|to|in|for|with|by)\b/g,
+    /\b(total|current|non.?current|third.?party|related.?party)\b/g,
+    /\b(balance\s+sheet|income\s+statement|cash\s+flow)\b/g
+  ];
+  
+  englishPatterns.forEach(pattern => {
+    const matches = combinedText.match(pattern);
+    if (matches) {
+      scores.en += matches.length * 5;
+    }
+  });
+
+  // Default to English if no clear winner or scores are very low
+  const maxScore = Math.max(...Object.values(scores));
+  const bestLang = maxScore < 5 ? 'en' : Object.entries(scores).reduce((best, [lang, score]) => 
     score > best[1] ? [lang, score] : best, ['en', 0]
   )[0];
+
+  console.log('Language detection scores:', scores, 'Best:', bestLang);
 
   return {
     detections: accounts.map((acc: any) => ({
       accountNumber: acc.accountNumber,
       language: bestLang,
-      confidence: 0.7
+      confidence: Math.min(maxScore / 10, 0.9)
     })),
     overallLanguage: bestLang
   };
