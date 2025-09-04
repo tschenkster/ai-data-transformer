@@ -710,12 +710,20 @@ const Homepage = () => {
           </section>
 
           {/* Final CTA Section */}
-          <section className="bg-gradient-to-br from-primary to-primary-glow py-12 md:py-16 text-primary-foreground">
-            <div className="container mx-auto px-4">
+          <section className="relative bg-gradient-to-br from-primary to-primary-glow py-12 md:py-16 text-white overflow-hidden">
+            {/* Dark overlay for better text contrast */}
+            <div className="absolute inset-0 bg-black/30"></div>
+            
+            {/* Subtle pattern overlay for texture */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:24px_24px]"></div>
+            </div>
+            
+            <div className="container mx-auto px-4 relative z-10">
               <div className="max-w-4xl mx-auto text-center space-y-8">
                 <div className="animate-fade-in space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-bold">Ready to Escape Excel Hell?</h2>
-                  <p className="text-xl opacity-90 max-w-3xl mx-auto">
+                  <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">Ready to Escape Excel Hell?</h2>
+                  <p className="text-xl text-white/95 max-w-3xl mx-auto drop-shadow-md">
                     Join startup CFOs who've transformed their finance operations and are making confident, 
                     data-driven decisions every day.
                   </p>
