@@ -57,6 +57,12 @@ const Homepage = () => {
                 </h1>
               </div>
 
+              {/* Moved text from lower section */}
+              <div className="text-center mt-12">
+                <p className="text-2xl md:text-3xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
+                  You need board-ready insights quickly, but here's the reality you're facing every month.
+                </p>
+              </div>
             </div>
           </section>
 
@@ -70,12 +76,6 @@ const Homepage = () => {
             
             <div className="container mx-auto px-4 relative z-10">
               <div className="max-w-6xl mx-auto text-center">
-                {/* Additional text outside the card */}
-                <div className="text-center mt-12">
-                  <p className="text-2xl md:text-3xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
-                    You need board-ready insights quickly, but here's the reality you're facing every month.
-                  </p>
-                </div>
               </div>
             </div>
           </section>
