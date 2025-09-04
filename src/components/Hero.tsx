@@ -42,7 +42,7 @@ export function Hero() {
         </h1>
         
         <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Easily convert DATEV reports into clean Excel (XLSX) format.
+          Turn messy DATEV exports into clean data & reports.
         </p>
 
         <div className="mt-8">
