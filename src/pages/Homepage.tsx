@@ -57,77 +57,82 @@ const Homepage = () => {
                 </h1>
               </div>
 
-              {/* Enhanced CFO Challenge Callout */}
-              <div className="mt-16 animate-fade-in" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
-                <div className="max-w-5xl mx-auto">
-                  {/* Main callout container with gradient and interactive effects */}
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/15 to-destructive/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-br from-background/95 to-background/90 border-2 border-primary/20 rounded-3xl p-8 md:p-12 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 hover:shadow-2xl">
+              {/* CFO Challenge Callout */}
+              <div className="mt-16">
+                <div className="max-w-4xl mx-auto bg-card rounded-2xl p-8 md:p-12 shadow-lg border">
+                  
+                  {/* Split layout: Need vs Reality */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    
+                    {/* Left side: What You Need */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 rounded-full">
+                          <Target className="h-6 w-6 text-green-600" />
+                        </div>
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">What You Need</Badge>
+                      </div>
                       
-                      {/* Split layout: Need vs Reality */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                        
-                        {/* Left side: Positive Need */}
-                        <div className="text-center lg:text-left space-y-4">
-                          <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-                            <div className="p-3 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                              <Target className="h-8 w-8 text-primary" />
-                            </div>
-                            <Badge className="px-3 py-1 bg-primary/10 text-primary border-primary/20">What You Need</Badge>
-                          </div>
-                          <h2 className="text-2xl md:text-3xl font-bold text-primary leading-tight">
-                            Board-ready insights
-                            <span className="block text-foreground">delivered quickly</span>
-                          </h2>
+                      <div className="space-y-3">
+                        <h2 className="text-3xl font-bold text-green-600">
+                          Board-ready insights
+                        </h2>
+                        <h2 className="text-3xl font-bold text-foreground">
+                          delivered quickly
+                        </h2>
+                        <p className="text-muted-foreground text-lg">
+                          Clean data, clear reports, confident decisions
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* VS Divider */}
+                    <div className="flex lg:hidden items-center justify-center my-6">
+                      <div className="bg-muted rounded-full px-4 py-2">
+                        <span className="text-sm font-bold text-muted-foreground">VS</span>
+                      </div>
+                    </div>
+
+                    <div className="hidden lg:flex items-center justify-center">
+                      <div className="bg-muted rounded-full px-4 py-2">
+                        <span className="text-sm font-bold text-muted-foreground">VS</span>
+                      </div>
+                    </div>
+
+                    {/* Right side: Current Reality */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 lg:justify-end">
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Current Reality</Badge>
+                        <div className="p-2 bg-red-100 rounded-full">
+                          <AlertTriangle className="h-6 w-6 text-red-600" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 lg:text-right">
+                        <h2 className="text-3xl font-bold text-red-600">
+                          The monthly struggle
+                        </h2>
+                        <h2 className="text-3xl font-bold text-foreground">
+                          you're facing
+                        </h2>
+                        <div className="flex items-center gap-2 lg:justify-end">
+                          <Clock className="h-5 w-5 text-red-500" />
                           <p className="text-muted-foreground text-lg">
-                            Clean data, clear reports, confident decisions
+                            Hours wasted, frustration mounting
                           </p>
                         </div>
-
-                        {/* Vertical divider with VS */}
-                        <div className="hidden lg:flex items-center justify-center">
-                          <div className="relative">
-                            <div className="w-px h-24 bg-gradient-to-b from-transparent via-border to-transparent"></div>
-                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                              <div className="bg-background border-2 border-border rounded-full w-12 h-12 flex items-center justify-center">
-                                <span className="text-sm font-bold text-muted-foreground">VS</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Right side: Reality Problem */}
-                        <div className="text-center lg:text-right space-y-4">
-                          <div className="flex items-center justify-center lg:justify-end gap-3 mb-4">
-                            <Badge variant="destructive" className="px-3 py-1">Current Reality</Badge>
-                            <div className="p-3 bg-destructive/10 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                              <AlertTriangle className="h-8 w-8 text-destructive animate-pulse" />
-                            </div>
-                          </div>
-                          <h2 className="text-2xl md:text-3xl font-bold text-destructive leading-tight">
-                            The monthly struggle
-                            <span className="block text-foreground">you're facing</span>
-                          </h2>
-                          <div className="flex items-center justify-center lg:justify-end gap-2 text-destructive/80">
-                            <Clock className="h-5 w-5 animate-pulse" />
-                            <p className="text-muted-foreground text-lg">
-                              Hours wasted, frustration mounting
-                            </p>
-                          </div>
-                        </div>
                       </div>
+                    </div>
+                  </div>
 
-                      {/* Bottom CTA with urgency */}
-                      <div className="mt-8 pt-8 border-t border-border/50 text-center">
-                        <p className="text-xl font-semibold text-foreground mb-4">
-                          It's time to bridge this gap
-                        </p>
-                        <div className="flex items-center justify-center gap-2 text-primary hover:text-primary/80 transition-colors cursor-pointer group-hover:scale-105 transition-transform duration-300">
-                          <span className="text-lg font-medium">See how we solve this below</span>
-                          <ChevronRight className="h-5 w-5 animate-pulse" />
-                        </div>
-                      </div>
+                  {/* Bottom CTA */}
+                  <div className="mt-12 pt-8 border-t text-center space-y-4">
+                    <p className="text-xl font-semibold text-foreground">
+                      It's time to bridge this gap
+                    </p>
+                    <div className="flex items-center justify-center gap-2 text-green-600 hover:text-green-700 transition-colors cursor-pointer">
+                      <span className="text-lg font-medium">See how we solve this below</span>
+                      <ChevronRight className="h-5 w-5" />
                     </div>
                   </div>
                 </div>
