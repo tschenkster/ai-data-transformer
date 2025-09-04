@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MultilingualSelector } from '@/components/MultilingualSelector';
 import { Database } from 'lucide-react';
 
 export function Header() {
-  const [selectedLanguage, setSelectedLanguage] = useState('de');
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    // Load language preference from localStorage
-    const savedLang = localStorage.getItem('lang_preference');
-    if (savedLang) {
-      setSelectedLanguage(savedLang);
-    }
-
     // Handle scroll for sticky header
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -22,11 +14,6 @@ export function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleLanguageChange = (value: string) => {
-    setSelectedLanguage(value);
-    localStorage.setItem('lang_preference', value);
-  };
 
   return (
     <header 
@@ -67,12 +54,6 @@ export function Header() {
                 Register
               </Link>
             </nav>
-
-            <MultilingualSelector
-              currentLanguage={selectedLanguage}
-              onLanguageChange={handleLanguageChange}
-              size="sm"
-            />
           </div>
         </div>
       </div>
