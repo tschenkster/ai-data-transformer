@@ -57,85 +57,11 @@ const Homepage = () => {
                 </h1>
               </div>
 
-              {/* CFO Challenge Callout */}
-              <div className="mt-16">
-                <div className="max-w-4xl mx-auto bg-card rounded-2xl p-8 md:p-12 shadow-lg border">
-                  
-                  {/* Split layout: Need vs Reality */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    
-                    {/* Left side: What You Need */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 rounded-full">
-                          <Target className="h-6 w-6 text-green-600" />
-                        </div>
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">What You Need</Badge>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <h2 className="text-3xl font-bold text-green-600">
-                          Board-ready insights
-                        </h2>
-                        <h2 className="text-3xl font-bold text-foreground">
-                          delivered quickly
-                        </h2>
-                        <p className="text-muted-foreground text-lg">
-                          Clean data, clear reports, confident decisions
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* VS Divider */}
-                    <div className="flex lg:hidden items-center justify-center my-6">
-                      <div className="bg-muted rounded-full px-4 py-2">
-                        <span className="text-sm font-bold text-muted-foreground">VS</span>
-                      </div>
-                    </div>
-
-                    <div className="hidden lg:flex items-center justify-center">
-                      <div className="bg-muted rounded-full px-4 py-2">
-                        <span className="text-sm font-bold text-muted-foreground">VS</span>
-                      </div>
-                    </div>
-
-                    {/* Right side: Current Reality */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 lg:justify-end">
-                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Current Reality</Badge>
-                        <div className="p-2 bg-red-100 rounded-full">
-                          <AlertTriangle className="h-6 w-6 text-red-600" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3 lg:text-right">
-                        <h2 className="text-3xl font-bold text-red-600">
-                          The monthly struggle
-                        </h2>
-                        <h2 className="text-3xl font-bold text-foreground">
-                          you're facing
-                        </h2>
-                        <div className="flex items-center gap-2 lg:justify-end">
-                          <Clock className="h-5 w-5 text-red-500" />
-                          <p className="text-muted-foreground text-lg">
-                            Hours wasted, frustration mounting
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bottom CTA */}
-                  <div className="mt-12 pt-8 border-t text-center space-y-4">
-                    <p className="text-xl font-semibold text-foreground">
-                      It's time to bridge this gap
-                    </p>
-                    <div className="flex items-center justify-center gap-2 text-green-600 hover:text-green-700 transition-colors cursor-pointer">
-                      <span className="text-lg font-medium">See how we solve this below</span>
-                      <ChevronRight className="h-5 w-5" />
-                    </div>
-                  </div>
-                </div>
+              {/* CFO Challenge Text */}
+              <div className="text-center mt-12">
+                <p className="text-2xl md:text-3xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
+                  You need board-ready insights quickly, but here's the reality you're facing every month.
+                </p>
               </div>
             </div>
           </section>
