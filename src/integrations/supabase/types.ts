@@ -1122,33 +1122,27 @@ export type Database = {
       }
     }
     Views: {
-      security_audit_summary_safe: {
+      audit_log_summary: {
         Row: {
           action: string | null
-          ip_status: string | null
-          log_date: string | null
-          sanitized_details: Json | null
-          security_audit_log_uuid: string | null
-          target_type: string | null
-          user_type: string | null
+          category: string | null
+          event_date: string | null
+          event_type: string | null
+          log_id: string | null
         }
         Insert: {
           action?: string | null
-          ip_status?: never
-          log_date?: never
-          sanitized_details?: never
-          security_audit_log_uuid?: string | null
-          target_type?: never
-          user_type?: never
+          category?: never
+          event_date?: never
+          event_type?: never
+          log_id?: string | null
         }
         Update: {
           action?: string | null
-          ip_status?: never
-          log_date?: never
-          sanitized_details?: never
-          security_audit_log_uuid?: string | null
-          target_type?: never
-          user_type?: never
+          category?: never
+          event_date?: never
+          event_type?: never
+          log_id?: string | null
         }
         Relationships: []
       }
@@ -1165,6 +1159,10 @@ export type Database = {
           p_user_uuids: string[]
         }
         Returns: Json
+      }
+      can_access_audit_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       can_delete_users: {
         Args: Record<PropertyKey, never>
@@ -1770,10 +1768,6 @@ export type Database = {
           | { input_data: Json; validation_rules: Json }
           | { input_text: string; max_length?: number }
         Returns: string
-      }
-      verify_audit_log_access: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
       }
     }
     Enums: {
