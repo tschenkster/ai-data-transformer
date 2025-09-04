@@ -27,7 +27,7 @@ export default function Start() {
         <div className="container mx-auto px-4 py-16">
           {/* Top greeting */}
           <div className="text-center mb-8">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm" style={{ color: 'hsl(var(--text-supporting))' }}>
               Welcome back 👋 — spreadsheets are safe with us today.
             </p>
           </div>
@@ -103,10 +103,10 @@ export default function Start() {
         {/* Welcome Header */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 border mb-8">
           <div className="relative z-10">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">
+            <h1 className="text-3xl font-bold tracking-tight mb-2" style={{ color: 'hsl(var(--text-heading))' }}>
               Welcome back, {userAccount?.first_name || user?.email?.split('@')[0] || 'User'}! 👋
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-lg" style={{ color: 'hsl(var(--text-body))' }}>
               Here's what's happening with your platform today.
             </p>
           </div>

@@ -42,11 +42,11 @@ export function HumorCard({ item, localizedContent }: HumorCardProps) {
             </div>
             <div className="flex-1 space-y-3">
               {localizedContent.title && (
-                <h3 className="text-lg font-semibold text-foreground">
+                <h3 className="text-lg font-semibold" style={{ color: 'hsl(var(--text-heading))' }}>
                   {localizedContent.title}
                 </h3>
               )}
-              <p className="text-base text-muted-foreground leading-relaxed">
+              <p className="text-base leading-relaxed" style={{ color: 'hsl(var(--text-body))' }}>
                 {localizedContent.body}
               </p>
               {item.asset_url && (
