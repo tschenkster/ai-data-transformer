@@ -34,7 +34,7 @@ const Homepage = () => {
   const { showBetaDialog, BetaDialog } = useBetaDialog();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
       <Hero />
       
