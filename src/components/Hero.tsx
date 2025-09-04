@@ -103,7 +103,7 @@ export function Hero() {
               `}
               role="button"
               tabIndex={0}
-              aria-describedby="upload-description"
+              aria-describedby="upload-status"
               aria-label="Upload your DATEV file - simulation mode"
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -136,11 +136,6 @@ export function Hero() {
                     <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
                       Transform your DATEV data in seconds
                     </h3>
-                    
-                    {/* Subcopy */}
-                    <p id="upload-description" className="text-base text-muted-foreground max-w-lg mx-auto">
-                      Drag & drop or click to simulate upload. Supports XLSX, CSV & PDF.
-                    </p>
                   </div>
 
                   {/* Format Chips */}
@@ -160,7 +155,7 @@ export function Hero() {
                   </div>
 
                   {/* CTA Button */}
-                  <div className="space-y-4">
+                  <div>
                     <Button 
                       variant="default" 
                       size="lg"
@@ -173,23 +168,11 @@ export function Hero() {
                       <Upload className="h-5 w-5 mr-2" />
                       Upload your DATEV file
                     </Button>
-
-                    {/* Helper Link */}
-                    <p className="text-sm">
-                      <button
-                        className="text-muted-foreground underline-offset-2 hover:underline hover:text-foreground transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toast.info("Sample files will be available once the app is live");
-                        }}
-                      >
-                        Try with a sample file
-                      </button>
-                    </p>
                   </div>
 
                   {/* Status Indicator */}
                   <div 
+                    id="upload-status"
                     className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground"
                     aria-live="polite"
                   >
