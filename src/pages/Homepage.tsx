@@ -181,9 +181,6 @@ const Homepage = () => {
                   </Card>
 
                 </div>
-
-                {/* Transformation Infographic */}
-                <TransformationVisualization />
               </div>
             </div>
           </section>
@@ -200,42 +197,8 @@ const Homepage = () => {
                   </p>
                 </div>
 
-                {/* Process Flow */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                  <div className="relative">
-                    <div className="text-center space-y-4">
-                      <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
-                        <span className="text-2xl font-bold text-primary-foreground">1</span>
-                      </div>
-                      <h3 className="text-lg font-semibold">Upload</h3>
-                      <p className="text-muted-foreground text-sm">Your messy DATEV export — one click to get started</p>
-                    </div>
-                    <div className="hidden md:block absolute top-10 right-0 transform translate-x-1/2">
-                      <ArrowRight className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <div className="text-center space-y-4">
-                      <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
-                        <span className="text-2xl font-bold text-primary-foreground">2</span>
-                      </div>
-                      <h3 className="text-lg font-semibold">AI Standardizes</h3>
-                      <p className="text-muted-foreground text-sm">Automated cleanup and categorization of your data</p>
-                    </div>
-                    <div className="hidden md:block absolute top-10 right-0 transform translate-x-1/2">
-                      <ArrowRight className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-
-                  <div className="text-center space-y-4">
-                    <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto shadow-glow">
-                      <span className="text-2xl font-bold text-primary-foreground">3</span>
-                    </div>
-                    <h3 className="text-lg font-semibold">Store in Database</h3>
-                    <p className="text-muted-foreground text-sm">Data saved in a reliable, scalable, and consistent database</p>
-                  </div>
-                </div>
+                {/* Transformation Infographic */}
+                <TransformationVisualization />
 
                 {/* Features Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
