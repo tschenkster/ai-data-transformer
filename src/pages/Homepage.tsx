@@ -684,27 +684,6 @@ const Homepage = () => {
                   </Card>
                 </div>
 
-                {/* ROI Calculator Teaser */}
-                <div className="text-center bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl p-8 border">
-                  <h3 className="text-2xl font-bold mb-4">Calculate Your ROI</h3>
-                  <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                    See how much time and money you'll save by eliminating manual Excel work and getting reliable financial insights.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary mb-1">20+</div>
-                      <div className="text-sm text-muted-foreground">Hours saved per month</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary mb-1">90%</div>
-                      <div className="text-sm text-muted-foreground">Faster reporting</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary mb-1">€5000+</div>
-                      <div className="text-sm text-muted-foreground">Value created monthly</div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </section>
