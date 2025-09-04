@@ -38,7 +38,7 @@ export function Hero() {
     <section className="py-20 md:py-28">
       <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
-          The world's most trusted DATEV converter
+          Convert useless DATEV reports into something meaningful.
         </h1>
         
         <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
