@@ -18,11 +18,13 @@ export default function About() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-6">
-              {/* Photo Placeholder */}
+              {/* Thomas's Photo */}
               <div className="flex justify-center">
-                <div className="w-48 h-48 bg-muted rounded-full flex items-center justify-center text-muted-foreground">
-                  Photo of Thomas
-                </div>
+                <img 
+                  src="/lovable-uploads/9a572706-2163-4eff-83f4-31746c12f3a9.png" 
+                  alt="Thomas Schenkelberg - Startup CFO" 
+                  className="w-48 h-48 rounded-full object-cover"
+                />
               </div>
               
               {/* LinkedIn Link */}
