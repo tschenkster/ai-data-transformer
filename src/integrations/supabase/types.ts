@@ -1122,7 +1122,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      security_audit_summary: {
+        Row: {
+          action: string | null
+          created_at: string | null
+          ip_status: string | null
+          sanitized_details: Json | null
+          security_audit_log_uuid: string | null
+          target_type: string | null
+          user_type: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string | null
+          ip_status?: never
+          sanitized_details?: never
+          security_audit_log_uuid?: string | null
+          target_type?: never
+          user_type?: never
+        }
+        Update: {
+          action?: string | null
+          created_at?: string | null
+          ip_status?: never
+          sanitized_details?: never
+          security_audit_log_uuid?: string | null
+          target_type?: never
+          user_type?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assess_translation_data_completeness: {
@@ -1697,6 +1726,17 @@ export type Database = {
         Args: { p_reason?: string; p_user_uuid: string }
         Returns: Json
       }
+      secure_insert_audit_log: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_ip_address?: unknown
+          p_target_user_id?: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       transition_user_account_status: {
         Args: {
           p_new_status: Database["public"]["Enums"]["user_account_status"]
@@ -1722,6 +1762,10 @@ export type Database = {
           | { input_data: Json; validation_rules: Json }
           | { input_text: string; max_length?: number }
         Returns: string
+      }
+      verify_audit_log_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
