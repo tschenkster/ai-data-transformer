@@ -575,19 +575,15 @@ const Homepage = () => {
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Up to 3 DATEV file uploads per month</span>
+                          <span>3 Uploads per Month</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Basic Excel conversion</span>
+                          <span>AI Conversion to clean xlsx file</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Community support</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>7 days data retention</span>
+                          <span>GDPR compliance</span>
                         </div>
                       </div>
 
@@ -602,32 +598,32 @@ const Homepage = () => {
                       <div>
                         <h3 className="text-2xl font-bold mb-2">Starter</h3>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-bold">€99</span>
+                          <span className="text-4xl font-bold">€49</span>
                           <span className="text-muted-foreground">/month</span>
                         </div>
-                        <p className="text-muted-foreground mt-2">Perfect for getting started with data transformation</p>
+                        <p className="text-muted-foreground mt-2">Perfect for getting started with properly storing data</p>
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Up to 10 DATEV file uploads per month</span>
+                          <span>Unlimited Uploads per Month</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Basic P&L report structures</span>
+                          <span>AI Conversion to clean xlsx file</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Standard data transformations</span>
+                          <span>GDPR compliance</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Email support</span>
+                          <span>Storage in SQL database</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>3 months data history</span>
+                          <span>Standard Report Templates</span>
                         </div>
                       </div>
 
@@ -644,7 +640,7 @@ const Homepage = () => {
                       <div>
                         <h3 className="text-2xl font-bold mb-2">Professional</h3>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-bold">€299</span>
+                          <span className="text-4xl font-bold">€99</span>
                           <span className="text-muted-foreground">/month</span>
                         </div>
                         <p className="text-muted-foreground mt-2">For growing finance teams needing advanced features</p>
@@ -653,31 +649,31 @@ const Homepage = () => {
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Unlimited DATEV file uploads</span>
+                          <span>Unlimited Uploads per Month</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Custom P&L report structures</span>
+                          <span>AI Conversion to clean xlsx file</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Advanced data transformations</span>
+                          <span>GDPR compliance</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Priority support + onboarding</span>
+                          <span>Storage in SQL database</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Unlimited data history</span>
+                          <span>Standard Report Templates</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>Team collaboration features</span>
+                          <span>Design your own reports</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                          <span>API access</span>
+                          <span>API for 3rd Party BI Tool</span>
                         </div>
                       </div>
 
