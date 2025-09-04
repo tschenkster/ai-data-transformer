@@ -60,8 +60,6 @@ const Homepage = () => {
                 </p>
               </div>
 
-              {/* Modern Transformation Visualization */}
-              <TransformationVisualization />
             </div>
           </section>
 
@@ -182,24 +180,8 @@ const Homepage = () => {
 
                 </div>
 
-                {/* Before → After Snapshot */}
-                <div className="text-center bg-destructive/5 rounded-2xl p-8 border border-destructive/20">
-                  <h3 className="text-2xl font-bold text-destructive mb-4">Before → After Snapshot</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                    <div>
-                      <h4 className="font-semibold text-destructive mb-2">Before</h4>
-                      <p className="text-sm text-muted-foreground">
-                        DATEV dumps → endless Excel cleanup → fragile Excel models → limited visibility
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-primary mb-2">After</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Clean, structured data in a database → reliable reporting → CFO focus on strategy and growth, not spreadsheet maintenance
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                {/* Transformation Infographic */}
+                <TransformationVisualization />
               </div>
             </div>
           </section>
