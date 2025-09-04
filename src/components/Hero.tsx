@@ -115,7 +115,7 @@ export function Hero() {
                   {/* Headline */}
                   <div className="space-y-3">
                     <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-                      ...into clean data & meaningful reports.
+                      ...into clean data & proper reports.
                     </h3>
                   </div>
 
