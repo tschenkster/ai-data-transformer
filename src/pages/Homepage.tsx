@@ -70,16 +70,6 @@ const Homepage = () => {
             
             <div className="container mx-auto px-4 relative z-10">
               <div className="max-w-6xl mx-auto text-center">
-                <div className="animate-fade-in space-y-8 bg-white/80 backdrop-blur-sm rounded-2xl p-8 md:p-12 shadow-2xl border border-primary/20">
-                  <Badge className="px-6 py-3 text-lg bg-primary text-primary-foreground shadow-lg">Perfect For</Badge>
-                  <h2 className="text-3xl md:text-5xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent leading-tight">
-                    CFOs of Startups with 10–100 Employees
-                  </h2>
-                  <div className="pt-4">
-                    <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full"></div>
-                  </div>
-                </div>
-                
                 {/* Additional text outside the card */}
                 <div className="text-center mt-12">
                   <p className="text-2xl md:text-3xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
