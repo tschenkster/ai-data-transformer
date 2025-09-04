@@ -39,21 +39,23 @@ export function Hero() {
         <div className="mt-8 flex justify-center">
           <div className="w-1/2">
             <div 
-              className="h-[300px] border-2 border-dashed border-muted/30 rounded-2xl flex flex-col items-center justify-center cursor-not-allowed bg-muted/10 backdrop-blur-sm opacity-60"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => e.preventDefault()}
+              className="h-[300px] border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 bg-background/50 backdrop-blur-sm"
             >
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto">
-                  <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-muted-foreground">Upload your DATEV file</p>
+                  <p className="text-lg font-semibold text-foreground">Upload your DATEV file</p>
                   <p className="text-sm text-muted-foreground mt-2">
                     Supports XLSX, CSV & PDF files
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Feature temporarily disabled
+                    Click or drag and drop your file here
                   </p>
                 </div>
               </div>
