@@ -523,7 +523,7 @@ const Homepage = () => {
                       <Award className="h-8 w-8 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold mb-2">Finance-Responsible Founders</h3>
+                      <h3 className="text-xl font-bold mb-2">Founders</h3>
                       <p className="text-muted-foreground">
                         Founders handling finance until they can hire a CFO, needing simple but powerful tools for investor updates and financial planning.
                       </p>
