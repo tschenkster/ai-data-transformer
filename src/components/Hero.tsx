@@ -45,25 +45,39 @@ export function Hero() {
           Turn messy DATEV exports into clean data & reports.
         </p>
 
-        <div className="mt-8">
-          <Button
-            onClick={handleCTAClick}
-            size="lg"
-            disabled
-            className="inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base md:text-lg font-semibold"
-            aria-label="Start DATEV file conversion (coming soon)"
-          >
-            Click here to convert a DATEV file!
-          </Button>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,.xlsx,.xml,.zip"
-            onChange={handleFileSelect}
-            className="hidden"
-            aria-hidden="true"
-          />
+        <div className="mt-8 flex justify-center">
+          <div className="w-1/2">
+            <div 
+              onClick={handleCTAClick}
+              className="h-[300px] border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 bg-background/50 backdrop-blur-sm"
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">Upload your DATEV file</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Supports XLSX, CSV & PDF files
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Click or drag and drop your file here
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.pdf"
+              onChange={handleFileSelect}
+              className="hidden"
+              aria-hidden="true"
+            />
+          </div>
         </div>
       </div>
     </section>
