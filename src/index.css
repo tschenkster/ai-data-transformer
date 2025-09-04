@@ -11,14 +11,14 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Financial App Theme - Green Primary */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 0 0% 99%;
+    --foreground: 240 10% 15%;
     
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 0 0% 99%;
+    --card-foreground: 240 10% 15%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 0 0% 99%;
+    --popover-foreground: 240 10% 15%;
     
     /* Primary - Bright Green */
     --primary: 158 100% 45%;
@@ -27,12 +27,12 @@ All colors MUST be HSL.
     --primary-hover: 158 100% 40%;
     
     /* Secondary - Neutral Gray */
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 240 4.8% 96.5%;
+    --secondary-foreground: 240 5.9% 20%;
     
     /* Muted */
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 240 4.8% 96.5%;
+    --muted-foreground: 240 3.8% 55%;
     
     /* Accent - Slightly Different Green */
     --accent: 168 80% 50%;
@@ -47,8 +47,8 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 98%;
     
     /* UI */
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --border: 240 5.9% 92%;
+    --input: 240 5.9% 92%;
     --ring: 158 100% 45%;
     
     /* Chart Colors */
