@@ -11,13 +11,13 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Financial App Theme - Green Primary */
-    --background: 35 20% 98.5%;
+    --background: 35 20% 97%;
     --foreground: 240 8% 25%;
     
-    --card: 35 20% 98.8%;
+    --card: 0 0% 100%;
     --card-foreground: 240 8% 25%;
     
-    --popover: 35 20% 98.8%;
+    --popover: 0 0% 100%;
     --popover-foreground: 240 8% 25%;
     
     /* Primary - Bright Green */
@@ -85,13 +85,13 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 240 10% 4.5%;
+    --background: 240 10% 3.5%;
     --foreground: 35 10% 85%;
     
-    --card: 240 10% 5%;
+    --card: 240 10% 6%;
     --card-foreground: 35 10% 85%;
     
-    --popover: 240 10% 5%;
+    --popover: 240 10% 6%;
     --popover-foreground: 35 10% 85%;
     
     /* Enhanced Typography Hierarchy - Dark */
