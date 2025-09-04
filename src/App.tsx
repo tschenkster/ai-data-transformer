@@ -18,6 +18,7 @@ import Register from "./pages/Register";
 import Convert from "./pages/Convert";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ function AppContent() {
       {/* Public routes */}
       <Route path="/" element={<Homepage />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/about" element={<About />} />
       <Route path="/register" element={<Register />} />
       <Route path="/convert" element={<Convert />} />
       <Route path="/auth" element={<Auth />} />
