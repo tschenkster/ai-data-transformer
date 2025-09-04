@@ -1122,11 +1122,11 @@ export type Database = {
       }
     }
     Views: {
-      security_audit_summary: {
+      security_audit_summary_safe: {
         Row: {
           action: string | null
-          created_at: string | null
           ip_status: string | null
+          log_date: string | null
           sanitized_details: Json | null
           security_audit_log_uuid: string | null
           target_type: string | null
@@ -1134,8 +1134,8 @@ export type Database = {
         }
         Insert: {
           action?: string | null
-          created_at?: string | null
           ip_status?: never
+          log_date?: never
           sanitized_details?: never
           security_audit_log_uuid?: string | null
           target_type?: never
@@ -1143,8 +1143,8 @@ export type Database = {
         }
         Update: {
           action?: string | null
-          created_at?: string | null
           ip_status?: never
+          log_date?: never
           sanitized_details?: never
           security_audit_log_uuid?: string | null
           target_type?: never
@@ -1167,6 +1167,10 @@ export type Database = {
         Returns: Json
       }
       can_delete_users: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      check_audit_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -1616,6 +1620,10 @@ export type Database = {
           p_to_status: Database["public"]["Enums"]["user_account_status"]
         }
         Returns: boolean
+      }
+      log_audit_access_attempt: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       log_failed_auth_attempt: {
         Args: { p_email: string; p_ip_address?: unknown; p_user_agent?: string }
