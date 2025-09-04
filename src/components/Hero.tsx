@@ -82,7 +82,7 @@ export function Hero() {
       <section className="py-16 md:py-24">
         <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
-            Convert useless DATEV stuff into clean data & reports.
+            Convert useless DATEV reports.
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 md:mb-16">
