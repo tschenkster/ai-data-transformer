@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Footer from '@/components/Footer';
 import TransformationVisualization from '@/components/TransformationVisualization';
+import { useBetaDialog } from '@/hooks/useBetaDialog';
 import { 
   TrendingUp, 
   Database, 
@@ -30,6 +31,8 @@ import {
 } from 'lucide-react';
 
 const Homepage = () => {
+  const { showBetaDialog, BetaDialog } = useBetaDialog();
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -313,11 +316,11 @@ const Homepage = () => {
                     Join startup CFOs who've already escaped Excel hell and are making data-driven decisions with confidence.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow">
+                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow" onClick={showBetaDialog}>
                       <PlayCircle className="h-5 w-5 mr-2" />
                       Start Free Trial
                     </Button>
-                    <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/5">
+                    <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/5" onClick={showBetaDialog}>
                       See Live Demo
                     </Button>
                   </div>
@@ -551,7 +554,7 @@ const Homepage = () => {
                       </div>
                     </div>
 
-                    <Button className="w-full mt-6" variant="outline">
+                    <Button className="w-full mt-6" variant="outline" onClick={showBetaDialog}>
                       Get Started Free
                     </Button>
                   </Card>
@@ -591,7 +594,7 @@ const Homepage = () => {
                       </div>
                     </div>
 
-                    <Button className="w-full mt-6" variant="outline">
+                    <Button className="w-full mt-6" variant="outline" onClick={showBetaDialog}>
                       Start Free Trial
                     </Button>
                   </Card>
@@ -641,7 +644,7 @@ const Homepage = () => {
                       </div>
                     </div>
 
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow mt-6 relative z-10">
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow mt-6 relative z-10" onClick={showBetaDialog}>
                       Start Free Trial
                     </Button>
                   </Card>
@@ -672,11 +675,11 @@ const Homepage = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90 shadow-xl">
+                  <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90 shadow-xl" onClick={showBetaDialog}>
                     <PlayCircle className="h-5 w-5 mr-2" />
                     Start Free Trial - No Credit Card
                   </Button>
-                  <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10">
+                  <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10" onClick={showBetaDialog}>
                     Book a Demo Call
                   </Button>
                 </div>
@@ -730,6 +733,8 @@ const Homepage = () => {
           <Footer />
         </main>
       </div>
+      
+      <BetaDialog />
     </div>
   );
 };
