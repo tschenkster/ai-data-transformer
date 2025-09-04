@@ -1,78 +1,235 @@
-import React, { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Upload, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function Hero() {
-  const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [showInactiveDialog, setShowInactiveDialog] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  const handleCTAClick = () => {
-    // Disabled - no functionality
-    return;
-  };
+  // Analytics event simulation
+  const trackEvent = useCallback((event: string, properties?: Record<string, any>) => {
+    console.log('Analytics:', event, properties);
+    // In production, this would connect to your analytics service
+  }, []);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Navigate to convert route with file data
-      navigate('/convert', { state: { file } });
-      
-      // Show success toast
-      toast.success("File uploaded successfully!", {
-        description: `Selected file: ${file.name}`,
-      });
+  // Handle drag events with debouncing
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragOver) {
+      setIsDragOver(true);
+      trackEvent('drag_over', { location: 'upload_box' });
     }
-  };
+  }, [isDragOver, trackEvent]);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set to false if we're leaving the card entirely
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (rect && (e.clientX < rect.left || e.clientX > rect.right || 
+                 e.clientY < rect.top || e.clientY > rect.bottom)) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    trackEvent('cta_click', { trigger: 'drop', location: 'upload_box' });
+    setShowInactiveDialog(true);
+  }, [trackEvent]);
+
+  const handleClick = useCallback(() => {
+    trackEvent('cta_click', { trigger: 'click', location: 'upload_box' });
+    setShowInactiveDialog(true);
+  }, [trackEvent]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  }, [handleClick]);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    trackEvent('hover', { location: 'upload_box' });
+  }, [trackEvent]);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
+
+  const handleFocus = useCallback(() => {
+    trackEvent('focus', { location: 'upload_box' });
+  }, [trackEvent]);
+
+  // Fire view event on mount
+  React.useEffect(() => {
+    trackEvent('view', { location: 'homepage_hero' });
+  }, [trackEvent]);
 
   return (
-    <section className="py-20 md:py-28">
-      <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
-        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
-          Convert useless DATEV stuff into clean data & reports.
-        </h1>
-        
-        <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Turn messy DATEV exports into clean data & reports.
-        </p>
+    <>
+      <section className="py-16 md:py-24">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+            Convert useless DATEV stuff into clean data & reports.
+          </h1>
+          
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 md:mb-16">
+            Turn messy DATEV exports into clean data & reports.
+          </p>
 
-        <div className="mt-8 flex justify-center">
-          <div className="w-1/2">
-            <div 
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => e.preventDefault()}
-              className="h-[300px] border-2 border-dashed border-primary/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 bg-background/50 backdrop-blur-sm"
+          {/* Upload Box - Visual Center of Gravity */}
+          <div className="flex justify-center">
+            <Card
+              ref={cardRef}
+              className={`
+                max-w-3xl md:max-w-4xl w-full
+                bg-background border border-border rounded-3xl shadow-lg
+                transition-all duration-300 cursor-pointer
+                ${isHovered ? 'shadow-xl border-primary' : ''}
+                ${isDragOver ? 'bg-primary/5 border-primary shadow-2xl animate-scale-in' : ''}
+                focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20
+              `}
+              role="button"
+              tabIndex={0}
+              aria-describedby="upload-description"
+              aria-label="Upload your DATEV file - simulation mode"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onFocus={handleFocus}
             >
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
+              <CardContent className="p-6 sm:p-8 md:p-10">
+                <div className="space-y-6 md:space-y-8">
+                  {/* Upload Icon */}
+                  <div className="flex justify-center">
+                    <div className={`
+                      w-20 h-20 md:w-24 md:h-24 bg-primary/10 rounded-full 
+                      flex items-center justify-center transition-transform duration-300
+                      ${isDragOver ? 'animate-pulse scale-110' : ''}
+                      ${isHovered ? 'scale-105' : ''}
+                    `}>
+                      <Upload className={`
+                        h-12 w-12 md:h-14 md:w-14 text-primary transition-transform duration-300
+                        ${isDragOver ? 'animate-pulse' : ''}
+                      `} />
+                    </div>
+                  </div>
+
+                  {/* Headline */}
+                  <div className="space-y-3">
+                    <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
+                      Transform your DATEV data in seconds
+                    </h3>
+                    
+                    {/* Subcopy */}
+                    <p id="upload-description" className="text-base text-muted-foreground max-w-lg mx-auto">
+                      Drag & drop or click to simulate upload. Supports XLSX, CSV & PDF.
+                    </p>
+                  </div>
+
+                  {/* Format Chips */}
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Badge variant="outline" className="bg-background/80 text-xs">
+                      <FileSpreadsheet className="h-3 w-3 mr-1" />
+                      XLSX
+                    </Badge>
+                    <Badge variant="outline" className="bg-background/80 text-xs">
+                      <FileSpreadsheet className="h-3 w-3 mr-1" />
+                      CSV
+                    </Badge>
+                    <Badge variant="outline" className="bg-background/80 text-xs">
+                      <FileSpreadsheet className="h-3 w-3 mr-1" />
+                      PDF
+                    </Badge>
+                  </div>
+
+                  {/* CTA Button */}
+                  <div className="space-y-4">
+                    <Button 
+                      variant="default" 
+                      size="lg"
+                      className="w-full sm:w-auto px-8 py-3 text-lg font-semibold rounded-xl"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClick();
+                      }}
+                    >
+                      <Upload className="h-5 w-5 mr-2" />
+                      Upload your DATEV file
+                    </Button>
+
+                    {/* Helper Link */}
+                    <p className="text-sm">
+                      <button
+                        className="text-muted-foreground underline-offset-2 hover:underline hover:text-foreground transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toast.info("Sample files will be available once the app is live");
+                        }}
+                      >
+                        Try with a sample file
+                      </button>
+                    </p>
+                  </div>
+
+                  {/* Status Indicator */}
+                  <div 
+                    className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground"
+                    aria-live="polite"
+                  >
+                    {isDragOver ? (
+                      "Drop your file here to simulate upload"
+                    ) : (
+                      "Coming soon: upload will be available once the app is live."
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg font-semibold text-foreground">Upload your DATEV file</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Supports XLSX, CSV & PDF files
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Click or drag and drop your file here
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.xlsx,.pdf"
-              onChange={handleFileSelect}
-              disabled
-              className="hidden"
-              aria-hidden="true"
-            />
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Inactive Notice Dialog */}
+      <Dialog open={showInactiveDialog} onOpenChange={setShowInactiveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" />
+              Upload Simulation
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              This is a demonstration of the upload interface. File upload functionality 
+              will be available once the app is live.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInactiveDialog(false)}
+              className="w-full sm:w-auto"
+            >
+              Got it
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
