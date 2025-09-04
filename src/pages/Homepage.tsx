@@ -561,8 +561,8 @@ const Homepage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2">
-                    <div className="space-y-6">
+                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2 flex flex-col h-full">
+                    <div className="flex-1 space-y-6">
                       <div>
                         <h3 className="text-2xl font-bold mb-2">Free</h3>
                         <div className="flex items-baseline gap-1">
@@ -586,15 +586,15 @@ const Homepage = () => {
                           <span>GDPR compliance</span>
                         </div>
                       </div>
-
-                      <Button className="w-full" variant="outline">
-                        Get Started Free
-                      </Button>
                     </div>
+
+                    <Button className="w-full mt-6" variant="outline">
+                      Get Started Free
+                    </Button>
                   </Card>
 
-                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2">
-                    <div className="space-y-6">
+                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2 flex flex-col h-full">
+                    <div className="flex-1 space-y-6">
                       <div>
                         <h3 className="text-2xl font-bold mb-2">Starter</h3>
                         <div className="flex items-baseline gap-1">
@@ -626,17 +626,17 @@ const Homepage = () => {
                           <span>Standard Report Templates</span>
                         </div>
                       </div>
-
-                      <Button className="w-full" variant="outline">
-                        Start Free Trial
-                      </Button>
                     </div>
+
+                    <Button className="w-full mt-6" variant="outline">
+                      Start Free Trial
+                    </Button>
                   </Card>
 
-                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2 border-primary relative overflow-hidden">
+                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2 border-primary relative overflow-hidden flex flex-col h-full">
                     <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground">Most Popular</Badge>
                     
-                    <div className="space-y-6 relative z-10">
+                    <div className="flex-1 space-y-6 relative z-10">
                       <div>
                         <h3 className="text-2xl font-bold mb-2">Professional</h3>
                         <div className="flex items-baseline gap-1">
@@ -676,11 +676,11 @@ const Homepage = () => {
                           <span>API for 3rd Party BI Tool</span>
                         </div>
                       </div>
-
-                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow">
-                        Start Free Trial
-                      </Button>
                     </div>
+
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow mt-6 relative z-10">
+                      Start Free Trial
+                    </Button>
                   </Card>
                 </div>
 
