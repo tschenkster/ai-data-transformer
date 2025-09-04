@@ -457,7 +457,7 @@ const Homepage = () => {
                       <Users className="h-8 w-8 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold mb-2">Finance Managers</h3>
+                      <h3 className="text-xl font-bold mb-2">FP&A Managers</h3>
                       <p className="text-muted-foreground">
                         Finance professionals who need reliable data infrastructure to support analysis and reporting without technical overhead.
                       </p>
