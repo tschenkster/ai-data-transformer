@@ -90,7 +90,7 @@ export function Hero() {
             <Card
               ref={cardRef}
               className={`
-                max-w-3xl md:max-w-4xl w-full
+                w-[60%] max-w-2xl
                 bg-background border border-border rounded-3xl shadow-lg
                 transition-all duration-300 cursor-pointer
                 ${isHovered ? 'shadow-xl border-primary' : ''}
