@@ -560,7 +560,43 @@ const Homepage = () => {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                  <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">Free</h3>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-bold">€0</span>
+                          <span className="text-muted-foreground">/month</span>
+                        </div>
+                        <p className="text-muted-foreground mt-2">Get started with basic DATEV conversion</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span>Up to 3 DATEV file uploads per month</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span>Basic Excel conversion</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span>Community support</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span>7 days data retention</span>
+                        </div>
+                      </div>
+
+                      <Button className="w-full" variant="outline">
+                        Get Started Free
+                      </Button>
+                    </div>
+                  </Card>
+
                   <Card className="p-8 hover:shadow-xl transition-all duration-300 border-2">
                     <div className="space-y-6">
                       <div>
