@@ -29,7 +29,7 @@ export default function About() {
               
               {/* LinkedIn Link */}
               <Button variant="outline" asChild>
-                <a href="#" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
+                <a href="https://www.linkedin.com/in/thomas-schenkelberg/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
                   <Linkedin className="h-4 w-4" />
                   Connect on LinkedIn
                   <ExternalLink className="h-3 w-3" />
