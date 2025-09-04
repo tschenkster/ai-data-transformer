@@ -425,7 +425,7 @@ const Homepage = () => {
               <div className="max-w-6xl mx-auto space-y-16">
                 <div className="text-center animate-fade-in space-y-4">
                   <Badge variant="secondary" className="px-4 py-2">Who We Serve</Badge>
-                  <h2 className="text-4xl md:text-5xl font-bold text-foreground">Built for Growing Finance Teams</h2>
+                  <h2 className="text-4xl md:text-5xl font-bold text-foreground">Built for Startup Finance Teams</h2>
                   <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                     Whether you're a solo CFO or building a finance team, our platform scales with your needs.
                   </p>
