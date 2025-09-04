@@ -75,12 +75,16 @@ const Homepage = () => {
                   <h2 className="text-3xl md:text-5xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent leading-tight">
                     CFOs of Startups with 10–100 Employees
                   </h2>
-                  <p className="text-xl md:text-2xl text-foreground leading-relaxed max-w-4xl mx-auto font-medium">
-                    You need board-ready insights quickly, but here's the reality you're facing every month.
-                  </p>
                   <div className="pt-4">
                     <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full"></div>
                   </div>
+                </div>
+                
+                {/* Additional text outside the card */}
+                <div className="text-center mt-12">
+                  <p className="text-2xl md:text-3xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
+                    You need board-ready insights quickly, but here's the reality you're facing every month.
+                  </p>
                 </div>
               </div>
             </div>
