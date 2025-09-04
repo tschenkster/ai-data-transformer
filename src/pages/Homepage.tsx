@@ -66,19 +66,6 @@ const Homepage = () => {
             </div>
           </section>
 
-          {/* Target Audience Section */}
-          <section className="relative bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 py-16 md:py-24">
-            {/* Enhanced background elements */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-xl"></div>
-              <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-secondary/10 rounded-full blur-xl"></div>
-            </div>
-            
-            <div className="container mx-auto px-4 relative z-10">
-              <div className="max-w-6xl mx-auto text-center">
-              </div>
-            </div>
-          </section>
 
           {/* Pain Points Section */}
           <section className="bg-gradient-to-br from-destructive/5 to-background py-8 md:py-12">
