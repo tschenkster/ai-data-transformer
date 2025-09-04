@@ -112,6 +112,13 @@ export function Hero() {
             >
               <CardContent className="p-6 sm:p-8 md:p-10">
                 <div className="space-y-6 md:space-y-8">
+                  {/* Headline */}
+                  <div className="space-y-3">
+                    <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
+                      ...into clean data & meaningful reports.
+                    </h3>
+                  </div>
+
                   {/* Upload Icon */}
                   <div className="flex justify-center">
                     <div className={`
@@ -125,13 +132,6 @@ export function Hero() {
                         ${isDragOver ? 'animate-pulse' : ''}
                       `} />
                     </div>
-                  </div>
-
-                  {/* Headline */}
-                  <div className="space-y-3">
-                    <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-                      ...into clean data & meaningful reports.
-                    </h3>
                   </div>
 
                   {/* Format Chips */}
