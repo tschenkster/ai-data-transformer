@@ -66,14 +66,27 @@ const Homepage = () => {
           </section>
 
           {/* Target Audience Section */}
-          <section className="container mx-auto px-4 py-12 md:py-16">
-            <div className="max-w-5xl mx-auto text-center space-y-12">
-              <div className="animate-fade-in space-y-4">
-                <Badge variant="secondary" className="px-4 py-2 bg-primary/10 text-primary">Perfect For</Badge>
-                <h2 className="text-xl md:text-2xl text-muted-foreground">CFOs of Startups with 10–100 Employees</h2>
-                <p className="text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-                  You need board-ready insights quickly, but here's the reality you're facing every month.
-                </p>
+          <section className="relative bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 py-16 md:py-24">
+            {/* Enhanced background elements */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-xl"></div>
+              <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-secondary/10 rounded-full blur-xl"></div>
+            </div>
+            
+            <div className="container mx-auto px-4 relative z-10">
+              <div className="max-w-6xl mx-auto text-center">
+                <div className="animate-fade-in space-y-8 bg-white/80 backdrop-blur-sm rounded-2xl p-8 md:p-12 shadow-2xl border border-primary/20">
+                  <Badge className="px-6 py-3 text-lg bg-primary text-primary-foreground shadow-lg">Perfect For</Badge>
+                  <h2 className="text-3xl md:text-5xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent leading-tight">
+                    CFOs of Startups with 10–100 Employees
+                  </h2>
+                  <p className="text-xl md:text-2xl text-foreground leading-relaxed max-w-4xl mx-auto font-medium">
+                    You need board-ready insights quickly, but here's the reality you're facing every month.
+                  </p>
+                  <div className="pt-4">
+                    <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
