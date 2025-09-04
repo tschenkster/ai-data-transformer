@@ -134,7 +134,7 @@ export function Hero() {
                   {/* Headline */}
                   <div className="space-y-3">
                     <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-                      Transform your DATEV data in seconds
+                      ...into clean data & meaningful reports.
                     </h3>
                   </div>
 
