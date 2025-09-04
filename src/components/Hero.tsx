@@ -185,17 +185,35 @@ export function Hero() {
         </div>
       </section>
 
-      {/* Inactive Notice Dialog */}
+      {/* Beta Testing Notice Dialog */}
       <Dialog open={showInactiveDialog} onOpenChange={setShowInactiveDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5 text-primary" />
-              Upload Simulation
+              🚧 Heads up!
             </DialogTitle>
-            <DialogDescription className="text-left">
-              This is a demonstration of the upload interface. File upload functionality 
-              will be available once the app is live.
+            <DialogDescription className="text-left space-y-4">
+              <p>
+                This app isn't open for public use yet — I'm still beta testing it with a handful of companies.
+              </p>
+              <p>
+                If you'd like to connect, ping me on LinkedIn:{" "}
+                <a 
+                  href="https://www.linkedin.com/in/thomas-schenkelberg/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://www.linkedin.com/in/thomas-schenkelberg/
+                </a>
+              </p>
+              <p>
+                Don't let DATEV drive you crazy — help is on the way soon. 🚀
+              </p>
+              <p className="text-right italic">
+                -Thomas<br />
+                <span className="text-sm">*Chief DATEV Therapist*</span>
+              </p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
