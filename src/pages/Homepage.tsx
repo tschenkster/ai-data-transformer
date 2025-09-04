@@ -156,6 +156,30 @@ const Homepage = () => {
                     </CardContent>
                   </Card>
 
+                  <Card className="relative overflow-hidden border-l-4 border-l-destructive hover:shadow-2xl transition-all duration-500 group bg-gradient-to-br from-destructive/5 to-transparent">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/10 rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500"></div>
+                    <CardHeader className="relative z-10">
+                      <CardTitle className="flex items-start gap-4 text-destructive text-xl">
+                        <div className="p-3 bg-destructive/10 rounded-xl group-hover:bg-destructive/20 transition-colors flex-shrink-0">
+                          <DollarSign className="h-7 w-7" />
+                        </div>
+                      <div>
+                        <div className="font-bold">Enterprise tools you can't afford</div>
+                        <div className="text-sm text-muted-foreground font-normal mt-2">Overpriced & Overengineered</div>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      Traditional finance platforms start at €5,000+ annually, take 2+ months to implement, and force you to pay for 145 features you'll never use. You need insights today, not next quarter.
+                    </p>
+                      <div className="flex items-center gap-2 text-destructive/70">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm">Budget stretched thin</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                 </div>
 
                 {/* Transformation Infographic */}
