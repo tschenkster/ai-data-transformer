@@ -1122,27 +1122,21 @@ export type Database = {
       }
     }
     Views: {
-      audit_log_summary: {
+      audit_events: {
         Row: {
-          action: string | null
-          category: string | null
+          event_action: string | null
           event_date: string | null
-          event_type: string | null
-          log_id: string | null
+          event_id: string | null
         }
         Insert: {
-          action?: string | null
-          category?: never
+          event_action?: string | null
           event_date?: never
-          event_type?: never
-          log_id?: string | null
+          event_id?: never
         }
         Update: {
-          action?: string | null
-          category?: never
+          event_action?: string | null
           event_date?: never
-          event_type?: never
-          log_id?: string | null
+          event_id?: never
         }
         Relationships: []
       }
@@ -1165,10 +1159,6 @@ export type Database = {
         Returns: boolean
       }
       can_delete_users: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      check_audit_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -1618,10 +1608,6 @@ export type Database = {
           p_to_status: Database["public"]["Enums"]["user_account_status"]
         }
         Returns: boolean
-      }
-      log_audit_access_attempt: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
       log_failed_auth_attempt: {
         Args: { p_email: string; p_ip_address?: unknown; p_user_agent?: string }
