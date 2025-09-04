@@ -27,6 +27,7 @@ import FileOrganizer from '@/pages/system-tools/FileOrganizer';
 import PerformanceAnalyzer from '@/pages/system-tools/PerformanceAnalyzer';
 import HistoricTranslationFixer from '@/pages/system-tools/HistoricTranslationFixer';
 import SqlMaintenance from '@/pages/system-tools/SqlMaintenance';
+import About from '@/pages/About';
 import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
@@ -163,6 +164,9 @@ export function AppRoutes() {
 
       {/* Auth callback redirect */}
       <Route path="/auth/callback" element={<Navigate to="/start" replace />} />
+      
+      {/* Public About page */}
+      <Route path="/about" element={<About />} />
       
       <Route path="/" element={<Navigate to="/start" replace />} />
       <Route path="*" element={<NotFound />} />

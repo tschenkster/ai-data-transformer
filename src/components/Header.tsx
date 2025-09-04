@@ -36,6 +36,12 @@ export function Header() {
           <div className="flex items-center gap-6">
             <nav className="hidden sm:flex items-center gap-6" aria-label="Main navigation">
               <Link 
+                to="/about" 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                About
+              </Link>
+              <Link 
                 to="/pricing" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
