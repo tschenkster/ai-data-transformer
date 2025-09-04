@@ -60,7 +60,7 @@ const Homepage = () => {
               {/* CFO Challenge Text */}
               <div className="text-center mt-12">
                 <p className="text-2xl md:text-3xl font-bold text-foreground max-w-4xl mx-auto leading-relaxed">
-                  You need board-ready insights quickly, but here's the reality you're facing every month.
+                  You need board-ready insights quickly, but then there's the (DATEV) reality...
                 </p>
               </div>
             </div>
