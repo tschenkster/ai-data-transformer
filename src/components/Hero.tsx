@@ -41,6 +41,9 @@ export function Hero() {
           The world's most trusted DATEV converter
         </h1>
         
+        <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          Turn messy DATEV exports into clean data & reports.
+        </p>
 
         <div className="mt-8">
           <Button
