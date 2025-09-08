@@ -55,9 +55,14 @@ Deno.serve(async (req) => {
       throw new Error('Invalid authentication')
     }
 
-    // Verify super admin role
-    const { data: isSuperAdmin, error: roleError } = await supabaseClient
-      .rpc('is_super_admin_user_secure')
+    // Verify super admin role using user-scoped client (so auth.uid() is set)
+    const supabaseUser = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } }
+    );
+
+    const { data: isSuperAdmin, error: roleError } = await supabaseUser.rpc('is_super_admin_user')
     
     if (roleError || !isSuperAdmin) {
       return new Response(
