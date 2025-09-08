@@ -193,6 +193,7 @@ export function ContentDiscoveryCard({ onAnalysisComplete }: ContentDiscoveryCar
                 )}
                 
                 <Button 
+                  type="button"
                   size="sm" 
                   variant="outline" 
                   className="w-full"
@@ -275,6 +276,7 @@ export function ContentDiscoveryCard({ onAnalysisComplete }: ContentDiscoveryCar
             )}
             
             <Button 
+              type="button"
               onClick={runGlobalAnalysis} 
               disabled={isGlobalAnalyzing}
               variant="default"

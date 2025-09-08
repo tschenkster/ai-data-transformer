@@ -218,6 +218,7 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                 )}
                 
                 <Button 
+                  type="button"
                   size="sm" 
                   variant="outline" 
                   className="w-full"
@@ -298,6 +299,7 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
             )}
             
             <Button 
+              type="button"
               onClick={runGlobalMigration} 
               disabled={isGlobalMigrating}
               variant="default"
