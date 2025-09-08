@@ -217,9 +217,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         console.log('👤 AuthProvider: Fetching user account for:', userId);
         
-        // Validate session before fetching
-        if (!isSessionValid(session)) {
-          console.warn('👤 AuthProvider: Session invalid during fetch, forcing logout');
+        // Validate session before fetching using a fresh session snapshot
+        const { data: { session: freshSession } } = await supabase.auth.getSession();
+        if (!isSessionValid(freshSession)) {
+          console.warn('👤 AuthProvider: Fresh session invalid during fetch, forcing logout');
           forceLogout();
           return;
         }
