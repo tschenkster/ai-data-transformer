@@ -304,6 +304,22 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
   
   console.log(`Starting migration for ${analysis.translationGaps.length} translation gaps...`);
 
+  // Report back analyzed counts expected by UI
+  const analyzedTotals = {
+    ui: analysis.contentByType.ui,
+    report_structure: analysis.contentByType.report_structure,
+    report_line_item: analysis.contentByType.report_line_item,
+  };
+  if (operation === 'migrate') {
+    (results as any).totalItemsAnalyzed = analyzedTotals.ui + analyzedTotals.report_structure + analyzedTotals.report_line_item;
+  } else {
+    const analyzeFor = analysisContentTypes.length ? analysisContentTypes : [];
+    const itemsAnalyzed = (analyzeFor.includes('ui') ? analyzedTotals.ui : 0)
+      + (analyzeFor.includes('report_structure') ? analyzedTotals.report_structure : 0)
+      + (analyzeFor.includes('report_line_item') ? analyzedTotals.report_line_item : 0);
+    (results as any).itemsAnalyzed = itemsAnalyzed;
+  }
+
   // 1. Bootstrap UI translations if needed
   if (analysis.uiKeysToBootstrap.length > 0) {
     console.log(`Bootstrapping ${analysis.uiKeysToBootstrap.length} UI keys...`);
@@ -536,7 +552,7 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
       source_field_name: 'text',
       original_text: key,
       translated_text: key, // Bootstrap with key as text
-      source: 'bootstrap',
+      source: 'ai',
       created_by: userId,
       updated_by: userId
     });
@@ -674,7 +690,7 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: 'text',
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai_generated',
+        source: 'ai',
         created_by: userId,
         updated_by: userId
       }, {
@@ -695,7 +711,7 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: (gap.fieldKey === 'structure_name' || gap.fieldKey === 'name') ? 'report_structure_name' : gap.fieldKey,
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai_generated',
+        source: 'ai',
         created_by: userId,
         updated_by: userId
       }, {
@@ -716,7 +732,7 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: gap.fieldKey,
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai_generated',
+        source: 'ai',
         created_by: userId,
         updated_by: userId
       }, {
