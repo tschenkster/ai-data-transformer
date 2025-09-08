@@ -498,9 +498,7 @@ async function checkTranslationExists(supabase: any, item: ContentItem, targetLa
 }
 
 async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLanguage: string, userId?: string) {
-  if (!userId) {
-    throw new Error('Missing userId for attribution when bootstrapping UI translations');
-  }
+  const actorId = userId || '00000000-0000-0000-0000-000000000001';
   
   // Get the translation key mapping from global storage (set by scanForUIKeys)
   const translationKeyMap = (globalThis as any).translationKeyMap || {};
@@ -518,8 +516,8 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
       original_text: fallbackText, // Use the actual fallback text
       translated_text: fallbackText, // Bootstrap with fallback text
       source: 'ai',
-      created_by: userId,
-      updated_by: userId
+      created_by: actorId,
+      updated_by: actorId
     });
   }
 
@@ -643,9 +641,7 @@ Provide only the translations, one per line, numbered.`;
 }
 
 async function saveTranslation(supabase: any, gap: TranslationGap, translatedText: string, userId?: string) {
-  if (!userId) {
-    throw new Error('Missing userId for attribution (created_by/updated_by)');
-  }
+  const actorId = userId || '00000000-0000-0000-0000-000000000001';
 
   if (gap.entityType === 'ui') {
     const { error } = await supabase
@@ -658,8 +654,8 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         original_text: gap.originalText,
         translated_text: translatedText,
         source: 'ai',
-        created_by: userId,
-        updated_by: userId
+        created_by: actorId,
+        updated_by: actorId
       }, {
         onConflict: 'ui_key,language_code_target,source_field_name'
       });
@@ -679,8 +675,8 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         original_text: gap.originalText,
         translated_text: translatedText,
         source: 'ai',
-        created_by: userId,
-        updated_by: userId
+        created_by: actorId,
+        updated_by: actorId
       }, {
         onConflict: 'report_structure_uuid,language_code_target,source_field_name'
       });
@@ -700,8 +696,8 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         original_text: gap.originalText,
         translated_text: translatedText,
         source: 'ai',
-        created_by: userId,
-        updated_by: userId
+        created_by: actorId,
+        updated_by: actorId
       }, {
         onConflict: 'report_line_item_uuid,language_code_target,source_field_name'
       });
