@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import ChangeHistoryTable, { ChangeHistoryEntry } from './ChangeHistoryTable';
 import CreateLineItemDialog from './CreateLineItemDialog';
 import DeleteLineItemDialog from './DeleteLineItemDialog';
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUITranslations } from '@/hooks/useUITranslations';
 import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
@@ -45,9 +44,7 @@ import {
   ChevronDown,
   Plus,
   Trash2,
-  Loader2,
-  Home,
-  Settings
+  Loader2
 } from 'lucide-react';
 import { buildTreeFromGlobalOrder, reorderItem, reorderItemWithinParent, flattenTreeToSequentialOrder, updateGlobalSortOrderWithTimeout } from '@/features/report-structure-manager/utils/sortOrderUtils';
 import { formatLineItemIdForDisplay, extractStructureIdFromLineItemId } from '@/features/report-structure-manager/utils/lineItemUtils';
@@ -1091,29 +1088,6 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/" className="flex items-center gap-1">
-                      <Home className="w-4 h-4" />
-                      {t('NAV_START', 'Start')}
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/report-structure-manager" className="flex items-center gap-1">
-                      <Settings className="w-4 h-4" />
-                      {t('NAV_REPORT_STRUCTURES', 'Report Structures')}
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>{t('TAB_MODIFY_STRUCTURE', 'Modify Structure')}</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
             <div className="flex items-center gap-3">
               <CardTitle className="text-xl font-semibold">{t('HEADING_STRUCTURE_EDITOR', 'Structure Editor')}</CardTitle>
               {selectedStructure && (
