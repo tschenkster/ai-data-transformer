@@ -19,6 +19,15 @@ verify_jwt = true
 [functions.generate-codebase-documentation]
 verify_jwt = true
 
+[functions.historic-translation-migration]
+verify_jwt = true
+
+[functions.historic-translation-validation]
+verify_jwt = true
+
+[functions.historic-translation-monitoring]
+verify_jwt = true
+
 [db]
 shadow_port = 54320
 major_version = 15
