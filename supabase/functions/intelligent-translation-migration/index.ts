@@ -2,6 +2,11 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
+// Global type declaration for translation key mapping
+declare global {
+  var translationKeyMap: Record<string, string>;
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -359,127 +364,36 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
   return results;
 }
 
+interface TranslationKeyWithText {
+  key: string;
+  fallbackText: string;
+  file: string;
+  line: number;
+}
+
 async function scanForUIKeys(): Promise<string[]> {
-  // Scan the codebase for actual translation keys used in t('KEY') calls
   console.log('Scanning codebase for UI translation keys...');
   
   try {
-    // Use Deno to read the source files and extract translation keys
-    const translationKeys = new Set<string>();
-    
-    // Define the file patterns to search
-    const searchPaths = [
-      'src/components',
-      'src/pages', 
-      'src/features',
-      'src/hooks',
-      'src/App.tsx'
-    ];
-    
-    // Regex to match t('KEY_NAME') patterns
-    const translationRegex = /\bt\s*\(\s*['"]([\w_.]+)['"]/g;
-    
-    for (const searchPath of searchPaths) {
-      try {
-        // In edge functions, we need to make HTTP requests to get file contents
-        // For now, return a comprehensive list of actual keys found in the codebase
-        // This will be replaced by dynamic scanning in a future version
-        const knownKeys = [
-          // App & Core
-          'MSG_LOADING', 'APP_TITLE', 'BRAND_NAME',
-          
-          // Menu Navigation
-          'MENU_LOGOUT', 'MENU_SYSTEM_ADMINISTRATION', 'MENU_DASHBOARD', 
-          'MENU_USER_PROFILE_MANAGEMENT', 'MENU_ROLES_PERMISSIONS', 'MENU_ENTITY_MANAGEMENT',
-          'MENU_ACTIVITY_LOG', 'MENU_SYSTEM_TOOLS', 'MENU_DATA_IMPORT_TRANSFORMATION',
-          'MENU_COA_TRANSLATOR', 'MENU_COA_MAPPER', 'MENU_TRIAL_BALANCE_IMPORT',
-          'MENU_JOURNAL_IMPORT', 'MENU_REPORT_STRUCTURE_MANAGER', 'MENU_MEMORY_MAINTENANCE',
-          'MENU_REPORTS', 'MENU_FINANCIAL_REPORTS', 'MENU_SQL_TABLES', 'MENU_START',
-          'MENU_ACCOUNT', 'WELCOME_DASHBOARD',
-          
-          // Header/Footer
-          'NAV_ABOUT', 'NAV_PRICING', 'NAV_LOGIN', 'NAV_REGISTER', 'FOOTER_CREATED_BY',
-          
-          // Hero Section
-          'HERO_UPLOAD_TITLE', 'HERO_UPLOAD_SUBTITLE', 'ARIA_UPLOAD_LABEL',
-          
-          // Buttons
-          'BTN_REFRESHING', 'BTN_REFRESH_STATUS', 'BTN_SAVE', 'BTN_CANCEL', 'BTN_DELETE',
-          'BTN_SUBMIT', 'BTN_CLOSE', 'BTN_EDIT', 'BTN_VIEW', 'BTN_CREATE', 'BTN_UPDATE',
-          
-          // Toast Messages
-          'TOAST_SYNCING_DOCS', 'TOAST_SYNCING_DOCS_DESC', 'TOAST_SUCCESS', 'TOAST_ERROR',
-          'TOAST_WARNING', 'TOAST_INFO',
-          
-          // Documentation
-          'DOC_MANAGER_TITLE', 'DOC_MANAGER_DESC', 'DATABASE_DOCUMENTATION', 
-          'CODEBASE_DOCUMENTATION', 'LATEST', 'GENERATED', 'SIZE', 'NONE',
-          
-          // Tables & Data
-          'TABLE_NO_DATA', 'TABLE_LOADING', 'TABLE_ERROR', 'SEARCH_PLACEHOLDER',
-          'FILTER_ALL', 'FILTER_ACTIVE', 'FILTER_INACTIVE',
-          
-          // Forms & Validation
-          'FORM_REQUIRED', 'FORM_INVALID_EMAIL', 'FORM_PASSWORD_MISMATCH',
-          'FORM_FIELD_REQUIRED', 'VALIDATION_ERROR',
-          
-          // Status & State
-          'STATUS_ACTIVE', 'STATUS_INACTIVE', 'STATUS_PENDING', 'STATUS_COMPLETED',
-          'STATUS_FAILED', 'STATUS_PROCESSING',
-          
-          // Errors
-          'ERROR_GENERIC', 'ERROR_NETWORK', 'ERROR_NOT_FOUND', 'ERROR_UNAUTHORIZED',
-          'ERROR_FORBIDDEN', 'ERROR_VALIDATION', 'ERROR_SERVER', 'ERROR_TIMEOUT',
-          'ERROR_TITLE', 'ERROR_TRANSLATION_LOAD', 'ERROR_LANGUAGE_CHANGE',
-          
-          // Success Messages
-          'SUCCESS_SAVED', 'SUCCESS_UPDATED', 'SUCCESS_DELETED', 'SUCCESS_CREATED',
-          'SUCCESS_UPLOADED', 'SUCCESS_IMPORTED',
-          
-          // Loading States
-          'LOADING_PLEASE_WAIT', 'LOADING', 'LOADING_DATA', 'LOADING_CONTENT',
-          
-          // Confirmations
-          'CONFIRM_DELETE', 'CONFIRM_SAVE', 'CONFIRM_CANCEL', 'CONFIRM_LOGOUT',
-          
-          // Language
-          'LANGUAGE_CHANGED', 'LANGUAGE_SELECTION', 'LANGUAGE_PREFERENCE',
-          
-          // Pagination
-          'PAGINATION_PREVIOUS', 'PAGINATION_NEXT', 'PAGINATION_FIRST', 'PAGINATION_LAST',
-          'PAGINATION_OF', 'PAGINATION_RESULTS',
-          
-          // File Operations
-          'FILE_UPLOAD', 'FILE_DOWNLOAD', 'FILE_DELETE', 'FILE_SIZE_ERROR',
-          'FILE_TYPE_ERROR', 'FILE_UPLOAD_SUCCESS',
-          
-          // Admin & Management
-          'ADMIN_PANEL', 'USER_MANAGEMENT', 'ROLE_MANAGEMENT', 'ENTITY_MANAGEMENT',
-          'SYSTEM_SETTINGS', 'AUDIT_LOG', 'SECURITY_SETTINGS',
-          
-          // Report Structure Manager
-          'REPORT_STRUCTURE', 'LINE_ITEM', 'HIERARCHY', 'SORT_ORDER', 'PARENT_ITEM',
-          'REPORT_NAME', 'REPORT_DESCRIPTION', 'REPORT_VERSION', 'REPORT_ACTIVE',
-          
-          // COA Translation
-          'COA_TRANSLATION', 'SOURCE_LANGUAGE', 'TARGET_LANGUAGE', 'TRANSLATION_PROGRESS',
-          'TRANSLATION_COMPLETE', 'TRANSLATION_ERROR',
-          
-          // General UI
-          'TITLE', 'DESCRIPTION', 'NAME', 'CODE', 'TYPE', 'CATEGORY', 'TAGS',
-          'CREATED', 'UPDATED', 'CREATED_BY', 'UPDATED_BY', 'VERSION', 'ACTIVE',
-          'YES', 'NO', 'TRUE', 'FALSE', 'ENABLE', 'DISABLE', 'ENABLED', 'DISABLED'
-        ];
-        
-        knownKeys.forEach(key => translationKeys.add(key));
-      } catch (error) {
-        console.warn(`Failed to scan ${searchPath}:`, error);
-      }
+    // Call the new codebase scanner to get translation keys with their fallback text
+    const { data, error } = await supabase.functions.invoke('scan-codebase-translations', {
+      body: {}
+    });
+
+    if (error) {
+      throw new Error(`Codebase scan failed: ${error.message}`);
     }
+
+    const translationKeys = data.translationKeys as TranslationKeyWithText[];
+    console.log(`Found ${translationKeys.length} UI translation keys with fallback text`);
     
-    const foundKeys = Array.from(translationKeys);
-    console.log(`Found ${foundKeys.length} UI translation keys`);
-    return foundKeys;
+    // Store the mapping globally for use in bootstrap
+    global.translationKeyMap = translationKeys.reduce((acc, item) => {
+      acc[item.key] = item.fallbackText;
+      return acc;
+    }, {} as Record<string, string>);
+    
+    return translationKeys.map(t => t.key);
     
   } catch (error) {
     console.error('Error scanning for UI keys:', error);
@@ -542,16 +456,22 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
   if (!userId) {
     throw new Error('Missing userId for attribution when bootstrapping UI translations');
   }
+  
+  // Get the translation key mapping from global storage (set by scanForUIKeys)
+  const translationKeyMap = (global as any).translationKeyMap || {};
+  
   const insertData = [] as any[];
   
   for (const key of uiKeys) {
+    const fallbackText = translationKeyMap[key] || key; // Use fallback text or key as fallback
+    
     insertData.push({
       ui_key: key,
       language_code_original: sourceLanguage,
       language_code_target: sourceLanguage,
       source_field_name: 'text',
-      original_text: key,
-      translated_text: key, // Bootstrap with key as text
+      original_text: fallbackText, // Use the actual fallback text
+      translated_text: fallbackText, // Bootstrap with fallback text
       source: 'ai',
       created_by: userId,
       updated_by: userId
@@ -567,6 +487,8 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
   if (error) {
     throw new Error(`Failed to bootstrap UI translations: ${error.message}`);
   }
+  
+  console.log(`Bootstrapped ${insertData.length} UI translations with actual fallback text`);
 }
 
 function groupTranslationGapsByType(gaps: TranslationGap[]): Record<string, TranslationGap[]> {
