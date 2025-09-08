@@ -37,41 +37,42 @@ const contentTypes: ContentType[] = [
 ];
 
 interface IntelligentMigrationCardProps {
-  analysisData: any;
+  analysisData?: any;
 }
 
 export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationCardProps) {
-  const [migrationProgress, setMigrationProgress] = useState<Record<string, { loading: boolean; progress: number; result?: any }>>({});
+  const [migrationProgress, setMigrationProgress] = useState<Record<string, { loading: boolean; progress: number; result?: any; phase?: string }>>({});
   const [globalMigration, setGlobalMigration] = useState<any>(null);
   const [isGlobalMigrating, setIsGlobalMigrating] = useState(false);
   const { toast } = useToast();
 
   const runSelectiveMigration = async (contentTypeId: string) => {
-    if (!analysisData) {
-      toast({
-        title: "Analysis Required",
-        description: "Please run content analysis first",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setMigrationProgress(prev => ({
       ...prev,
-      [contentTypeId]: { loading: true, progress: 0 }
+      [contentTypeId]: { loading: true, progress: 0, phase: 'discovering' }
     }));
 
     try {
-      // Simulate progress updates
+      // Two-phase progress: Discovery (0-40%) + Migration (40-100%)
       const progressInterval = setInterval(() => {
-        setMigrationProgress(prev => ({
-          ...prev,
-          [contentTypeId]: {
-            ...prev[contentTypeId],
-            progress: Math.min(prev[contentTypeId].progress + 5, 90)
+        setMigrationProgress(prev => {
+          const current = prev[contentTypeId];
+          const newProgress = Math.min(current.progress + 3, current.phase === 'discovering' ? 40 : 95);
+          
+          // Switch to migration phase at 40%
+          if (current.phase === 'discovering' && newProgress >= 40) {
+            return {
+              ...prev,
+              [contentTypeId]: { ...current, progress: 40, phase: 'migrating' }
+            };
           }
-        }));
-      }, 500);
+          
+          return {
+            ...prev,
+            [contentTypeId]: { ...current, progress: newProgress }
+          };
+        });
+      }, 400);
 
       const { data, error } = await supabase.functions.invoke('intelligent-translation-migration', {
         body: { 
@@ -92,12 +93,15 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
 
       setMigrationProgress(prev => ({
         ...prev,
-        [contentTypeId]: { loading: false, progress: 100, result: data.result }
+        [contentTypeId]: { loading: false, progress: 100, result: data.result, phase: 'complete' }
       }));
 
+      const discoveredItems = data.result.itemsAnalyzed || 0;
+      const generatedTranslations = data.result.translationsGenerated || 0;
+      
       toast({
         title: "Migration Complete",
-        description: `Generated ${data.result.translationsGenerated || 0} translations for ${contentTypes.find(ct => ct.id === contentTypeId)?.label}`,
+        description: `Discovered ${discoveredItems} items, generated ${generatedTranslations} translations for ${contentTypes.find(ct => ct.id === contentTypeId)?.label}`,
       });
 
     } catch (error: any) {
@@ -115,15 +119,6 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
   };
 
   const runGlobalMigration = async () => {
-    if (!analysisData) {
-      toast({
-        title: "Analysis Required",
-        description: "Please run content analysis first",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsGlobalMigrating(true);
     setGlobalMigration(null);
     
@@ -142,9 +137,12 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
 
       setGlobalMigration(data.result);
 
+      const discoveredItems = data.result.totalItemsAnalyzed || 0;
+      const generatedTranslations = data.result.translationsGenerated || 0;
+
       toast({
         title: "Global Migration Complete",
-        description: `Generated ${data.result.translationsGenerated} translations across all content types`,
+        description: `Discovered ${discoveredItems} items, generated ${generatedTranslations} translations across all content types`,
       });
 
     } catch (error: any) {
@@ -176,7 +174,6 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
           {contentTypes.map((contentType) => {
             const Icon = contentType.icon;
             const migration = migrationProgress[contentType.id];
-            const hasContent = analysisData?.contentByType?.[contentType.id] > 0 || analysisData?.translationGaps?.some((gap: any) => gap.entityType === contentType.id);
             
             return (
               <div key={contentType.id} className="border rounded-lg p-4 space-y-3">
@@ -191,7 +188,11 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                   <div className="space-y-2">
                     <Progress value={migration.progress} className="h-2" />
                     <div className="text-xs text-muted-foreground">
-                      Migrating {contentType.label.toLowerCase()}...
+                      {migration.phase === 'discovering' ? (
+                        <>Discovering {contentType.label.toLowerCase()}...</>
+                      ) : (
+                        <>Migrating {contentType.label.toLowerCase()}...</>
+                      )}
                     </div>
                   </div>
                 )}
@@ -200,9 +201,18 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                   <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription className="text-sm">
-                      Generated <Badge variant="secondary" className="ml-1">
-                        {migration.result.translationsGenerated || 0}
-                      </Badge> translations
+                      <div className="space-y-1">
+                        <div>
+                          Analyzed <Badge variant="outline" className="ml-1">
+                            {migration.result.itemsAnalyzed || 0}
+                          </Badge> items
+                        </div>
+                        <div>
+                          Generated <Badge variant="secondary" className="ml-1">
+                            {migration.result.translationsGenerated || 0}
+                          </Badge> translations
+                        </div>
+                      </div>
                     </AlertDescription>
                   </Alert>
                 )}
@@ -212,32 +222,24 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                   variant="outline" 
                   className="w-full"
                   onClick={() => runSelectiveMigration(contentType.id)}
-                  disabled={migration?.loading || (!hasContent && !!analysisData)}
+                  disabled={migration?.loading}
                 >
                   {migration?.loading ? (
                     <>
                       <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                      Migrating...
+                      {migration.phase === 'discovering' ? 'Discovering...' : 'Migrating...'}
                     </>
                   ) : (
                     <>
                       <Bot className="h-3 w-3 mr-2" />
-                      Migrate
+                      Discover & Migrate
                     </>
                   )}
                 </Button>
                 
-                {!hasContent && analysisData && (
-                  <div className="text-xs text-muted-foreground">
-                    No {contentType.label.toLowerCase()} or translation gaps found in analysis
-                  </div>
-                )}
-                
-                {!analysisData && (
-                  <div className="text-xs text-muted-foreground">
-                    Run content analysis first to enable migration
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground">
+                  Automatically discovers content and generates translations
+                </div>
               </div>
             );
           })}
@@ -259,27 +261,27 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                     <p className="font-medium">Migration completed successfully!</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
+                        <span className="font-medium">Items Analyzed:</span>
+                        <Badge variant="outline" className="ml-2">
+                          {globalMigration.totalItemsAnalyzed || 0}
+                        </Badge>
+                      </div>
+                      <div>
                         <span className="font-medium">UI Elements:</span>
                         <Badge variant="secondary" className="ml-2">
-                          {globalMigration.uiElementsProcessed}
+                          {globalMigration.uiElementsProcessed || 0}
                         </Badge>
                       </div>
                       <div>
                         <span className="font-medium">Structures:</span>
                         <Badge variant="secondary" className="ml-2">
-                          {globalMigration.structuresProcessed}
-                        </Badge>
-                      </div>
-                      <div>
-                        <span className="font-medium">Line Items:</span>
-                        <Badge variant="secondary" className="ml-2">
-                          {globalMigration.lineItemsProcessed}
+                          {globalMigration.structuresProcessed || 0}
                         </Badge>
                       </div>
                       <div>
                         <span className="font-medium">Translations:</span>
                         <Badge variant="secondary" className="ml-2">
-                          {globalMigration.translationsGenerated}
+                          {globalMigration.translationsGenerated || 0}
                         </Badge>
                       </div>
                     </div>
@@ -290,31 +292,26 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Run comprehensive migration to process all content types with multi-directional translation
-                  {!analysisData && (
-                    <span className="text-amber-600 block mt-1">
-                      Note: Run content analysis first to see what will be processed.
-                    </span>
-                  )}
+                  Automatically discovers all translatable content and generates translations with AI-powered language detection and multi-directional translation
                 </AlertDescription>
               </Alert>
             )}
             
             <Button 
               onClick={runGlobalMigration} 
-              disabled={isGlobalMigrating || !analysisData}
+              disabled={isGlobalMigrating}
               variant="default"
               className="w-full"
             >
               {isGlobalMigrating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Migrating All Content...
+                  Discovering & Migrating...
                 </>
               ) : (
                 <>
                   <Bot className="h-4 w-4 mr-2" />
-                  Migrate All Content Types
+                  Discover & Migrate All Content
                 </>
               )}
             </Button>
