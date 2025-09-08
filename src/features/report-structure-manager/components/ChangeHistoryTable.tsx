@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RotateCcw } from 'lucide-react';
+import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
 
 export interface ChangeHistoryEntry {
   change_uuid: string;
@@ -36,6 +38,41 @@ interface ChangeHistoryTableProps {
 
 export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndoneItems }: ChangeHistoryTableProps) {
   const [undoingItems, setUndoingItems] = useState<Set<string>>(new Set());
+  const [translatedDescriptions, setTranslatedDescriptions] = useState<Map<string, string>>(new Map());
+  const { contentLanguage } = useContentLanguage();
+
+  // Translate descriptions when language changes or history updates
+  useEffect(() => {
+    const translateDescriptions = async () => {
+      const newTranslations = new Map<string, string>();
+      
+      for (const entry of changeHistory) {
+        if (entry.line_item_uuid) {
+          try {
+            const translated = await EnhancedTranslationService.getTranslationWithFallback(
+              'report_line_item',
+              entry.line_item_uuid,
+              'report_line_item_description',
+              contentLanguage
+            );
+            newTranslations.set(entry.change_uuid, translated);
+          } catch (error) {
+            console.error('Translation failed for change entry:', entry.change_uuid, error);
+            newTranslations.set(entry.change_uuid, entry.line_item_description);
+          }
+        } else {
+          // Fallback to original description if no UUID
+          newTranslations.set(entry.change_uuid, entry.line_item_description);
+        }
+      }
+      
+      setTranslatedDescriptions(newTranslations);
+    };
+
+    if (changeHistory.length > 0) {
+      translateDescriptions();
+    }
+  }, [changeHistory, contentLanguage]);
 
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString('en-US', { 
@@ -120,7 +157,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
                   <div className="font-mono text-xs text-muted-foreground mb-1">
                     {entry.hierarchy_path || entry.line_item_key}
                   </div>
-                  <div>{entry.line_item_description}</div>
+                  <div>{translatedDescriptions.get(entry.change_uuid) || entry.line_item_description}</div>
                 </TableCell>
                 <TableCell>
                   <Button

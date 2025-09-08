@@ -24,10 +24,10 @@ export default function AccountProfile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Languages className="h-5 w-5" />
-                Language Preferences
+                {t('LANGUAGE_PREFERENCES', 'Language Preferences')}
               </CardTitle>
               <CardDescription>
-                Configure your language preferences for different parts of the application
+                {t('LANGUAGE_PREFERENCES_DESCRIPTION', 'Configure your language preferences for different parts of the application')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -37,7 +37,7 @@ export default function AccountProfile() {
                   {t('INTERFACE_LANGUAGE', 'Interface Language')}
                 </Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Language for menus, buttons, and interface elements
+                  {t('INTERFACE_LANGUAGE_DESCRIPTION', 'Language for menus, buttons, and interface elements')}
                 </p>
                 <UserLanguageSelector showLabel={false} />
               </div>
@@ -45,10 +45,10 @@ export default function AccountProfile() {
               {/* Content Language */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Content Language
+                  {t('CONTENT_LANGUAGE', 'Content Language')}
                 </Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Language for report structures, line items, and data content
+                  {t('CONTENT_LANGUAGE_DESCRIPTION', 'Language for report structures, line items, and data content')}
                 </p>
                 <ContentLanguageSelector showLabel={false} />
               </div>
