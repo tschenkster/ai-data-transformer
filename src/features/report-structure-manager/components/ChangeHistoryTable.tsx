@@ -121,7 +121,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
   return (
     <Card className="mt-6">
       <CardHeader>
-        <CardTitle className="text-sm">Change Log</CardTitle>
+        <CardTitle className="text-sm">{t('CHANGE_LOG_TITLE', 'Change Log')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -169,7 +169,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
                     onClick={() => handleUndo(entry.change_uuid)}
                     disabled={undoingItems.has(entry.change_uuid)}
                     className="h-6 w-6 p-0"
-                    title="Undo this change"
+                    title={t('CHANGE_LOG_UNDO_TOOLTIP', 'Undo this change')}
                   >
                     <RotateCcw className={`h-3 w-3 ${undoingItems.has(entry.change_uuid) ? 'animate-spin' : ''}`} />
                   </Button>
