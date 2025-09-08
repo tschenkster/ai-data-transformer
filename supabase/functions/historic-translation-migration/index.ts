@@ -106,8 +106,8 @@ serve(async (req) => {
               : (row.translated_text && row.translated_text.trim().length > 0 ? row.translated_text : null);
             if (!text) continue;
 
-            // Invoke detect-language function for this text
-            const { data: detection, error: detectError } = await supabaseClient.functions.invoke('detect-language', {
+            // Invoke detect-language function for this text using the user's JWT
+            const { data: detection, error: detectError } = await userClient.functions.invoke('detect-language', {
               body: { texts: [text] }
             });
             if (detectError) {
