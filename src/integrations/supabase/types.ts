@@ -371,7 +371,7 @@ export type Database = {
       report_line_items_translations: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           language_code_original: string | null
           language_code_target: string
           original_text: string | null
@@ -382,11 +382,11 @@ export type Database = {
           source_field_name: string
           translated_text: string | null
           updated_at: string
-          updated_by: string | null
+          updated_by: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           language_code_original?: string | null
           language_code_target: string
           original_text?: string | null
@@ -397,11 +397,11 @@ export type Database = {
           source_field_name: string
           translated_text?: string | null
           updated_at?: string
-          updated_by?: string | null
+          updated_by: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           language_code_original?: string | null
           language_code_target?: string
           original_text?: string | null
@@ -412,7 +412,7 @@ export type Database = {
           source_field_name?: string
           translated_text?: string | null
           updated_at?: string
-          updated_by?: string | null
+          updated_by?: string
         }
         Relationships: [
           {
@@ -604,7 +604,7 @@ export type Database = {
       report_structures_translations: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           language_code_original: string | null
           language_code_target: string
           original_text: string | null
@@ -615,11 +615,11 @@ export type Database = {
           source_field_name: string
           translated_text: string | null
           updated_at: string
-          updated_by: string | null
+          updated_by: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           language_code_original?: string | null
           language_code_target: string
           original_text?: string | null
@@ -630,11 +630,11 @@ export type Database = {
           source_field_name: string
           translated_text?: string | null
           updated_at?: string
-          updated_by?: string | null
+          updated_by: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           language_code_original?: string | null
           language_code_target?: string
           original_text?: string | null
@@ -645,7 +645,7 @@ export type Database = {
           source_field_name?: string
           translated_text?: string | null
           updated_at?: string
-          updated_by?: string | null
+          updated_by?: string
         }
         Relationships: [
           {
@@ -813,7 +813,7 @@ export type Database = {
       ui_translations: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           language_code_original: string | null
           language_code_target: string
           original_text: string | null
@@ -824,11 +824,11 @@ export type Database = {
           ui_translation_id: number
           ui_translation_uuid: string
           updated_at: string
-          updated_by: string | null
+          updated_by: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           language_code_original?: string | null
           language_code_target: string
           original_text?: string | null
@@ -839,11 +839,11 @@ export type Database = {
           ui_translation_id?: never
           ui_translation_uuid?: string
           updated_at?: string
-          updated_by?: string | null
+          updated_by: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           language_code_original?: string | null
           language_code_target?: string
           original_text?: string | null
@@ -854,7 +854,7 @@ export type Database = {
           ui_translation_id?: never
           ui_translation_uuid?: string
           updated_at?: string
-          updated_by?: string | null
+          updated_by?: string
         }
         Relationships: [
           {
