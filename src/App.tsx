@@ -27,52 +27,55 @@ function AppContent() {
   const { user, loading } = useAuth();
   const { t } = useUITranslations();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('MSG_LOADING', 'Loading...')}</p>
-        </div>
+  // Render a non-blocking loading overlay instead of halting all routes
+  const loadingOverlay = loading ? (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 backdrop-blur-sm">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">{t('MSG_LOADING', 'Loading...')}</p>
       </div>
-    );
-  }
+    </div>
+  ) : null;
+
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Homepage />} />
-      <Route path="/pricing" element={<Pricing />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/convert" element={<Convert />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      
-      {/* Protected routes */}
-      {user ? (
-        <Route path="/*" element={
-          <SidebarProvider>
-            <div className="min-h-screen flex flex-col w-full">
-              {/* Global header with sidebar trigger */}
-              <header className="h-12 flex items-center border-b bg-background px-4 md:hidden">
-                <SidebarTrigger className="mr-2" />
-                <h1 className="text-lg font-semibold">{t('APP_TITLE', 'Data Transformer')}</h1>
-              </header>
-              
-              <div className="flex flex-1 w-full">
-                <AppSidebar />
-                <main className="flex-1 overflow-auto">
-                  <AppRoutes />
-                </main>
+    <>
+      {loadingOverlay}
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Homepage />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/convert" element={<Convert />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        
+        {/* Protected routes */}
+        {user ? (
+          <Route path="/*" element={
+            <SidebarProvider>
+              <div className="min-h-screen flex flex-col w-full">
+                {/* Global header with sidebar trigger */}
+                <header className="h-12 flex items-center border-b bg-background px-4 md:hidden">
+                  <SidebarTrigger className="mr-2" />
+                  <h1 className="text-lg font-semibold">{t('APP_TITLE', 'Data Transformer')}</h1>
+                </header>
+                
+                <div className="flex flex-1 w-full">
+                  <AppSidebar />
+                  <main className="flex-1 overflow-auto">
+                    <AppRoutes />
+                  </main>
+                </div>
               </div>
-            </div>
-          </SidebarProvider>
-        } />
-      ) : (
-        <Route path="/*" element={<Navigate to="/auth" replace />} />
-      )}
-    </Routes>
+            </SidebarProvider>
+          } />
+        ) : (
+          <Route path="/*" element={<Navigate to="/auth" replace />} />
+        )}
+      </Routes>
+    </>
   );
 }
 
