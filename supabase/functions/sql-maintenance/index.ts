@@ -84,9 +84,9 @@ Deno.serve(async (req) => {
 
     if (req.method === 'POST') {
       if (path === 'delete-all' || action === 'delete-all') {
-        return await handleDeleteAll(req, supabaseClient, user.id, body)
+        return await handleDeleteAll(req, supabaseClient, supabaseUser, user.id, body)
       } else if (path === 'delete-where' || action === 'delete-where') {
-        return await handleDeleteWhere(req, supabaseClient, user.id, body)
+        return await handleDeleteWhere(req, supabaseClient, supabaseUser, user.id, body)
       }
     }
 
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
   }
 })
 
-async function handleDeleteAll(req: Request, supabaseClient: any, userId: string, body?: any) {
+async function handleDeleteAll(req: Request, supabaseClient: any, supabaseUser: any, userId: string, body?: any) {
   const requestBody: DeleteAllRequest = body || await req.json()
   const { schema_name, table_name, mode, restart_identity = false, cascade = false } = requestBody
   
@@ -140,7 +140,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     const csvMetadata = await exportTableToCSV(supabaseClient, schema_name, table_name)
     
     // Use the secure RPC function for actual deletion
-    const { data: rowsDeleted, error: deleteError } = await supabaseClient
+    const { data: rowsDeleted, error: deleteError } = await supabaseUser
       .rpc('delete_all_rows_secure', {
         p_schema_name: schema_name,
         p_table_name: table_name,
@@ -156,7 +156,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     const duration = Date.now() - startTime
 
     // Log the operation
-    await supabaseClient.rpc('log_sql_maintenance_event', {
+    await supabaseUser.rpc('log_sql_maintenance_event', {
       p_action: 'delete_all',
       p_schema_name: schema_name,
       p_table_name: table_name,
@@ -187,7 +187,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
     const duration = Date.now() - startTime
     
     // Log the failed operation
-    await supabaseClient.rpc('log_sql_maintenance_event', {
+    await supabaseUser.rpc('log_sql_maintenance_event', {
       p_action: 'delete_all',
       p_schema_name: schema_name,
       p_table_name: table_name,
@@ -201,7 +201,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, userId: string
   }
 }
 
-async function handleDeleteWhere(req: Request, supabaseClient: any, userId: string, body?: any) {
+async function handleDeleteWhere(req: Request, supabaseClient: any, supabaseUser: any, userId: string, body?: any) {
   const requestBody: DeleteWhereRequest = body || await req.json()
   const { schema_name, table_name, filter, advanced_predicate, dry_run = false, sample_limit = 50, row_limit } = requestBody
   
@@ -211,7 +211,7 @@ async function handleDeleteWhere(req: Request, supabaseClient: any, userId: stri
   
   try {
     // Check if table is protected
-    const { data: isProtected } = await supabaseClient
+    const { data: isProtected } = await supabaseUser
       .rpc('is_table_protected', { p_schema_name: schema_name, p_table_name: table_name })
     
     if (isProtected) {
@@ -286,7 +286,7 @@ async function handleDeleteWhere(req: Request, supabaseClient: any, userId: stri
     const duration = Date.now() - startTime
 
     // Log the operation
-    await supabaseClient.rpc('log_sql_maintenance_event', {
+    await supabaseUser.rpc('log_sql_maintenance_event', {
       p_action: 'delete_where',
       p_schema_name: schema_name,
       p_table_name: table_name,
@@ -317,7 +317,7 @@ async function handleDeleteWhere(req: Request, supabaseClient: any, userId: stri
     const duration = Date.now() - startTime
     
     // Log the failed operation
-    await supabaseClient.rpc('log_sql_maintenance_event', {
+    await supabaseUser.rpc('log_sql_maintenance_event', {
       p_action: 'delete_where',
       p_schema_name: schema_name,
       p_table_name: table_name,
