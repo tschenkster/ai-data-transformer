@@ -112,7 +112,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
           <CardTitle className="text-sm">{t('CHANGE_LOG_TITLE', 'Change Log')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No changes made yet. Your modifications will appear here.</p>
+          <p className="text-sm text-muted-foreground">{t('MSG_NO_CHANGES_YET', 'No changes made yet. Your modifications will appear here.')}</p>
         </CardContent>
       </Card>
     );
@@ -127,10 +127,10 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Time</TableHead>
-              <TableHead className="w-[120px]">Action Type</TableHead>
-              <TableHead>Line Item</TableHead>
-              <TableHead className="w-[80px]">Undo</TableHead>
+              <TableHead className="w-[100px]">{t('TABLE_TIME', 'Time')}</TableHead>
+              <TableHead className="w-[120px]">{t('TABLE_ACTION_TYPE', 'Action Type')}</TableHead>
+              <TableHead>{t('TABLE_LINE_ITEM', 'Line Item')}</TableHead>
+              <TableHead className="w-[80px]">{t('TABLE_UNDO', 'Undo')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -151,9 +151,9 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
                     variant="secondary"
                     className="text-xs bg-muted text-muted-foreground"
                   >
-                    {entry.action_type === 'rename' ? 'Rename' : 
-                     entry.action_type === 'move' ? 'Move' :
-                     entry.action_type === 'create' ? 'Create' : 'Delete'}
+                    {entry.action_type === 'rename' ? t('ACTION_RENAME', 'Rename') : 
+                     entry.action_type === 'move' ? t('ACTION_MOVE', 'Move') :
+                     entry.action_type === 'create' ? t('ACTION_CREATE', 'Create') : t('ACTION_DELETE', 'Delete')}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-sm">

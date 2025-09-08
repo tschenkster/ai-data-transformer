@@ -1069,7 +1069,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
             </Select>
             <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Add Item
+              {t('BTN_ADD_ITEM', 'Add Item')}
             </Button>
           </div>
           <div className="text-center py-8 text-muted-foreground">

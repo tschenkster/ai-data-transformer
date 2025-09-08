@@ -376,13 +376,13 @@ export default function ReportStructureManager() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Version</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created By</TableHead>
-                      <TableHead>Created At</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('TABLE_ID', 'ID')}</TableHead>
+                      <TableHead>{t('TABLE_NAME', 'Name')}</TableHead>
+                      <TableHead>{t('TABLE_VERSION', 'Version')}</TableHead>
+                      <TableHead>{t('TABLE_STATUS', 'Status')}</TableHead>
+                      <TableHead>{t('TABLE_CREATED_BY', 'Created By')}</TableHead>
+                      <TableHead>{t('TABLE_CREATED_AT', 'Created At')}</TableHead>
+                      <TableHead>{t('TABLE_ACTIONS', 'Actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -397,13 +397,13 @@ export default function ReportStructureManager() {
                         <TableCell>{structure.version}</TableCell>
                         <TableCell>
                           {structure.is_active ? (
-                            <Badge variant="default">
-                              <Check className="w-3 h-3 mr-1" />
-                              Active
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">Disabled</Badge>
-                          )}
+                             <Badge variant="default">
+                               <Check className="w-3 h-3 mr-1" />
+                               {t('STATUS_ACTIVE', 'Active')}
+                             </Badge>
+                           ) : (
+                             <Badge variant="secondary">{t('STATUS_INACTIVE', 'Disabled')}</Badge>
+                           )}
                         </TableCell>
                         <TableCell>{structure.created_by_user_name}</TableCell>
                         <TableCell>{formatDate(structure.created_at)}</TableCell>

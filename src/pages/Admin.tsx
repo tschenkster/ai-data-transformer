@@ -5,9 +5,11 @@ import { SecurityAuditLog, AccessManagement } from '@/features/data-security';
 import { SecurityAuditDashboard } from '@/features/auth';
 import { UserManagementPanel } from '@/features/user-management';
 import Footer from '@/components/Footer';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 export default function Admin() {
   const { isSuperAdmin, isAdmin } = useAuth();
+  const { t } = useUITranslations();
 
   return (
     <div className="bg-background">
@@ -17,13 +19,13 @@ export default function Admin() {
         <Tabs defaultValue="users" className="space-y-4">
           <TabsList>
             {(isSuperAdmin || isAdmin) && (
-              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="users">{t('TAB_USERS', 'Users')}</TabsTrigger>
             )}
             {(isSuperAdmin || isAdmin) && (
-              <TabsTrigger value="entities">Entity Management</TabsTrigger>
+              <TabsTrigger value="entities">{t('PAGE_ENTITY_MANAGEMENT', 'Entity Management')}</TabsTrigger>
             )}
-            <TabsTrigger value="audit">Audit Log</TabsTrigger>
-            <TabsTrigger value="security">Security Dashboard</TabsTrigger>
+            <TabsTrigger value="audit">{t('TAB_AUDIT_LOG', 'Audit Log')}</TabsTrigger>
+            <TabsTrigger value="security">{t('TAB_SECURITY_DASHBOARD', 'Security Dashboard')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="audit" className="space-y-4">

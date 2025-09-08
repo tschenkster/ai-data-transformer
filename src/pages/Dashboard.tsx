@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { Progress } from '@/components/ui/progress';
+import { useUITranslations } from '@/hooks/useUITranslations';
 import { 
   BarChart3, 
   Users, 
@@ -40,6 +41,7 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const { isAdmin, user, userAccount, isSuperAdmin } = useAuth();
+  const { t } = useUITranslations();
   const [activeStructureUuid, setActiveStructureUuid] = useState<string | null>(null);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [users, setUsers] = useState<UserAccount[]>([]);
@@ -176,11 +178,11 @@ export default function Dashboard() {
         <>
           <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur-sm">
             <Settings className="h-4 w-4 mr-2" />
-            Settings
+            {t('BTN_SETTINGS', 'Settings')}
           </Button>
           <Button size="sm" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg">
             <Plus className="h-4 w-4 mr-2" />
-            Quick Action
+            {t('BTN_QUICK_ACTION', 'Quick Action')}
           </Button>
         </>
       )}
@@ -188,15 +190,15 @@ export default function Dashboard() {
   );
 
   const adminCrumbs = [
-    { path: '/start', label: 'Start' },
-    { path: '/admin', label: 'System Administration' },
-    { path: '/dashboard', label: 'Dashboard' }
+    { path: '/start', label: t('NAV_START', 'Start') },
+    { path: '/admin', label: t('NAV_SYSTEM_ADMINISTRATION', 'System Administration') },
+    { path: '/dashboard', label: t('NAV_DASHBOARD', 'Dashboard') }
   ];
 
   return (
     <CompactPageLayout 
       breadcrumbItems={adminCrumbs}
-      currentPage="Dashboard"
+      currentPage={t('PAGE_DASHBOARD', 'Dashboard')}
       actions={dashboardActions}
     >
       <div className="space-y-8">
@@ -205,7 +207,7 @@ export default function Dashboard() {
         {isAdmin && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">System Overview</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{t('HEADING_SYSTEM_OVERVIEW', 'System Overview')}</h2>
               <Badge variant="secondary" className="px-3 py-1">
                 <Zap className="h-3 w-3 mr-1" />
                 Live Data
@@ -227,38 +229,38 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <ModernStatsCard
-                  title="Total Users"
+                  title={t('STATS_TOTAL_USERS', 'Total Users')}
                   value={users.length}
                   icon={Users}
                   color="blue"
                   trend="up"
                   trendValue="+12%"
-                  description="Active platform users"
+                  description={t('STATS_DESC_ACTIVE_USERS', 'Active platform users')}
                 />
                 <ModernStatsCard
-                  title="Pending Approvals"
+                  title={t('STATS_PENDING_APPROVALS', 'Pending Approvals')}
                   value={users.filter(u => u.user_status === 'pending').length}
                   icon={Clock}
                   color="orange"
-                  description="Awaiting approval"
+                  description={t('STATS_DESC_AWAITING_APPROVAL', 'Awaiting approval')}
                 />
                 <ModernStatsCard
-                  title="Approved Users"
+                  title={t('STATS_APPROVED_USERS', 'Approved Users')}
                   value={users.filter(u => u.user_status === 'approved').length}
                   icon={CheckCircle}
                   color="green"
                   trend="up"
                   trendValue="+5"
-                  description="Successfully onboarded"
+                  description={t('STATS_DESC_ONBOARDED', 'Successfully onboarded')}
                 />
                 <ModernStatsCard
-                  title="System Health"
+                  title={t('STATS_SYSTEM_HEALTH', 'System Health')}
                   value="99.9%"
                   icon={Shield}
                   color="green"
                   trend="up"
-                  trendValue="Excellent"
-                  description="Uptime this month"
+                  trendValue={t('STATUS_EXCELLENT', 'Excellent')}
+                  description={t('STATS_DESC_UPTIME', 'Uptime this month')}
                 />
               </div>
             )}
@@ -270,27 +272,27 @@ export default function Dashboard() {
           {/* User Profile Section */}
           <div className="lg:col-span-4">
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold">Your Profile</h3>
+              <h3 className="text-xl font-semibold">{t('HEADING_YOUR_PROFILE', 'Your Profile')}</h3>
               <UserProfileDisplay />
               
               {/* Quick Actions Card */}
               <Card className="bg-gradient-to-br from-muted/50 to-muted/25 border-dashed">
                 <CardHeader>
-                  <CardTitle className="text-lg">Quick Actions</CardTitle>
-                  <CardDescription>Frequently used features</CardDescription>
+                  <CardTitle className="text-lg">{t('HEADING_QUICK_ACTIONS', 'Quick Actions')}</CardTitle>
+                  <CardDescription>{t('DESC_QUICK_ACTIONS', 'Frequently used features')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button variant="ghost" className="w-full justify-start h-12">
                     <Users className="h-4 w-4 mr-3" />
-                    Manage Users
+                    {t('QUICK_ACTION_MANAGE_USERS', 'Manage Users')}
                   </Button>
                   <Button variant="ghost" className="w-full justify-start h-12">
                     <FileText className="h-4 w-4 mr-3" />
-                    View Reports
+                    {t('QUICK_ACTION_VIEW_REPORTS', 'View Reports')}
                   </Button>
                   <Button variant="ghost" className="w-full justify-start h-12">
                     <Settings className="h-4 w-4 mr-3" />
-                    Settings
+                    {t('BTN_SETTINGS', 'Settings')}
                   </Button>
                 </CardContent>
               </Card>
