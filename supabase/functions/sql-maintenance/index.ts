@@ -120,7 +120,7 @@ async function handleDeleteAll(req: Request, supabaseClient: any, supabaseUser: 
   
   try {
     // Check if table is protected
-    const { data: isProtected } = await supabaseClient
+    const { data: isProtected } = await supabaseUser
       .rpc('is_table_protected', { p_schema_name: schema_name, p_table_name: table_name })
     
     if (isProtected) {
@@ -139,18 +139,27 @@ async function handleDeleteAll(req: Request, supabaseClient: any, supabaseUser: 
     // Export data to CSV before deletion
     const csvMetadata = await exportTableToCSV(supabaseClient, schema_name, table_name)
     
-    // Use the secure RPC function for actual deletion
-    const { data: rowsDeleted, error: deleteError } = await supabaseUser
-      .rpc('delete_all_rows_secure', {
-        p_schema_name: schema_name,
-        p_table_name: table_name,
-        p_mode: mode,
-        p_restart_identity: restart_identity,
-        p_cascade: cascade
-      })
-    
-    if (deleteError) {
-      throw new Error(`Delete operation failed: ${deleteError.message}`)
+    // Perform deletion based on mode using user-scoped context (RLS-aware)
+    let rowsDeleted = 0
+    if (mode === 'delete') {
+      const { error: delError } = await supabaseUser.from(table_name).delete()
+      if (delError) {
+        throw new Error(`Delete operation failed: ${delError.message}`)
+      }
+      rowsDeleted = rowCountBefore || 0
+    } else {
+      const { data, error: deleteError } = await supabaseUser
+        .rpc('delete_all_rows_secure', {
+          p_schema_name: schema_name,
+          p_table_name: table_name,
+          p_mode: mode,
+          p_restart_identity: restart_identity,
+          p_cascade: cascade
+        })
+      if (deleteError) {
+        throw new Error(`Delete operation failed: ${deleteError.message}`)
+      }
+      rowsDeleted = data || 0
     }
 
     const duration = Date.now() - startTime
@@ -272,7 +281,7 @@ async function handleDeleteWhere(req: Request, supabaseClient: any, supabaseUser
     const csvMetadata = await exportTableToCSV(supabaseClient, schema_name, table_name, whereClause)
 
     // Perform deletion
-    let deleteQuery = supabaseClient.from(table_name).delete()
+    let deleteQuery = supabaseUser.from(table_name).delete()
     if (filter) {
       deleteQuery = applyFiltersToQuery(deleteQuery, filter)
     }
