@@ -34,6 +34,13 @@ export function MigrationExecutor() {
       progress: 0
     },
     {
+      id: 'detect_ui_original',
+      title: 'Detect Original Languages',
+      description: 'AI-detect language_code_original for UI translations',
+      status: 'pending',
+      progress: 0
+    },
+    {
       id: 'migrate_ui',
       title: 'Migrate UI Translations',
       description: 'Fix NULL values in ui_translations table',
@@ -101,6 +108,19 @@ export function MigrationExecutor() {
             updateStepStatus(step.id, 'running', i);
             await new Promise(resolve => setTimeout(resolve, 300));
           }
+          break;
+
+        case 'detect_ui_original':
+          // Detect original languages for UI translations
+          updateStepStatus(step.id, 'running', 10);
+          const { error: detectError } = await supabase.functions.invoke('historic-translation-migration', {
+            body: {
+              operation: 'detect_ui_original_languages',
+              dry_run: false
+            }
+          });
+          if (detectError) throw detectError;
+          updateStepStatus(step.id, 'running', 100);
           break;
 
         case 'migrate_ui':

@@ -82,6 +82,74 @@ serve(async (req) => {
         }
         break;
 
+      case 'detect_ui_original_languages': {
+        // AI-detect language_code_original per row in ui_translations
+        const pageSize = 200;
+        let page = 0;
+        let totalProcessed = 0;
+        let totalUpdated = 0;
+        const samples: Array<{ id: number; ui_key: string; before?: string | null; detected: string; after?: string }> = [];
+
+        while (true) {
+          const { data: rows, error } = await supabaseClient
+            .from('ui_translations')
+            .select('ui_translation_id, ui_key, original_text, translated_text, language_code_original, language_code_target')
+            .order('ui_translation_id', { ascending: true })
+            .range(page * pageSize, page * pageSize + pageSize - 1);
+
+          if (error) throw error;
+          if (!rows || rows.length === 0) break;
+
+          for (const row of rows) {
+            const text: string | null = (row.original_text && row.original_text.trim().length > 0)
+              ? row.original_text
+              : (row.translated_text && row.translated_text.trim().length > 0 ? row.translated_text : null);
+            if (!text) continue;
+
+            // Invoke detect-language function for this text
+            const { data: detection, error: detectError } = await supabaseClient.functions.invoke('detect-language', {
+              body: { texts: [text] }
+            });
+            if (detectError) {
+              console.warn('detect-language error for id', row.ui_translation_id, detectError);
+              continue;
+            }
+            const detectedLang: string = (detection?.language || detection?.overallLanguage || 'en').toLowerCase();
+
+            totalProcessed++;
+
+            if (dry_run) {
+              if ((row.language_code_original || '').toLowerCase() !== detectedLang) {
+                totalUpdated++;
+                if (samples.length < 10) {
+                  samples.push({ id: row.ui_translation_id, ui_key: row.ui_key, before: row.language_code_original, detected: detectedLang });
+                }
+              }
+            } else {
+              if ((row.language_code_original || '').toLowerCase() !== detectedLang) {
+                const { error: updateError } = await supabaseClient
+                  .from('ui_translations')
+                  .update({ language_code_original: detectedLang })
+                  .eq('ui_translation_id', row.ui_translation_id);
+                if (updateError) {
+                  console.warn('Update failed for id', row.ui_translation_id, updateError);
+                } else {
+                  totalUpdated++;
+                  if (samples.length < 10) {
+                    samples.push({ id: row.ui_translation_id, ui_key: row.ui_key, before: row.language_code_original, detected: detectedLang, after: detectedLang });
+                  }
+                }
+              }
+            }
+          }
+
+          page++;
+        }
+
+        result = { success: true, dry_run, processed: totalProcessed, updated: totalUpdated, samples };
+        break;
+      }
+
       case 'migrate_report_structures_translations':
         if (dry_run) {
           const { data: assessment, error } = await userClient.rpc('assess_translation_data_completeness');
