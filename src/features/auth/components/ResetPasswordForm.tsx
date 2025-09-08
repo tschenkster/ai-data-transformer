@@ -10,6 +10,7 @@ import { Key, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 import { PasswordValidator } from '@/features/auth/utils/passwordValidation';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 export function ResetPasswordForm() {
   const [password, setPassword] = useState('');
@@ -19,6 +20,7 @@ export function ResetPasswordForm() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useUITranslations();
 
   useEffect(() => {
     // Handle the reset password callback
@@ -91,10 +93,10 @@ export function ResetPasswordForm() {
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">
             <Key className="h-5 w-5" />
-            Set New Password
+            {t('SET_NEW_PASSWORD', 'Set New Password')}
           </CardTitle>
           <CardDescription>
-            Enter a strong password for your account
+            {t('ENTER_STRONG_PASSWORD', 'Enter a strong password for your account')}
           </CardDescription>
         </CardHeader>
         
@@ -108,11 +110,11 @@ export function ResetPasswordForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password">{t('NEW_PASSWORD', 'New Password')}</Label>
               <Input
                 id="new-password"
                 type="password"
-                placeholder="Enter your new password"
+                placeholder={t('ENTER_NEW_PASSWORD_PLACEHOLDER', 'Enter your new password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -122,18 +124,18 @@ export function ResetPasswordForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">Confirm Password</Label>
+              <Label htmlFor="confirm-new-password">{t('CONFIRM_PASSWORD', 'Confirm Password')}</Label>
               <Input
                 id="confirm-new-password"
                 type="password"
-                placeholder="Confirm your new password"
+                placeholder={t('CONFIRM_NEW_PASSWORD_PLACEHOLDER', 'Confirm your new password')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={loading}
               />
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-600">Passwords do not match</p>
+                <p className="text-xs text-red-600">{t('PASSWORDS_DO_NOT_MATCH', 'Passwords do not match')}</p>
               )}
             </div>
             
@@ -145,10 +147,10 @@ export function ResetPasswordForm() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating Password...
+                  {t('BTN_UPDATING_PASSWORD', 'Updating Password...')}
                 </>
               ) : (
-                'Update Password'
+                t('BTN_UPDATE_PASSWORD', 'Update Password')
               )}
             </Button>
           </form>

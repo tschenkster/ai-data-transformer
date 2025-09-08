@@ -10,6 +10,7 @@ import { AlertTriangle, Shield, RefreshCw, Search, Download, Filter } from 'luci
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 interface SecurityLog {
   security_audit_log_uuid: string;
@@ -43,6 +44,7 @@ export function SecurityAuditDashboard() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const { toast } = useToast();
+  const { t } = useUITranslations();
 
   const fetchSecurityLogs = async () => {
     try {
@@ -155,12 +157,12 @@ export function SecurityAuditDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Security Audit Dashboard</h2>
-          <p className="text-muted-foreground">Monitor authentication and security events</p>
+          <h2 className="text-2xl font-bold text-foreground">{t('SECURITY_AUDIT_DASHBOARD', 'Security Audit Dashboard')}</h2>
+          <p className="text-muted-foreground">{t('MONITOR_AUTH_EVENTS', 'Monitor authentication and security events')}</p>
         </div>
         <Button onClick={fetchSecurityLogs} disabled={loading} size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('BTN_REFRESH', 'Refresh')}
         </Button>
       </div>
 
@@ -168,7 +170,7 @@ export function SecurityAuditDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('TOTAL_EVENTS', 'Total Events')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -178,7 +180,7 @@ export function SecurityAuditDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Failed Logins</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('FAILED_LOGINS', 'Failed Logins')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -188,7 +190,7 @@ export function SecurityAuditDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Suspicious Activity</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('SUSPICIOUS_ACTIVITY', 'Suspicious Activity')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -198,7 +200,7 @@ export function SecurityAuditDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rate Limit Hits</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('RATE_LIMIT_HITS', 'Rate Limit Hits')}</CardTitle>
             <Filter className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
@@ -210,16 +212,16 @@ export function SecurityAuditDashboard() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>{t('FILTERS', 'Filters')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <Label htmlFor="search">Search</Label>
+              <Label htmlFor="search">{t('SEARCH', 'Search')}</Label>
               <div className="flex">
                 <Input
                   id="search"
-                  placeholder="Search actions or emails..."
+                  placeholder={t('SEARCH_ACTIONS_EMAILS', 'Search actions or emails...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -231,24 +233,24 @@ export function SecurityAuditDashboard() {
             </div>
 
             <div>
-              <Label htmlFor="action-filter">Action Type</Label>
+              <Label htmlFor="action-filter">{t('ACTION_TYPE', 'Action Type')}</Label>
               <Select value={actionFilter} onValueChange={setActionFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All actions" />
+                  <SelectValue placeholder={t('ALL_ACTIONS', 'All actions')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Actions</SelectItem>
-                  <SelectItem value="failed_login_attempt">Failed Logins</SelectItem>
-                  <SelectItem value="login_success">Successful Logins</SelectItem>
-                  <SelectItem value="suspicious_activity_detected">Suspicious Activity</SelectItem>
-                  <SelectItem value="account_creation_attempt">Account Creation</SelectItem>
-                  <SelectItem value="logout">Logout</SelectItem>
+                  <SelectItem value="all">{t('ALL_ACTIONS', 'All Actions')}</SelectItem>
+                  <SelectItem value="failed_login_attempt">{t('FAILED_LOGINS', 'Failed Logins')}</SelectItem>
+                  <SelectItem value="login_success">{t('SUCCESSFUL_LOGINS', 'Successful Logins')}</SelectItem>
+                  <SelectItem value="suspicious_activity_detected">{t('SUSPICIOUS_ACTIVITY', 'Suspicious Activity')}</SelectItem>
+                  <SelectItem value="account_creation_attempt">{t('ACCOUNT_CREATION', 'Account Creation')}</SelectItem>
+                  <SelectItem value="logout">{t('LOGOUT', 'Logout')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="start-date">Start Date</Label>
+              <Label htmlFor="start-date">{t('START_DATE', 'Start Date')}</Label>
               <Input
                 id="start-date"
                 type="date"
@@ -258,7 +260,7 @@ export function SecurityAuditDashboard() {
             </div>
 
             <div>
-              <Label htmlFor="end-date">End Date</Label>
+              <Label htmlFor="end-date">{t('END_DATE', 'End Date')}</Label>
               <Input
                 id="end-date"
                 type="date"
@@ -269,7 +271,7 @@ export function SecurityAuditDashboard() {
 
             <div className="flex items-end">
               <Button onClick={fetchSecurityLogs} className="w-full">
-                Apply Filters
+                {t('BTN_APPLY_FILTERS', 'Apply Filters')}
               </Button>
             </div>
           </div>
@@ -279,34 +281,34 @@ export function SecurityAuditDashboard() {
       {/* Security Logs Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Security Events</CardTitle>
+          <CardTitle>{t('SECURITY_EVENTS', 'Security Events')}</CardTitle>
           <CardDescription>
-            Recent security events and authentication logs
+            {t('RECENT_SECURITY_EVENTS', 'Recent security events and authentication logs')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center p-8">
               <RefreshCw className="h-6 w-6 animate-spin" />
-              <span className="ml-2">Loading security logs...</span>
+              <span className="ml-2">{t('LOADING_SECURITY_LOGS', 'Loading security logs...')}</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Details</TableHead>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>User Agent</TableHead>
+                    <TableHead>{t('TIMESTAMP', 'Timestamp')}</TableHead>
+                    <TableHead>{t('ACTION', 'Action')}</TableHead>
+                    <TableHead>{t('DETAILS', 'Details')}</TableHead>
+                    <TableHead>{t('IP_ADDRESS', 'IP Address')}</TableHead>
+                    <TableHead>{t('USER_AGENT', 'User Agent')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {logs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                        No security logs found matching your criteria
+                        {t('NO_SECURITY_LOGS_FOUND', 'No security logs found matching your criteria')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -324,10 +326,10 @@ export function SecurityAuditDashboard() {
                           {formatLogDetails(log.details)}
                         </TableCell>
                         <TableCell className="font-mono text-xs">
-                          {log.ip_address || 'N/A'}
+                          {log.ip_address || t('NOT_AVAILABLE_SHORT', 'N/A')}
                         </TableCell>
                         <TableCell className="max-w-xs truncate text-xs">
-                          {log.user_agent || 'N/A'}
+                          {log.user_agent || t('NOT_AVAILABLE_SHORT', 'N/A')}
                         </TableCell>
                       </TableRow>
                     ))

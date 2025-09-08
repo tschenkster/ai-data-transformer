@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Database } from 'lucide-react';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { t } = useUITranslations();
 
   useEffect(() => {
     // Handle scroll for sticky header
@@ -29,7 +31,7 @@ export function Header() {
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
               <Database className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-semibold text-foreground">DATEV Converter</span>
+            <span className="text-xl font-semibold text-foreground">{t('BRAND_NAME', 'DATEV Converter')}</span>
           </Link>
 
           {/* Navigation Links */}
@@ -39,25 +41,25 @@ export function Header() {
                 to="/about" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                About
+                {t('NAV_ABOUT', 'About')}
               </Link>
               <Link 
                 to="/pricing" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Pricing
+                {t('NAV_PRICING', 'Pricing')}
               </Link>
               <Link 
                 to="/auth" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Login
+                {t('NAV_LOGIN', 'Login')}
               </Link>
               <Link 
                 to="/register" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Register
+                {t('NAV_REGISTER', 'Register')}
               </Link>
             </nav>
           </div>

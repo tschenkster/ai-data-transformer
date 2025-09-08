@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { syncAllDocsToProject } from "@/utils/documentationSync";
 import { FileText, RotateCcw as Sync, RefreshCw, CheckCircle, AlertTriangle, Folder, Download } from "lucide-react";
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 interface DocsStatus {
   database_docs: {
@@ -30,6 +31,7 @@ interface DocsStatus {
 export function DocumentationManager() {
   const { isSuperAdmin } = useAuth();
   const { toast } = useToast();
+  const { t } = useUITranslations();
   const [docsStatus, setDocsStatus] = useState<DocsStatus>({
     database_docs: {},
     codebase_docs: {},
@@ -93,8 +95,8 @@ export function DocumentationManager() {
     setIsSyncing(true);
     try {
       toast({
-        title: "Syncing Documentation",
-        description: "Updating project /docs folder with latest documentation...",
+        title: t('TOAST_SYNCING_DOCS', 'Syncing Documentation'),
+        description: t('TOAST_SYNCING_DOCS_DESC', 'Updating project /docs folder with latest documentation...'),
       });
 
       const result = await syncAllDocsToProject();
@@ -142,7 +144,7 @@ export function DocumentationManager() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Folder className="h-5 w-5 text-primary" />
-            <CardTitle>Documentation Manager</CardTitle>
+            <CardTitle>{t('DOC_MANAGER_TITLE', 'Documentation Manager')}</CardTitle>
           </div>
           <Button
             variant="outline"
@@ -153,18 +155,18 @@ export function DocumentationManager() {
             {isRefreshing ? (
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Refreshing...
+                {t('BTN_REFRESHING', 'Refreshing...')}
               </>
             ) : (
               <>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh Status
+                {t('BTN_REFRESH_STATUS', 'Refresh Status')}
               </>
             )}
           </Button>
         </div>
         <CardDescription>
-          Manage and synchronize all documentation files between storage and project folder.
+          {t('DOC_MANAGER_DESC', 'Manage and synchronize all documentation files between storage and project folder.')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -174,19 +176,19 @@ export function DocumentationManager() {
           <div className="space-y-2">
             <h4 className="font-semibold flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Database Documentation
+              {t('DATABASE_DOCUMENTATION', 'Database Documentation')}
             </h4>
             <div className="text-sm space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Latest:</span>
-                <span>{docsStatus.database_docs.latest_file || 'None'}</span>
+                <span className="text-muted-foreground">{t('LATEST', 'Latest')}:</span>
+                <span>{docsStatus.database_docs.latest_file || t('NONE', 'None')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Generated:</span>
+                <span className="text-muted-foreground">{t('GENERATED', 'Generated')}:</span>
                 <span>{formatDate(docsStatus.database_docs.last_generated)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Size:</span>
+                <span className="text-muted-foreground">{t('SIZE', 'Size')}:</span>
                 <span>{formatFileSize(docsStatus.database_docs.file_size)}</span>
               </div>
             </div>
@@ -196,19 +198,19 @@ export function DocumentationManager() {
           <div className="space-y-2">
             <h4 className="font-semibold flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Codebase Documentation
+              {t('CODEBASE_DOCUMENTATION', 'Codebase Documentation')}
             </h4>
             <div className="text-sm space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Latest:</span>
-                <span>{docsStatus.codebase_docs.latest_file || 'None'}</span>
+                <span className="text-muted-foreground">{t('LATEST', 'Latest')}:</span>
+                <span>{docsStatus.codebase_docs.latest_file || t('NONE', 'None')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Generated:</span>
+                <span className="text-muted-foreground">{t('GENERATED', 'Generated')}:</span>
                 <span>{formatDate(docsStatus.codebase_docs.last_generated)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Size:</span>
+                <span className="text-muted-foreground">{t('SIZE', 'Size')}:</span>
                 <span>{formatFileSize(docsStatus.codebase_docs.file_size)}</span>
               </div>
             </div>
