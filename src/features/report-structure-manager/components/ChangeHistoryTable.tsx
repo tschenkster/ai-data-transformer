@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { RotateCcw } from 'lucide-react';
 import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
 import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 export interface ChangeHistoryEntry {
   change_uuid: string;
@@ -40,6 +41,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
   const [undoingItems, setUndoingItems] = useState<Set<string>>(new Set());
   const [translatedDescriptions, setTranslatedDescriptions] = useState<Map<string, string>>(new Map());
   const { contentLanguage } = useContentLanguage();
+  const { t } = useUITranslations();
 
   // Translate descriptions when language changes or history updates
   useEffect(() => {
@@ -75,7 +77,8 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
   }, [changeHistory, contentLanguage]);
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', { 
+    const locale = contentLanguage === 'de' ? 'de-DE' : 'en-US';
+    return new Date(timestamp).toLocaleTimeString(locale, { 
       hour12: false, 
       hour: '2-digit', 
       minute: '2-digit', 
@@ -106,7 +109,7 @@ export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndo
     return (
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-sm">Change Log</CardTitle>
+          <CardTitle className="text-sm">{t('CHANGE_LOG_TITLE', 'Change Log')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">No changes made yet. Your modifications will appear here.</p>

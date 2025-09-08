@@ -12,6 +12,9 @@ import CreateLineItemDialog from './CreateLineItemDialog';
 import DeleteLineItemDialog from './DeleteLineItemDialog';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUITranslations } from '@/hooks/useUITranslations';
+import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 import { 
   DndContext, 
   closestCenter, 
@@ -284,6 +287,8 @@ interface ReportStructureModifierProps {
 
 export default function ReportStructureModifier({}: ReportStructureModifierProps) {
   const { toast } = useToast();
+  const { t } = useUITranslations();
+  const { contentLanguage } = useContentLanguage();
   
   // Track component lifecycle
   useEffect(() => {
@@ -382,27 +387,9 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
     
     setLoading(true);
     try {
-      console.log('Fetching line items for structure:', structureUuid);
-      const { data, error } = await supabase
-        .from('report_line_items')
-        .select('*')
-        .eq('report_structure_uuid', structureUuid)
-        .order('sort_order', { ascending: true });
+      console.log('Fetching translated line items for structure:', structureUuid, 'lang:', contentLanguage);
+      const data = await EnhancedReportService.fetchLineItemsWithTranslations(structureUuid, contentLanguage);
 
-      if (error) {
-        console.error('Supabase error fetching line items:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load report structure items",
-          variant: "destructive",
-        });
-        // Reset state on error
-        setLineItems([]);
-        setTreeData([]);
-        return;
-      }
-
-      console.log('Line items fetched successfully:', data?.length || 0);
       setLineItems(data || []);
       
       // Build tree data from the fetched items with error handling
@@ -413,9 +400,9 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       } catch (treeError) {
         console.error('Error building tree data:', treeError);
         toast({
-          title: "Warning",
-          description: "Data loaded but tree structure may be incomplete",
-          variant: "default",
+          title: t('WARN_PARTIAL_DATA', 'Warning'),
+          description: t('MSG_DATA_LOADED_TREE_INCOMPLETE', 'Data loaded but tree structure may be incomplete'),
+          variant: 'default',
         });
         setTreeData([]);
       }
@@ -425,17 +412,16 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
         await fetchChangeHistory(structureUuid);
       } catch (historyError) {
         console.error('Error loading change history:', historyError);
-        // Don't show toast for history errors as it's not critical
+        // Non-critical
       }
       
     } catch (error) {
       console.error('Unexpected error in fetchLineItems:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading data",
-        variant: "destructive",
+        title: t('ERROR', 'Error'),
+        description: t('ERR_LOADING_DATA', 'An unexpected error occurred while loading data'),
+        variant: 'destructive',
       });
-      // Reset state on error
       setLineItems([]);
       setTreeData([]);
     } finally {
@@ -1111,33 +1097,33 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
                   <BreadcrumbItem>
                     <BreadcrumbLink href="/" className="flex items-center gap-1">
                       <Home className="w-4 h-4" />
-                      Home
+                      {t('NAV_START', 'Start')}
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
                     <BreadcrumbLink href="/report-structure-manager" className="flex items-center gap-1">
                       <Settings className="w-4 h-4" />
-                      Report Structures
+                      {t('NAV_REPORT_STRUCTURES', 'Report Structures')}
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Modify Structure</BreadcrumbPage>
+                    <BreadcrumbPage>{t('TAB_MODIFY_STRUCTURE', 'Modify Structure')}</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
             <div className="flex items-center gap-3">
-              <CardTitle className="text-xl font-semibold">Structure Editor</CardTitle>
+              <CardTitle className="text-xl font-semibold">{t('HEADING_STRUCTURE_EDITOR', 'Structure Editor')}</CardTitle>
               {selectedStructure && (
                 <Badge variant={selectedStructure.is_active ? "default" : "secondary"} className="text-xs">
-                  {selectedStructure.is_active ? "Active" : "Inactive"}
+                  {selectedStructure.is_active ? t('STATUS_ACTIVE', 'Active') : t('STATUS_INACTIVE', 'Inactive')}
                 </Badge>
               )}
             </div>
             <CardDescription>
-              Manage line items, hierarchy, and structure organization
+              {t('DESC_STRUCTURE_EDITOR', 'Manage line items, hierarchy, and structure organization')}
             </CardDescription>
           </div>
           
