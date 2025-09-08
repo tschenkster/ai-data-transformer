@@ -176,7 +176,7 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
           {contentTypes.map((contentType) => {
             const Icon = contentType.icon;
             const migration = migrationProgress[contentType.id];
-            const hasContent = analysisData?.contentByType?.[contentType.id] > 0;
+            const hasContent = analysisData?.contentByType?.[contentType.id] > 0 || analysisData?.translationGaps?.some((gap: any) => gap.entityType === contentType.id);
             
             return (
               <div key={contentType.id} className="border rounded-lg p-4 space-y-3">
@@ -212,7 +212,7 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                   variant="outline" 
                   className="w-full"
                   onClick={() => runSelectiveMigration(contentType.id)}
-                  disabled={migration?.loading || !hasContent}
+                  disabled={migration?.loading || (!hasContent && !!analysisData)}
                 >
                   {migration?.loading ? (
                     <>
@@ -229,7 +229,13 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
                 
                 {!hasContent && analysisData && (
                   <div className="text-xs text-muted-foreground">
-                    No {contentType.label.toLowerCase()} found in analysis
+                    No {contentType.label.toLowerCase()} or translation gaps found in analysis
+                  </div>
+                )}
+                
+                {!analysisData && (
+                  <div className="text-xs text-muted-foreground">
+                    Run content analysis first to enable migration
                   </div>
                 )}
               </div>
