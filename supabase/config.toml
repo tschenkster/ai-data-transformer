@@ -28,6 +28,36 @@ verify_jwt = true
 [functions.historic-translation-monitoring]
 verify_jwt = true
 
+[functions.intelligent-translation-migration]
+verify_jwt = true
+
+[functions.bulk-translation-migration]
+verify_jwt = true
+
+[functions.detect-language]
+verify_jwt = true
+
+[functions.ai-translation]
+verify_jwt = true
+
+[functions.translate-accounts]
+verify_jwt = true
+
+[functions.upsert-ui-translations]
+verify_jwt = true
+
+[functions.sql-maintenance]
+verify_jwt = true
+
+[functions.delete-user]
+verify_jwt = true
+
+[functions.generate-db-documentation]
+verify_jwt = true
+
+[functions.retroactive-translation-generation]
+verify_jwt = true
+
 [db]
 shadow_port = 54320
 major_version = 15
