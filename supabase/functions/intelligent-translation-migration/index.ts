@@ -44,40 +44,42 @@ serve(async (req) => {
   }
 
   try {
-    const { operation = 'analyze', filters = {} } = await req.json();
+    const { operation = 'analyze', filters = {}, contentTypes = [] } = await req.json();
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    if (operation === 'analyze') {
-      console.log('Starting comprehensive content analysis...');
-      const analysis = await performComprehensiveAnalysis(supabase);
+    // Selective analysis operations
+    if (operation === 'analyze' || operation.startsWith('analyze-')) {
+      console.log(`Starting ${operation} content analysis...`);
+      const analysis = await performSelectiveAnalysis(supabase, operation, contentTypes);
       
       return new Response(JSON.stringify({ 
         success: true,
-        operation: 'analyze',
+        operation,
         result: analysis
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (operation === 'migrate') {
-      console.log('Starting intelligent translation migration...');
-      const result = await performIntelligentMigration(supabase, filters);
+    // Selective migration operations
+    if (operation === 'migrate' || operation.startsWith('migrate-')) {
+      console.log(`Starting ${operation} translation migration...`);
+      const result = await performSelectiveMigration(supabase, operation, contentTypes, filters);
       
       return new Response(JSON.stringify({ 
         success: true,
-        operation: 'migrate',
+        operation,
         result
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    throw new Error('Invalid operation. Use "analyze" or "migrate"');
+    throw new Error('Invalid operation. Supported: analyze, analyze-ui, analyze-structures, analyze-line-items, migrate, migrate-ui, migrate-structures, migrate-line-items');
 
   } catch (error) {
     console.error('Error in intelligent-translation-migration function:', error);
@@ -91,7 +93,7 @@ serve(async (req) => {
   }
 });
 
-async function performComprehensiveAnalysis(supabase: any): Promise<MigrationAnalysis> {
+async function performSelectiveAnalysis(supabase: any, operation: string, contentTypes: string[] = []): Promise<MigrationAnalysis> {
   const contentItems: ContentItem[] = [];
   const analysis: MigrationAnalysis = {
     totalContentItems: 0,
@@ -118,25 +120,33 @@ async function performComprehensiveAnalysis(supabase: any): Promise<MigrationAna
   const enabledLanguages = systemLanguages.map((l: any) => l.language_code);
   console.log('Enabled system languages:', enabledLanguages);
 
-  // 1. Discover UI content gaps
-  console.log('Analyzing UI translations...');
-  const uiKeys = await scanForUIKeys();
-  analysis.uiKeysToBootstrap = uiKeys;
-  analysis.contentByType.ui = uiKeys.length;
+  // Determine what to analyze based on operation
+  const shouldAnalyzeUI = operation === 'analyze' || operation === 'analyze-ui' || contentTypes.includes('ui');
+  const shouldAnalyzeStructures = operation === 'analyze' || operation === 'analyze-structures' || contentTypes.includes('report_structure');
+  const shouldAnalyzeLineItems = operation === 'analyze' || operation === 'analyze-line-items' || contentTypes.includes('report_line_item');
 
-  // Sample UI keys for language detection
-  if (uiKeys.length > 0) {
-    const sampleUITexts = uiKeys.slice(0, 10);
-    const uiLanguage = await detectLanguage(supabase, sampleUITexts);
-    analysis.detectedLanguages[uiLanguage.language] = (analysis.detectedLanguages[uiLanguage.language] || 0) + uiKeys.length;
+  // 1. Discover UI content gaps
+  if (shouldAnalyzeUI) {
+    console.log('Analyzing UI translations...');
+    const uiKeys = await scanForUIKeys();
+    analysis.uiKeysToBootstrap = uiKeys;
+    analysis.contentByType.ui = uiKeys.length;
+
+    // Sample UI keys for language detection
+    if (uiKeys.length > 0) {
+      const sampleUITexts = uiKeys.slice(0, 10);
+      const uiLanguage = await detectLanguage(supabase, sampleUITexts);
+      analysis.detectedLanguages[uiLanguage.language] = (analysis.detectedLanguages[uiLanguage.language] || 0) + uiKeys.length;
+    }
   }
 
   // 2. Discover report structures
-  console.log('Analyzing report structures...');
-  const { data: structures, error: structError } = await supabase
-    .from('report_structures')
-    .select('report_structure_uuid, report_structure_name, description')
-    .not('report_structure_name', 'is', null);
+  if (shouldAnalyzeStructures) {
+    console.log('Analyzing report structures...');
+    const { data: structures, error: structError } = await supabase
+      .from('report_structures')
+      .select('report_structure_uuid, report_structure_name, description')
+      .not('report_structure_name', 'is', null);
 
   if (structError) {
     throw new Error(`Failed to fetch structures: ${structError.message}`);
@@ -158,25 +168,27 @@ async function performComprehensiveAnalysis(supabase: any): Promise<MigrationAna
         });
       }
     }
+    }
+    analysis.contentByType.report_structure = structures?.length || 0;
   }
-  analysis.contentByType.report_structure = structures?.length || 0;
 
   // 3. Discover report line items
-  console.log('Analyzing report line items...');
-  const { data: lineItems, error: itemError } = await supabase
-    .from('report_line_items')
-    .select(`
-      report_line_item_uuid, 
-      report_line_item_description,
-      level_1_line_item_description,
-      level_2_line_item_description,
-      level_3_line_item_description,
-      level_4_line_item_description,
-      level_5_line_item_description,
-      level_6_line_item_description,
-      level_7_line_item_description,
-      description_of_leaf
-    `);
+  if (shouldAnalyzeLineItems) {
+    console.log('Analyzing report line items...');
+    const { data: lineItems, error: itemError } = await supabase
+      .from('report_line_items')
+      .select(`
+        report_line_item_uuid, 
+        report_line_item_description,
+        level_1_line_item_description,
+        level_2_line_item_description,
+        level_3_line_item_description,
+        level_4_line_item_description,
+        level_5_line_item_description,
+        level_6_line_item_description,
+        level_7_line_item_description,
+        description_of_leaf
+      `);
 
   if (itemError) {
     throw new Error(`Failed to fetch line items: ${itemError.message}`);
@@ -205,8 +217,9 @@ async function performComprehensiveAnalysis(supabase: any): Promise<MigrationAna
         });
       }
     }
+    }
+    analysis.contentByType.report_line_item = lineItems?.length || 0;
   }
-  analysis.contentByType.report_line_item = lineItems?.length || 0;
 
   // 4. Detect languages for all content items
   console.log('Detecting languages for content items...');
@@ -272,7 +285,7 @@ async function performComprehensiveAnalysis(supabase: any): Promise<MigrationAna
   return analysis;
 }
 
-async function performIntelligentMigration(supabase: any, filters: any) {
+async function performSelectiveMigration(supabase: any, operation: string, contentTypes: string[] = [], filters: any = {}) {
   const results = {
     uiElementsProcessed: 0,
     structuresProcessed: 0,
@@ -281,8 +294,13 @@ async function performIntelligentMigration(supabase: any, filters: any) {
     errors: [] as string[]
   };
 
-  // Get the analysis first
-  const analysis = await performComprehensiveAnalysis(supabase);
+  // Get the analysis first - use selective analysis for efficiency
+  const analysisContentTypes = operation === 'migrate' ? [] : 
+    operation === 'migrate-ui' ? ['ui'] :
+    operation === 'migrate-structures' ? ['report_structure'] :
+    operation === 'migrate-line-items' ? ['report_line_item'] : contentTypes;
+  
+  const analysis = await performSelectiveAnalysis(supabase, operation === 'migrate' ? 'analyze' : `analyze-${operation.split('-')[1]}`, analysisContentTypes);
   
   console.log(`Starting migration for ${analysis.translationGaps.length} translation gaps...`);
 
@@ -503,15 +521,19 @@ Provide only the translations, one per line, numbered.`;
         const gap = pairGaps[i];
         const translatedText = translations[i];
 
-        await saveTranslation(supabase, gap, translatedText);
-        results.push({
-          entityType: gap.entityType,
-          entityUuid: gap.entityUuid,
-          fieldKey: gap.fieldKey,
-          sourceLanguage: gap.sourceLanguage,
-          targetLanguage: gap.targetLanguage,
-          translatedText
-        });
+        try {
+          await saveTranslation(supabase, gap, translatedText);
+          results.push({
+            entityType: gap.entityType,
+            entityUuid: gap.entityUuid,
+            fieldKey: gap.fieldKey,
+            sourceLanguage: gap.sourceLanguage,
+            targetLanguage: gap.targetLanguage,
+            translatedText
+          });
+        } catch (saveError: any) {
+          console.error(`Translation failed for ${gap.sourceLanguage}->${gap.targetLanguage}:`, saveError);
+        }
       }
     } catch (error) {
       console.error(`Translation failed for ${languagePair}:`, error);
