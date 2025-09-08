@@ -10,11 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X } from 'lucide-react';
+import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, Check, X, Trash2 } from 'lucide-react';
 import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
 import ReportStructureViewer from './ReportStructureViewer';
 import ReportStructureModifier from './ReportStructureModifier';
-import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
 import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
 import { ReportStructureService } from '../services/reportStructureService';
 import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
@@ -306,32 +305,56 @@ export default function ReportStructureManager() {
     }
 
     // View action - always show
-    actions.push(createViewAction(
-      () => {
-        fetchLineItems(structure.report_structure_id);
-        // Switch to viewer tab
-        const viewerTab = document.querySelector('[data-state="inactive"][value="viewer"]') as HTMLElement;
-        if (viewerTab) viewerTab.click();
-      }
-    ));
+    actions.push(
+      <Button
+        key="view"
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          fetchLineItems(structure.report_structure_id);
+          // Switch to viewer tab
+          const viewerTab = document.querySelector('[data-state="inactive"][value="viewer"]') as HTMLElement;
+          if (viewerTab) viewerTab.click();
+        }}
+      >
+        <Eye className="h-4 w-4 mr-1" />
+        {t('BTN_VIEW', 'View')}
+      </Button>
+    );
 
     // Modify action - only show for super admins
     if (isSuperAdmin) {
-      actions.push(createModifyAction(
-        () => {
-          setSelectedStructureForModify(structure.report_structure_id);
-          // Switch to modifier tab
-          const modifierTab = document.querySelector('[data-state="inactive"][value="modifier"]') as HTMLElement;
-          if (modifierTab) modifierTab.click();
-        }
-      ));
-    }
+      actions.push(
+        <Button
+          key="modify"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setSelectedStructureForModify(structure.report_structure_id);
+            // Switch to modifier tab
+            const modifierTab = document.querySelector('[data-state="inactive"][value="modifier"]') as HTMLElement;
+            if (modifierTab) modifierTab.click();
+          }}
+        >
+          <Edit className="h-4 w-4 mr-1" />
+          {t('BTN_MODIFY', 'Modify')}
+        </Button>
+      );
 
-    // Delete action - always show but disabled if structure has mappings
-    actions.push(createDeleteAction(
-      () => deleteStructure(structure.report_structure_id, structure.report_structure_name),
-      structuresWithMappings.has(structure.report_structure_id)
-    ));
+      // Delete action - only show for super admins
+      actions.push(
+        <Button
+          key="delete"
+          variant="ghost"
+          size="sm"
+          onClick={() => deleteStructure(structure.report_structure_id, structure.report_structure_name)}
+          disabled={structuresWithMappings.has(structure.report_structure_id)}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          {t('BTN_DELETE', 'Delete')}
+        </Button>
+      );
+    }
 
     return actions;
   };
@@ -434,13 +457,11 @@ export default function ReportStructureManager() {
                         </TableCell>
                         <TableCell>{structure.created_by_user_name}</TableCell>
                         <TableCell>{formatDate(structure.created_at)}</TableCell>
-                        <TableCell>
-            <ActionButtons 
-              actions={getActionsForStructure(structure)}
-              title=""
-              className="space-y-0"
-            />
-                        </TableCell>
+                         <TableCell>
+                           <div className="flex items-center gap-2">
+                             {getActionsForStructure(structure)}
+                           </div>
+                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
