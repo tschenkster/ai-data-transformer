@@ -41,8 +41,8 @@ export function useUITranslations(languageCode?: string) {
     } catch (error) {
       console.error('Failed to load UI translations:', error);
       toast({
-        title: "Translation Error",
-        description: "Failed to load interface translations",
+        title: t('ERROR_TITLE', 'Translation Error'),
+        description: t('ERROR_TRANSLATION_LOAD', 'Failed to load interface translations'),
         variant: "destructive",
       });
     } finally {
@@ -89,8 +89,8 @@ export function useUITranslations(languageCode?: string) {
     } catch (error) {
       console.error('Failed to change language:', error);
       toast({
-        title: "Error",
-        description: "Failed to change language preference",
+        title: t('ERROR_GENERIC', 'Error'),
+        description: t('ERROR_LANGUAGE_CHANGE', 'Failed to change language preference'),
         variant: "destructive",
       });
     }

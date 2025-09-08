@@ -5,12 +5,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useBetaDialog } from '@/hooks/useBetaDialog';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 export function Hero() {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { showBetaDialog, BetaDialog } = useBetaDialog();
+  const { t } = useUITranslations();
 
   // Analytics event simulation
   const trackEvent = useCallback((event: string, properties?: Record<string, any>) => {
@@ -82,7 +84,7 @@ export function Hero() {
       <section className="py-16 md:py-24">
         <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-12 md:mb-16">
-            Convert useless DATEV reports
+            {t('HERO_UPLOAD_TITLE', 'Convert useless DATEV reports')}
           </h1>
 
           {/* Upload Box - Visual Center of Gravity */}
@@ -100,7 +102,7 @@ export function Hero() {
               role="button"
               tabIndex={0}
               aria-describedby="upload-status"
-              aria-label="Upload your DATEV file - simulation mode"
+              aria-label={t('ARIA_UPLOAD_LABEL', 'Upload your DATEV file - simulation mode')}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -115,7 +117,7 @@ export function Hero() {
                   {/* Headline */}
                   <div className="space-y-3">
                     <h3 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-                      ...into clean data & proper reports.
+                      {t('HERO_UPLOAD_SUBTITLE', '...into clean data & proper reports.')}
                     </h3>
                   </div>
 
@@ -162,7 +164,7 @@ export function Hero() {
                       }}
                     >
                       <Upload className="h-5 w-5 mr-2" />
-                      Upload your DATEV file
+                      {t('BTN_UPLOAD_FILE', 'Upload your DATEV file')}
                     </Button>
                   </div>
 
@@ -173,9 +175,9 @@ export function Hero() {
                     aria-live="polite"
                   >
                     {isDragOver ? (
-                      "Drop your file here to simulate upload"
+                      t('MSG_DROP_FILE', "Drop your file here to simulate upload")
                     ) : (
-                      "Coming soon: upload will be available once the app is live."
+                      t('MSG_COMING_SOON', "Coming soon: upload will be available once the app is live.")
                     )}
                   </div>
                 </div>

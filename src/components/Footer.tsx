@@ -1,8 +1,12 @@
+import React from 'react';
+import { useUITranslations } from '@/hooks/useUITranslations';
+
 const Footer = () => {
+  const { t } = useUITranslations();
   return (
     <footer className="mt-auto py-4 text-center">
       <p className="text-xs text-muted-foreground">
-        created with ❤️ by{" "}
+        {t('FOOTER_CREATED_BY', 'created with ❤️ by')}{" "}
         <a
           href="https://www.linkedin.com/in/thomas-schenkelberg/"
           target="_blank"

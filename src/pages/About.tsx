@@ -3,8 +3,10 @@ import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Linkedin } from 'lucide-react';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 export default function About() {
+  const { t } = useUITranslations();
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -14,7 +16,7 @@ export default function About() {
           <Card>
             <CardHeader>
               <CardTitle className="text-3xl font-bold text-center">
-                Hi, I'm Thomas — the Startup CFO who is building the DATEV Converter app.
+                {t('ABOUT_TITLE', 'Hi, I\'m Thomas — the Startup CFO who is building the DATEV Converter app.')}
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-6">
@@ -31,7 +33,7 @@ export default function About() {
               <Button variant="outline" asChild>
                 <a href="https://www.linkedin.com/in/thomas-schenkelberg/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
                   <Linkedin className="h-4 w-4" />
-                  Connect on LinkedIn
+                  {t('BTN_CONNECT_LINKEDIN', 'Connect on LinkedIn')}
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
@@ -41,11 +43,11 @@ export default function About() {
           {/* About DATEV Converter App */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold">About DATEV Converter App</CardTitle>
+              <CardTitle className="text-2xl font-semibold">{t('HEADING_ABOUT_APP', 'About DATEV Converter App')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium mb-3 text-text-heading">Why this app exists</h3>
+                <h3 className="text-lg font-medium mb-3 text-text-heading">{t('HEADING_WHY_EXISTS', 'Why this app exists')}</h3>
                 <p className="text-text-body leading-relaxed">
                   Before companies have Accounting in‑house or an ERP/BI stack, getting <strong>reliable insight</strong> is oddly hard. 
                   I kept running into the same wall: messy exports, fragile spreadsheets, zero time for analysis. 
@@ -54,7 +56,7 @@ export default function About() {
               </div>
               
               <div>
-                <h3 className="text-lg font-medium mb-3 text-text-heading">What I'm building</h3>
+                <h3 className="text-lg font-medium mb-3 text-text-heading">{t('HEADING_WHAT_BUILDING', 'What I\'m building')}</h3>
                 <ul className="space-y-2 text-text-body">
                   <li className="flex items-start">
                     <span className="font-medium mr-2">•</span>
@@ -76,7 +78,7 @@ export default function About() {
           {/* About Fractional CFO Work */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold">About my Fractional CFO Work</CardTitle>
+              <CardTitle className="text-2xl font-semibold">{t('HEADING_CFO_WORK', 'About my Fractional CFO Work')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-text-body leading-relaxed">
@@ -106,7 +108,7 @@ export default function About() {
           {/* CV Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold">CV Summary — Thomas Schenkelberg</CardTitle>
+              <CardTitle className="text-2xl font-semibold">{t('HEADING_CV_SUMMARY', 'CV Summary — Thomas Schenkelberg')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-text-body">
@@ -124,7 +126,7 @@ export default function About() {
           {/* Companies */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold">Companies I used to work for</CardTitle>
+              <CardTitle className="text-2xl font-semibold">{t('HEADING_COMPANIES', 'Companies I used to work for')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4 text-text-body">
@@ -169,7 +171,7 @@ export default function About() {
           {/* Completed Projects */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold">Completed Projects & Achievements</CardTitle>
+              <CardTitle className="text-2xl font-semibold">{t('HEADING_PROJECTS', 'Completed Projects & Achievements')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 text-text-body">
