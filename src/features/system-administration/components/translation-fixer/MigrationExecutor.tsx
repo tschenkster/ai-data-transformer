@@ -111,15 +111,38 @@ export function MigrationExecutor() {
           break;
 
         case 'detect_ui_original':
-          // Detect original languages for UI translations
-          updateStepStatus(step.id, 'running', 10);
-          const { error: detectError } = await supabase.functions.invoke('historic-translation-migration', {
-            body: {
-              operation: 'detect_ui_original_languages',
-              dry_run: false
-            }
-          });
-          if (detectError) throw detectError;
+          // Detect original languages for UI translations in batches
+          let lastId = 0;
+          let hasMore = true;
+          let totalProcessed = 0;
+          let totalRows = 0;
+          
+          while (hasMore) {
+            const { data: batchResult, error: detectError } = await supabase.functions.invoke('historic-translation-migration', {
+              body: {
+                operation: 'detect_ui_original_languages_batch',
+                dry_run: false,
+                batch_size: 50,
+                start_after_id: lastId > 0 ? lastId : undefined,
+                reprocess_all: false
+              }
+            });
+            
+            if (detectError) throw detectError;
+            
+            totalProcessed += batchResult.processed;
+            totalRows = batchResult.total_rows || totalRows;
+            lastId = batchResult.last_id;
+            hasMore = batchResult.has_more;
+            
+            // Update progress based on total rows
+            const progress = totalRows > 0 ? Math.min(95, (totalProcessed / totalRows) * 100) : 90;
+            updateStepStatus(step.id, 'running', progress);
+            
+            // Small delay to prevent overwhelming the system
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+          
           updateStepStatus(step.id, 'running', 100);
           break;
 

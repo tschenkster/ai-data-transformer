@@ -9,6 +9,9 @@ const corsHeaders = {
 interface RequestBody {
   operation: string;
   dry_run?: boolean;
+  batch_size?: number;
+  start_after_id?: number;
+  reprocess_all?: boolean;
 }
 
 serve(async (req) => {
@@ -59,7 +62,7 @@ serve(async (req) => {
       );
     }
 
-    const { operation, dry_run = false }: RequestBody = await req.json();
+    const { operation, dry_run = false, batch_size = 50, start_after_id, reprocess_all = false }: RequestBody = await req.json();
     
     console.log(`Historic Translation Migration - Operation: ${operation}, Dry Run: ${dry_run}`);
 
@@ -147,6 +150,129 @@ serve(async (req) => {
         }
 
         result = { success: true, dry_run, processed: totalProcessed, updated: totalUpdated, samples };
+        break;
+      }
+
+      case 'detect_ui_original_languages_batch': {
+        // Batched AI-detect language_code_original for UI translations
+        let query = supabaseClient
+          .from('ui_translations')
+          .select('ui_translation_id, ui_key, original_text, translated_text, language_code_original, language_code_target')
+          .order('ui_translation_id', { ascending: true })
+          .limit(batch_size);
+
+        // Add filter conditions
+        if (!reprocess_all) {
+          query = query.or('language_code_original.is.null,language_code_original.eq.');
+        }
+        if (start_after_id) {
+          query = query.gt('ui_translation_id', start_after_id);
+        }
+
+        const { data: rows, error } = await query;
+        if (error) throw error;
+
+        if (!rows || rows.length === 0) {
+          return new Response(JSON.stringify({
+            success: true,
+            processed: 0,
+            updated: 0,
+            last_id: start_after_id || 0,
+            has_more: false,
+            total_rows: 0
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          });
+        }
+
+        // Get total count for progress tracking
+        const { count: totalRows } = await supabaseClient
+          .from('ui_translations')
+          .select('*', { count: 'exact', head: true })
+          .or(reprocess_all ? undefined : 'language_code_original.is.null,language_code_original.eq.');
+
+        // Extract texts for batch detection
+        const textsForDetection: string[] = [];
+        const rowsWithText: any[] = [];
+        
+        for (const row of rows) {
+          const text: string | null = (row.original_text && row.original_text.trim().length > 0)
+            ? row.original_text
+            : (row.translated_text && row.translated_text.trim().length > 0 ? row.translated_text : null);
+          if (text) {
+            textsForDetection.push(text);
+            rowsWithText.push({ ...row, text });
+          }
+        }
+
+        let totalUpdated = 0;
+        const samples: Array<{ id: number; ui_key: string; before?: string | null; detected: string; after?: string }> = [];
+
+        if (textsForDetection.length > 0) {
+          // Single batch call to detect-language
+          const { data: detection, error: detectError } = await userClient.functions.invoke('detect-language', {
+            body: { texts: textsForDetection }
+          });
+
+          if (detectError) {
+            console.warn('detect-language batch error:', detectError);
+          } else {
+            const detections = detection?.detections || [];
+            
+            // Process results
+            for (let i = 0; i < rowsWithText.length && i < detections.length; i++) {
+              const row = rowsWithText[i];
+              const detectedLang: string = (detections[i]?.language || 'en').toLowerCase();
+
+              if ((row.language_code_original || '').toLowerCase() !== detectedLang) {
+                if (!dry_run) {
+                  const { error: updateError } = await supabaseClient
+                    .from('ui_translations')
+                    .update({ language_code_original: detectedLang })
+                    .eq('ui_translation_id', row.ui_translation_id);
+                  
+                  if (!updateError) {
+                    totalUpdated++;
+                    if (samples.length < 10) {
+                      samples.push({ 
+                        id: row.ui_translation_id, 
+                        ui_key: row.ui_key, 
+                        before: row.language_code_original, 
+                        detected: detectedLang, 
+                        after: detectedLang 
+                      });
+                    }
+                  }
+                } else {
+                  totalUpdated++;
+                  if (samples.length < 10) {
+                    samples.push({ 
+                      id: row.ui_translation_id, 
+                      ui_key: row.ui_key, 
+                      before: row.language_code_original, 
+                      detected: detectedLang 
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        const lastId = rows[rows.length - 1]?.ui_translation_id || start_after_id || 0;
+        const hasMore = rows.length === batch_size;
+
+        result = {
+          success: true,
+          dry_run,
+          processed: rows.length,
+          updated: totalUpdated,
+          last_id: lastId,
+          has_more: hasMore,
+          total_rows: totalRows || 0,
+          samples
+        };
         break;
       }
 
