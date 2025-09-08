@@ -47,6 +47,8 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
   const { toast } = useToast();
 
   const runSelectiveMigration = async (contentTypeId: string) => {
+    console.log('Starting migration for:', contentTypeId);
+    
     setMigrationProgress(prev => ({
       ...prev,
       [contentTypeId]: { loading: true, progress: 0, phase: 'discovering' }
@@ -80,6 +82,8 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
           contentTypes: [contentTypeId]
         }
       });
+
+      console.log('Migration response:', { data, error, contentTypeId });
 
       clearInterval(progressInterval);
 
