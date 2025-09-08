@@ -19,6 +19,7 @@ import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
 import { ReportStructureService } from '../services/reportStructureService';
 import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 import { TranslationTestButton } from '@/components/admin/TranslationTestButton';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 interface ReportStructure {
   report_structure_id: number;
@@ -67,6 +68,7 @@ export default function ReportStructureManager() {
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const { contentLanguage } = useContentLanguage();
+  const { t } = useUITranslations();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
@@ -321,20 +323,20 @@ export default function ReportStructureManager() {
         <TabsList>
           <TabsTrigger value="overview">
             <Database className="w-4 h-4 mr-2" />
-            List Report Structures
+            {t('TAB_LIST_REPORT_STRUCTURES', 'List Report Structures')}
           </TabsTrigger>
           <TabsTrigger value="upload">
             <Upload className="w-4 h-4 mr-2" />
-            Upload New Structure
+            {t('TAB_UPLOAD_NEW_STRUCTURE', 'Upload New Structure')}
           </TabsTrigger>
           <TabsTrigger value="viewer">
             <Eye className="w-4 h-4 mr-2" />
-            View Structure
+            {t('TAB_VIEW_STRUCTURE', 'View Structure')}
           </TabsTrigger>
           {isSuperAdmin && (
             <TabsTrigger value="modifier">
               <Edit className="w-4 h-4 mr-2" />
-              Modify Structure
+              {t('TAB_MODIFY_STRUCTURE', 'Modify Structure')}
             </TabsTrigger>
           )}
         </TabsList>
@@ -343,9 +345,9 @@ export default function ReportStructureManager() {
       <TabsContent value="overview" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>Report Structures</CardTitle>
+            <CardTitle>{t('HEADING_REPORT_STRUCTURES', 'Report Structures')}</CardTitle>
             <CardDescription>
-              Manage your report structures and generate missing translations
+              {t('DESC_MANAGE_REPORT_STRUCTURES', 'Manage your report structures and generate missing translations')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -433,9 +435,9 @@ export default function ReportStructureManager() {
       <TabsContent value="viewer" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>Structure Viewer</CardTitle>
+            <CardTitle>{t('HEADING_STRUCTURE_VIEWER', 'Structure Viewer')}</CardTitle>
             <CardDescription>
-              Browse and explore the hierarchical structure of report line items
+              {t('DESC_STRUCTURE_VIEWER', 'Browse and explore the hierarchical structure of report line items')}
             </CardDescription>
           </CardHeader>
           <CardContent>

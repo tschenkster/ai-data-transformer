@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { useUITranslations } from '@/hooks/useUITranslations';
 
 interface BreadcrumbConfig {
   path: string;
@@ -44,20 +45,20 @@ const DEFAULT_ROUTES: Record<string, BreadcrumbConfig> = {
   '/coa-mapper': { path: '/coa-mapper', label: 'CoA Mapper' },
 };
 
-function generateBreadcrumbsFromPath(pathname: string): BreadcrumbConfig[] {
+function generateBreadcrumbsFromPath(pathname: string, routes: Record<string, BreadcrumbConfig>): BreadcrumbConfig[] {
   const segments = pathname.split('/').filter(Boolean);
   const breadcrumbs: BreadcrumbConfig[] = [];
   
   // Always start with home
-  breadcrumbs.push(DEFAULT_ROUTES['/start'] || { path: '/start', label: 'Start', icon: Home });
+  breadcrumbs.push(routes['/start'] || { path: '/start', label: 'Start', icon: Home });
   
   // Build path segments
   let currentPath = '';
   segments.forEach((segment, index) => {
     currentPath += `/${segment}`;
     
-    if (DEFAULT_ROUTES[currentPath]) {
-      breadcrumbs.push(DEFAULT_ROUTES[currentPath]);
+    if (routes[currentPath]) {
+      breadcrumbs.push(routes[currentPath]);
     } else {
       // Create a fallback breadcrumb for unknown paths
       const label = segment
@@ -73,9 +74,34 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbConfig[] {
 
 export function AppBreadcrumb({ items, currentPage, actions }: AppBreadcrumbProps) {
   const location = useLocation();
+  const { t } = useUITranslations();
   
-  // Use provided items or generate from current path
-  const breadcrumbItems = items || generateBreadcrumbsFromPath(location.pathname);
+  // Create translated default routes
+  const getTranslatedRoutes = () => ({
+    '/': { path: '/', label: t('NAV_START', 'Start'), icon: Home },
+    '/start': { path: '/start', label: t('NAV_START', 'Start'), icon: Home },
+    '/dashboard': { path: '/dashboard', label: t('NAV_DASHBOARD', 'Dashboard') },
+    '/admin': { path: '/admin', label: t('NAV_SYSTEM_ADMINISTRATION', 'System Administration') },
+    '/admin/user-profile-management': { path: '/admin/user-profile-management', label: t('NAV_USER_PROFILE_MANAGEMENT', 'User Profile Management') },
+    '/admin/roles-permissions-management': { path: '/admin/roles-permissions-management', label: t('NAV_ROLES_PERMISSIONS_MANAGEMENT', 'Roles & Permissions Management') },
+    '/admin/entity-management': { path: '/admin/entity-management', label: t('NAV_ENTITY_MANAGEMENT', 'Entity Management') },
+    '/admin/system-tools': { path: '/admin/system-tools', label: t('NAV_SYSTEM_TOOLS', 'System Tools') },
+    '/admin/system-tools/database-docs': { path: '/admin/system-tools/database-docs', label: t('NAV_DATABASE_DOCUMENTATION', 'Database Documentation') },
+    '/admin/system-tools/codebase-docs': { path: '/admin/system-tools/codebase-docs', label: t('NAV_CODEBASE_DOCUMENTATION', 'Codebase Documentation Generator') },
+    '/admin/system-tools/performance-analyzer': { path: '/admin/system-tools/performance-analyzer', label: t('NAV_PERFORMANCE_ANALYZER', 'Performance Analyzer') },
+    '/admin/system-tools/file-organizer': { path: '/admin/system-tools/file-organizer', label: t('NAV_FILE_ORGANIZER', 'File Organizer') },
+    '/admin/report-structure-manager': { path: '/admin/report-structure-manager', label: t('NAV_REPORT_STRUCTURE_MANAGER', 'Report Structure Manager') },
+    '/reports': { path: '/reports', label: t('NAV_REPORTS', 'Reports') },
+    '/reports/structures': { path: '/reports/structures', label: t('NAV_REPORT_STRUCTURES', 'Report Structures') },
+    '/imports': { path: '/imports', label: t('NAV_DATA_IMPORT', 'Data Import') },
+    '/imports/trial-balance': { path: '/imports/trial-balance', label: t('NAV_TRIAL_BALANCE_IMPORT', 'Trial Balance Import') },
+    '/imports/journal-entries': { path: '/imports/journal-entries', label: t('NAV_JOURNAL_ENTRY_IMPORT', 'Journal Entry Import') },
+    '/coa-translator': { path: '/coa-translator', label: t('NAV_COA_TRANSLATOR', 'CoA Translator') },
+    '/coa-mapper': { path: '/coa-mapper', label: t('NAV_COA_MAPPER', 'CoA Mapper') },
+  });
+  
+  // Use provided items or generate from current path with translations
+  const breadcrumbItems = items || generateBreadcrumbsFromPath(location.pathname, getTranslatedRoutes());
   const lastItem = breadcrumbItems[breadcrumbItems.length - 1];
   const previousItems = breadcrumbItems.slice(0, -1);
   

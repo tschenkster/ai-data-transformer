@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 import { useUITranslations } from '@/hooks/useUITranslations';
 
 export default function ReportStructureManager() {
-  const { t } = useUITranslations('en');
+  const { t } = useUITranslations();
 
   useEffect(() => {
     console.log('ReportStructureManager page mounted');
