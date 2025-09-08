@@ -565,11 +565,11 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
     const { error } = await supabase.rpc('create_translation_entries', {
       p_entity_type: gap.entityType,
       p_entity_uuid: gap.entityUuid,
-      p_translations: JSON.stringify([{
+      p_translations: [{
         field_key: gap.fieldKey,
         lang_code: gap.targetLanguage,
         text_value: translatedText
-      }]),
+      }],
       p_source_language: gap.sourceLanguage
     });
 
