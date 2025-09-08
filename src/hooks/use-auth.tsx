@@ -49,6 +49,7 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   authError: string | null;
   authTimeoutCount: number;
+  authLoading: boolean;
   forceLogout: () => Promise<void>;
   logSecurityEvent: (action: string, targetUserId?: string, details?: any) => Promise<void>;
   // Entity management
@@ -66,7 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // account data loading
+  const [authLoading, setAuthLoading] = useState(true); // auth/session loading
   const [authError, setAuthError] = useState<string | null>(null);
   const [authTimeoutCount, setAuthTimeoutCount] = useState(0);
   const [availableEntities, setAvailableEntities] = useState<Entity[]>([]);
@@ -110,10 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Set timeout for initial auth check
     initTimeoutId = setTimeout(() => {
-      if (mounted && loading) {
+      if (mounted && authLoading) {
         console.error('🔐 AuthProvider: Initial auth check timeout after 15 seconds');
         setAuthError('Authentication timeout - please refresh the page');
-        setLoading(false);
+        setAuthLoading(false);
         setAuthTimeoutCount(prev => prev + 1);
       }
     }, 15000);
@@ -141,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setSession(session);
       setUser(session?.user ?? null);
+      setAuthLoading(false);
       
       if (!session?.user) {
         console.log('🔐 AuthProvider: No user, clearing state');
@@ -181,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setSession(session);
         setUser(session?.user ?? null);
+        setAuthLoading(false);
         
         if (!session?.user) {
           console.log('🔐 AuthProvider: No initial user');
@@ -560,6 +564,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userAccount,
     userRoles,
     loading,
+    authLoading,
     signUp,
     signIn,
     signOut,

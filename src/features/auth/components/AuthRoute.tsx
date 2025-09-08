@@ -9,9 +9,9 @@ interface AuthRouteProps {
 }
 
 export function AuthRoute({ children, requireAdmin = false, requireSuperAdmin = false }: AuthRouteProps) {
-  const { user, userAccount, loading, isAdmin, isSuperAdmin } = useAuth();
+  const { user, userAccount, authLoading, isAdmin, isSuperAdmin } = useAuth();
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />

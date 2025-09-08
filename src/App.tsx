@@ -24,11 +24,11 @@ import About from "./pages/About";
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, authLoading } = useAuth();
   const { t } = useUITranslations();
 
   // Render a non-blocking loading overlay instead of halting all routes
-  const loadingOverlay = loading ? (
+  const loadingOverlay = authLoading ? (
     <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 backdrop-blur-sm">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
