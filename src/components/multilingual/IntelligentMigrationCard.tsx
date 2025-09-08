@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +45,15 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
   const [globalMigration, setGlobalMigration] = useState<any>(null);
   const [isGlobalMigrating, setIsGlobalMigrating] = useState(false);
   const { toast } = useToast();
+
+  // Auto-run UI migration once on mount for this session
+  useEffect(() => {
+    if (!sessionStorage.getItem('autoUiMigrationRun')) {
+      sessionStorage.setItem('autoUiMigrationRun', '1');
+      // Fire-and-forget; UI will show progress
+      runSelectiveMigration('ui');
+    }
+  }, []);
 
   const runSelectiveMigration = async (contentTypeId: string) => {
     console.log('Starting migration for:', contentTypeId);
