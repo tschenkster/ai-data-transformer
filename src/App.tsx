@@ -12,6 +12,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { ContentLanguageProvider } from "@/contexts/ContentLanguageProvider";
+import { useUITranslations } from "@/hooks/useUITranslations";
 import Homepage from "./pages/Homepage";
 import Pricing from "./pages/Pricing";
 import Register from "./pages/Register";
@@ -24,13 +25,14 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const { user, loading } = useAuth();
+  const { t } = useUITranslations();
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('MSG_LOADING', 'Loading...')}</p>
         </div>
       </div>
     );
@@ -55,7 +57,7 @@ function AppContent() {
               {/* Global header with sidebar trigger */}
               <header className="h-12 flex items-center border-b bg-background px-4 md:hidden">
                 <SidebarTrigger className="mr-2" />
-                <h1 className="text-lg font-semibold">Data Transformer</h1>
+                <h1 className="text-lg font-semibold">{t('APP_TITLE', 'Data Transformer')}</h1>
               </header>
               
               <div className="flex flex-1 w-full">
