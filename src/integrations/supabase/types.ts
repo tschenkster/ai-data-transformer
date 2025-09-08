@@ -1187,6 +1187,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      debug_translation_fallback: {
+        Args: {
+          p_entity_type: string
+          p_entity_uuid: string
+          p_language_code?: string
+          p_source_field_name: string
+        }
+        Returns: Json
+      }
       delete_all_rows_secure: {
         Args: {
           p_cascade?: boolean
