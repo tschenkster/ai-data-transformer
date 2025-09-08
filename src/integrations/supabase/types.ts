@@ -814,9 +814,9 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
-          language_code_original: string | null
+          language_code_original: string
           language_code_target: string
-          original_text: string | null
+          original_text: string
           source: string
           source_field_name: string
           translated_text: string | null
@@ -829,9 +829,9 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
-          language_code_original?: string | null
+          language_code_original: string
           language_code_target: string
-          original_text?: string | null
+          original_text: string
           source?: string
           source_field_name?: string
           translated_text?: string | null
@@ -844,9 +844,9 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
-          language_code_original?: string | null
+          language_code_original?: string
           language_code_target?: string
-          original_text?: string | null
+          original_text?: string
           source?: string
           source_field_name?: string
           translated_text?: string | null
@@ -1172,6 +1172,10 @@ export type Database = {
         }[]
       }
       check_translation_data_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      check_ui_translation_integrity: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }

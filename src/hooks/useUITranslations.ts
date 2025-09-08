@@ -53,12 +53,27 @@ export function useUITranslations(languageCode?: string) {
   const t = (key: string, fallback?: string): string => {
     const translation = translations[key];
     
-    // Development-only warning for missing translation keys
-    if (process.env.NODE_ENV === 'development' && !translation && !fallback) {
-      console.warn(`🌐 Missing translation for key: "${key}" in language "${languageCode || userLanguage}"`);
+    // Enhanced fallback chain with validation
+    if (!translation) {
+      // Development-only warning for missing translation keys
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`🌐 Missing translation for key: "${key}" in language "${languageCode || userLanguage}"`);
+      }
+      
+      // Fallback chain: provided fallback -> key itself
+      return fallback || key;
     }
     
-    return translation || fallback || key;
+    // Validate translation is not empty
+    if (translation.trim() === '') {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`🌐 Empty translation for key: "${key}" in language "${languageCode || userLanguage}"`);
+      }
+      
+      return fallback || key;
+    }
+    
+    return translation;
   };
 
   const changeLanguage = async (newLanguage: string) => {

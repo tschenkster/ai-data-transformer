@@ -291,25 +291,77 @@ export class EnhancedTranslationService {
   }
 
   /**
-   * Get all UI translations for a specific language
-   * Returns key-value mapping for efficient lookup
+   * Get all UI translations for a specific language with enhanced error handling
+   * Returns key-value mapping for efficient lookup with fallback mechanisms
    */
   static async getAllUITranslationsForLanguage(languageCode: string): Promise<Record<string, string>> {
-    const { data, error } = await supabase
-      .from('ui_translations')
-      .select('ui_key, translated_text')
-      .eq('language_code_target', languageCode);
+    try {
+      const { data, error } = await supabase
+        .from('ui_translations')
+        .select('ui_key, translated_text, original_text, language_code_original')
+        .eq('language_code_target', languageCode);
 
-    if (error) {
-      console.error('Error fetching UI translations:', error);
+      if (error) {
+        console.error('Error fetching UI translations:', error);
+        
+        // Fallback: try English if requested language failed
+        if (languageCode !== 'en') {
+          console.warn(`Falling back to English translations due to error with ${languageCode}`);
+          return this.getAllUITranslationsForLanguage('en');
+        }
+        
+        return {};
+      }
+
+      if (!data || data.length === 0) {
+        // No translations found for this language, fallback to English
+        if (languageCode !== 'en') {
+          console.warn(`No translations found for ${languageCode}, falling back to English`);
+          return this.getAllUITranslationsForLanguage('en');
+        }
+        return {};
+      }
+
+      // Process translations with validation
+      const translations = data.reduce((acc: Record<string, string>, translation: any) => {
+        let translatedText = translation.translated_text;
+        
+        // Validation: ensure translated_text exists
+        if (!translatedText) {
+          // Development warning
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`🌐 Missing translated_text for UI key: "${translation.ui_key}" in language "${languageCode}"`);
+          }
+          
+          // Fallback chain: original_text -> ui_key
+          translatedText = translation.original_text || translation.ui_key || '';
+        }
+        
+        acc[translation.ui_key] = translatedText;
+        return acc;
+      }, {});
+
+      // Log translation statistics in development
+      if (process.env.NODE_ENV === 'development') {
+        const totalKeys = data.length;
+        const missingTranslations = data.filter(t => !t.translated_text).length;
+        
+        if (missingTranslations > 0) {
+          console.warn(`🌐 Translation completeness for ${languageCode}: ${totalKeys - missingTranslations}/${totalKeys} (${Math.round(((totalKeys - missingTranslations) / totalKeys) * 100)}%)`);
+        }
+      }
+
+      return translations;
+      
+    } catch (error) {
+      console.error('Unexpected error in getAllUITranslationsForLanguage:', error);
+      
+      // Final fallback: try English if not already trying English
+      if (languageCode !== 'en') {
+        return this.getAllUITranslationsForLanguage('en');
+      }
+      
       return {};
     }
-
-    if (!data) return {};
-
-    return data.reduce((acc: Record<string, string>, translation: any) => {
-      acc[translation.ui_key] = translation.translated_text || '';
-      return acc;
-    }, {});
   }
 }
