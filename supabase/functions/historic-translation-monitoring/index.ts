@@ -42,8 +42,14 @@ serve(async (req) => {
       );
     }
 
-    // Verify super admin privileges using existing RPC
-    const { data: isSuperAdmin, error: adminError } = await supabaseClient.rpc('is_super_admin_user');
+    // Verify super admin privileges using user-scoped client (so auth.uid() is set)
+    const supabaseUser = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } }
+    );
+
+    const { data: isSuperAdmin, error: adminError } = await supabaseUser.rpc('is_super_admin_user');
     
     if (adminError || !isSuperAdmin) {
       return new Response(
