@@ -19,39 +19,45 @@ interface ValidationRule {
 export function ValidationDashboard() {
   const [validationRules, setValidationRules] = useState<ValidationRule[]>([
     {
-      id: 'no_null_original_lang',
-      name: 'No NULL Original Language',
-      description: 'All translation records must have a non-NULL language_code_original',
+      id: 'EMPTY_UI_TRANSLATIONS',
+      name: 'UI Translations Bootstrap',
+      description: 'UI translations table should not be empty - needs initial translation entries',
       status: 'checking'
     },
     {
-      id: 'no_null_original_text',
-      name: 'No NULL Original Text',
-      description: 'All translation records must have non-NULL original_text',
+      id: 'EMPTY_STRUCTURES_TRANSLATIONS',
+      name: 'Structure Translations Bootstrap',
+      description: 'Report structure translations should not be empty when structures exist',
       status: 'checking'
     },
     {
-      id: 'valid_language_codes',
+      id: 'EMPTY_LINE_ITEMS_TRANSLATIONS',
+      name: 'Line Item Translations Bootstrap',
+      description: 'Line item translations should not be empty when line items exist',
+      status: 'checking'
+    },
+    {
+      id: 'UI_NULL_VALUES',
+      name: 'No NULL Original Language (UI)',
+      description: 'UI translation records must have non-NULL language_code_original',
+      status: 'checking'
+    },
+    {
+      id: 'STRUCTURES_NULL_VALUES',
+      name: 'No NULL Original Text (Structures)',
+      description: 'Report structure translation records must have non-NULL original_text',
+      status: 'checking'
+    },
+    {
+      id: 'LINE_ITEMS_NULL_VALUES',
+      name: 'No NULL Original Text (Line Items)',
+      description: 'Line item translation records must have non-NULL original_text',
+      status: 'checking'
+    },
+    {
+      id: 'MISSING_LANGUAGE_CODES',
       name: 'Valid Language Codes',
       description: 'All language codes must be valid 2-character ISO codes',
-      status: 'checking'
-    },
-    {
-      id: 'consistent_source_tracking',
-      name: 'Consistent Source Tracking',
-      description: 'Source language and original text must be consistent across related records',
-      status: 'checking'
-    },
-    {
-      id: 'complete_translation_chains',
-      name: 'Complete Translation Chains',
-      description: 'All entities must have translations in required languages (DE, EN)',
-      status: 'checking'
-    },
-    {
-      id: 'schema_constraints_active',
-      name: 'Schema Constraints Active',
-      description: 'Database constraints and triggers are properly enforced',
       status: 'checking'
     }
   ]);
@@ -119,19 +125,44 @@ export function ValidationDashboard() {
 
   const runQuickFix = async (ruleId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('historic-translation-validation', {
-        body: { 
-          operation: 'quick_fix',
-          rule_id: ruleId
-        }
-      });
+      // Handle bootstrap operations for empty tables differently
+      if (['EMPTY_UI_TRANSLATIONS', 'EMPTY_STRUCTURES_TRANSLATIONS', 'EMPTY_LINE_ITEMS_TRANSLATIONS'].includes(ruleId)) {
+        const operationMap: Record<string, string> = {
+          'EMPTY_UI_TRANSLATIONS': 'bootstrap_ui_translations',
+          'EMPTY_STRUCTURES_TRANSLATIONS': 'bootstrap_structures_translations',
+          'EMPTY_LINE_ITEMS_TRANSLATIONS': 'bootstrap_line_items_translations'
+        };
+        
+        const operation = operationMap[ruleId];
+        const { data, error } = await supabase.functions.invoke('historic-translation-migration', {
+          body: { 
+            operation,
+            dry_run: false
+          }
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Bootstrap Completed",
+          description: `Successfully created ${data?.created || 0} initial translation entries.`,
+        });
+      } else {
+        // Handle regular validation fixes using existing logic
+        const { error } = await supabase.functions.invoke('historic-translation-validation', {
+          body: { 
+            operation: 'quick_fix',
+            rule_id: ruleId
+          }
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Quick Fix Applied",
-        description: "The issue has been automatically resolved.",
-      });
+        toast({
+          title: "Quick Fix Applied",
+          description: "The issue has been automatically resolved.",
+        });
+      }
 
       // Re-run validation to update status
       await runValidation();

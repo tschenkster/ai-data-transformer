@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -18,68 +18,214 @@ interface MigrationStep {
 }
 
 export function MigrationExecutor() {
-  const [migrationSteps, setMigrationSteps] = useState<MigrationStep[]>([
-    {
-      id: 'backup',
-      title: 'Create Data Backup',
-      description: 'Create backup of current translation data before migration',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'analyze',
-      title: 'Analyze Data Patterns',
-      description: 'Analyze existing data to determine optimal migration strategy',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'detect_ui_original',
-      title: 'Detect Original Languages',
-      description: 'AI-detect language_code_original for UI translations',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'migrate_ui',
-      title: 'Migrate UI Translations',
-      description: 'Fix NULL values in ui_translations table',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'migrate_structures',
-      title: 'Migrate Report Structure Translations',
-      description: 'Fix NULL values in report_structures_translations table',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'migrate_line_items',
-      title: 'Migrate Report Line Item Translations',
-      description: 'Fix NULL values in report_line_items_translations table',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'add_constraints',
-      title: 'Add Schema Constraints',
-      description: 'Add NOT NULL constraints and validation triggers',
-      status: 'pending',
-      progress: 0
-    },
-    {
-      id: 'validate',
-      title: 'Validate Migration',
-      description: 'Verify all data integrity rules are enforced',
-      status: 'pending',
-      progress: 0
-    }
-  ]);
-
+  const [migrationSteps, setMigrationSteps] = useState<MigrationStep[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [canRollback, setCanRollback] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
+
+  // Initialize migration steps based on current system state
+  const initializeMigrationSteps = async () => {
+    if (isInitialized) return;
+    
+    try {
+      // Check validation status to determine what steps are needed
+      const { data: validation, error } = await supabase.functions.invoke('historic-translation-validation', {
+        body: { operation: 'validate_all' }
+      });
+      
+      if (error) throw error;
+
+      const baseSteps: MigrationStep[] = [
+        {
+          id: 'backup',
+          title: 'Create Data Backup',
+          description: 'Create backup of current translation data before migration',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'analyze',
+          title: 'Analyze Data Patterns',
+          description: 'Analyze existing data to determine optimal migration strategy',
+          status: 'pending',
+          progress: 0
+        }
+      ];
+
+      const bootstrapSteps: MigrationStep[] = [];
+      const migrationSteps: MigrationStep[] = [];
+
+      // Check if bootstrap is needed based on validation results
+      const results = validation?.results || {};
+      
+      // Add bootstrap steps for empty tables
+      if (results.EMPTY_UI_TRANSLATIONS?.status === 'fail') {
+        bootstrapSteps.push({
+          id: 'bootstrap_ui',
+          title: 'Bootstrap UI Translations',
+          description: 'Create initial UI translation entries from common keys',
+          status: 'pending',
+          progress: 0
+        });
+      }
+
+      if (results.EMPTY_STRUCTURES_TRANSLATIONS?.status === 'fail') {
+        bootstrapSteps.push({
+          id: 'bootstrap_structures',
+          title: 'Bootstrap Structure Translations',
+          description: 'Create initial translation entries from existing report structures',
+          status: 'pending',
+          progress: 0
+        });
+      }
+
+      if (results.EMPTY_LINE_ITEMS_TRANSLATIONS?.status === 'fail') {
+        bootstrapSteps.push({
+          id: 'bootstrap_line_items',
+          title: 'Bootstrap Line Item Translations',
+          description: 'Create initial translation entries from existing line items',
+          status: 'pending',
+          progress: 0
+        });
+      }
+
+      // Add regular migration steps
+      migrationSteps.push({
+        id: 'detect_ui_original',
+        title: 'Detect Original Languages',
+        description: 'AI-detect language_code_original for UI translations',
+        status: 'pending',
+        progress: 0
+      });
+
+      migrationSteps.push({
+        id: 'migrate_ui',
+        title: 'Migrate UI Translations',
+        description: 'Fix NULL values in ui_translations table',
+        status: 'pending',
+        progress: 0
+      });
+
+      migrationSteps.push({
+        id: 'migrate_structures',
+        title: 'Migrate Report Structure Translations',
+        description: 'Fix NULL values in report_structures_translations table',
+        status: 'pending',
+        progress: 0
+      });
+
+      migrationSteps.push({
+        id: 'migrate_line_items',
+        title: 'Migrate Report Line Item Translations',
+        description: 'Fix NULL values in report_line_items_translations table',
+        status: 'pending',
+        progress: 0
+      });
+
+      const finalSteps: MigrationStep[] = [
+        {
+          id: 'add_constraints',
+          title: 'Add Schema Constraints',
+          description: 'Add NOT NULL constraints and validation triggers',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'validate',
+          title: 'Validate Migration',
+          description: 'Verify all data integrity rules are enforced',
+          status: 'pending',
+          progress: 0
+        }
+      ];
+
+      const allSteps = [...baseSteps, ...bootstrapSteps, ...migrationSteps, ...finalSteps];
+      setMigrationSteps(allSteps);
+      setIsInitialized(true);
+
+      if (bootstrapSteps.length > 0) {
+        toast({
+          title: "Bootstrap Required",
+          description: `Detected ${bootstrapSteps.length} empty translation tables that need bootstrapping.`,
+        });
+      }
+
+    } catch (error: any) {
+      console.error('Failed to initialize migration steps:', error);
+      toast({
+        title: "Initialization Failed",
+        description: "Failed to analyze system state. Using default migration steps.",
+        variant: "destructive"
+      });
+      
+      // Fall back to default steps
+      setMigrationSteps([
+        {
+          id: 'backup',
+          title: 'Create Data Backup',
+          description: 'Create backup of current translation data before migration',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'analyze',
+          title: 'Analyze Data Patterns',
+          description: 'Analyze existing data to determine optimal migration strategy',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'detect_ui_original',
+          title: 'Detect Original Languages',
+          description: 'AI-detect language_code_original for UI translations',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'migrate_ui',
+          title: 'Migrate UI Translations',
+          description: 'Fix NULL values in ui_translations table',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'migrate_structures',
+          title: 'Migrate Report Structure Translations',
+          description: 'Fix NULL values in report_structures_translations table',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'migrate_line_items',
+          title: 'Migrate Report Line Item Translations',
+          description: 'Fix NULL values in report_line_items_translations table',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'add_constraints',
+          title: 'Add Schema Constraints',
+          description: 'Add NOT NULL constraints and validation triggers',
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 'validate',
+          title: 'Validate Migration',
+          description: 'Verify all data integrity rules are enforced',
+          status: 'pending',
+          progress: 0
+        }
+      ]);
+      setIsInitialized(true);
+    }
+  };
+
+  // Initialize on component mount
+  useEffect(() => {
+    initializeMigrationSteps();
+  }, []);
 
   const updateStepStatus = (stepId: string, status: MigrationStep['status'], progress: number, error?: string) => {
     setMigrationSteps(prev => prev.map(step => 
@@ -108,6 +254,45 @@ export function MigrationExecutor() {
             updateStepStatus(step.id, 'running', i);
             await new Promise(resolve => setTimeout(resolve, 300));
           }
+          break;
+
+        case 'bootstrap_ui':
+          // Bootstrap UI translations from common keys
+          updateStepStatus(step.id, 'running', 20);
+          const { error: bootstrapUIError } = await supabase.functions.invoke('historic-translation-migration', {
+            body: { 
+              operation: 'bootstrap_ui_translations',
+              dry_run: false
+            }
+          });
+          if (bootstrapUIError) throw bootstrapUIError;
+          updateStepStatus(step.id, 'running', 100);
+          break;
+
+        case 'bootstrap_structures':
+          // Bootstrap report structures translations
+          updateStepStatus(step.id, 'running', 20);
+          const { error: bootstrapStructError } = await supabase.functions.invoke('historic-translation-migration', {
+            body: { 
+              operation: 'bootstrap_structures_translations',
+              dry_run: false
+            }
+          });
+          if (bootstrapStructError) throw bootstrapStructError;
+          updateStepStatus(step.id, 'running', 100);
+          break;
+
+        case 'bootstrap_line_items':
+          // Bootstrap line items translations
+          updateStepStatus(step.id, 'running', 20);
+          const { error: bootstrapLineError } = await supabase.functions.invoke('historic-translation-migration', {
+            body: { 
+              operation: 'bootstrap_line_items_translations',
+              dry_run: false
+            }
+          });
+          if (bootstrapLineError) throw bootstrapLineError;
+          updateStepStatus(step.id, 'running', 100);
           break;
 
         case 'detect_ui_original':
