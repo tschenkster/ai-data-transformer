@@ -515,7 +515,7 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
       source_field_name: 'text',
       original_text: fallbackText, // Use the actual fallback text
       translated_text: fallbackText, // Bootstrap with fallback text
-      source: 'ai',
+      source: 'system',
       created_by: actorId,
       updated_by: actorId
     });
@@ -653,7 +653,7 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: 'text',
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai',
+        source: 'ai_generated',
         created_by: actorId,
         updated_by: actorId
       }, {
@@ -674,7 +674,7 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: (gap.fieldKey === 'structure_name' || gap.fieldKey === 'name') ? 'report_structure_name' : gap.fieldKey,
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai',
+        source: 'ai_generated',
         created_by: actorId,
         updated_by: actorId
       }, {
@@ -695,7 +695,7 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: gap.fieldKey,
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai',
+        source: 'ai_generated',
         created_by: actorId,
         updated_by: actorId
       }, {
