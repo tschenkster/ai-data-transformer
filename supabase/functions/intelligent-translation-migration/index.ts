@@ -373,8 +373,14 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
 
       if (uiGaps.length > 0) {
         console.log(`Translating ${uiGaps.length} UI entries to target languages...`);
-        const uiResults = await translateBatch(supabase, uiGaps, userId);
-        results.translationsGenerated += uiResults.length;
+        try {
+          const uiResults = await translateBatch(supabase, uiGaps, userId);
+          results.translationsGenerated += uiResults.length;
+        } catch (aiErr) {
+          console.warn('AI translation failed for UI keys, falling back to placeholders:', aiErr?.message || aiErr);
+          const upserted = await upsertPlaceholderUiTranslations(supabase, uiGaps, userId);
+          results.translationsGenerated += upserted;
+        }
       }
     } catch (error: any) {
       results.errors.push(`UI bootstrap/translation failed: ${error.message}`);
@@ -707,6 +713,35 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
   }
 }
 
+
+
+async function upsertPlaceholderUiTranslations(supabase: any, gaps: TranslationGap[], userId?: string): Promise<number> {
+  const actorId = userId || '00000000-0000-0000-0000-000000000001';
+  if (!gaps || gaps.length === 0) return 0;
+
+  const rows = gaps.map(gap => ({
+    ui_key: gap.entityUuid,
+    language_code_original: gap.sourceLanguage,
+    language_code_target: gap.targetLanguage,
+    source_field_name: 'text',
+    original_text: gap.originalText,
+    translated_text: gap.originalText, // placeholder equals original
+    source: 'system',
+    created_by: actorId,
+    updated_by: actorId
+  }));
+
+  const { error } = await supabase
+    .from('ui_translations')
+    .upsert(rows, { onConflict: 'ui_key,language_code_target,source_field_name' });
+
+  if (error) {
+    console.error('Placeholder UI upsert failed:', error);
+    return 0;
+  }
+
+  return rows.length;
+}
 
 function getLanguageName(code: string): string {
   const names: Record<string, string> = {

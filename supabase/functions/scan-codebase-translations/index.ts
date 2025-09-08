@@ -242,6 +242,9 @@ async function scanCodebaseForTranslations(): Promise<TranslationKey[]> {
     { key: 'VERSION', fallbackText: 'Version', file: 'src/components/ui/label.tsx', line: 19 },
   ];
 
+  // Ensure critical welcome key is present
+  translations.push({ key: 'WELCOME_DASHBOARD', fallbackText: 'Welcome to your Dashboard', file: 'src/pages/Dashboard.tsx', line: 10 });
+
   console.log(`Dynamic scan found ${translations.length} translation keys`);
   return translations;
 }
