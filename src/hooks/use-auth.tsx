@@ -330,7 +330,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [user?.id, session]);
+  }, [user?.id]); // Remove session dependency to prevent infinite loops
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
