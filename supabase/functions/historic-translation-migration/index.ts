@@ -306,6 +306,225 @@ serve(async (req) => {
         }
         break;
 
+      case 'bootstrap_ui_translations':
+        // Bootstrap UI translations from static keys when table is empty
+        const { data: uiCount } = await supabaseClient
+          .from('ui_translations')
+          .select('*', { count: 'exact', head: true });
+        
+        if (uiCount && uiCount > 0) {
+          result = { success: true, message: 'UI translations table is not empty, skipping bootstrap', created: 0 };
+          break;
+        }
+
+        // Define common UI translation keys that should exist
+        const commonUIKeys = [
+          'MENU_DATA_IMPORT_TRANSFORMATION',
+          'MENU_COA_TRANSLATOR', 
+          'MENU_COA_MAPPER',
+          'MENU_TRIAL_BALANCE_IMPORT',
+          'MENU_JOURNAL_IMPORT',
+          'MENU_REPORT_STRUCTURE_MANAGER',
+          'MENU_MEMORY_MAINTENANCE',
+          'COMMON_SAVE',
+          'COMMON_CANCEL',
+          'COMMON_DELETE',
+          'COMMON_EDIT',
+          'COMMON_ADD',
+          'COMMON_SEARCH'
+        ];
+
+        let uiCreated = 0;
+        const currentUserId = user?.id || '00000000-0000-0000-0000-000000000001';
+        
+        for (const uiKey of commonUIKeys) {
+          // Create German original and English translation entries
+          const translations = [
+            {
+              ui_key: uiKey,
+              language_code_original: 'de',
+              language_code_target: 'de',
+              source_field_name: 'text',
+              original_text: uiKey, // Use key as placeholder
+              translated_text: uiKey,
+              source: 'bootstrap',
+              created_by: currentUserId,
+              updated_by: currentUserId
+            },
+            {
+              ui_key: uiKey,
+              language_code_original: 'de',
+              language_code_target: 'en',
+              source_field_name: 'text',
+              original_text: uiKey,
+              translated_text: uiKey.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+              source: 'bootstrap',
+              created_by: currentUserId,
+              updated_by: currentUserId
+            }
+          ];
+
+          const { error: insertError } = await supabaseClient
+            .from('ui_translations')
+            .insert(translations);
+          
+          if (!insertError) {
+            uiCreated += translations.length;
+          }
+        }
+
+        result = { success: true, message: `Bootstrap completed for UI translations`, created: uiCreated };
+        break;
+
+      case 'bootstrap_structures_translations':
+        // Bootstrap report structure translations from existing structures
+        const { data: structCount } = await supabaseClient
+          .from('report_structures_translations')
+          .select('*', { count: 'exact', head: true });
+        
+        if (structCount && structCount > 0) {
+          result = { success: true, message: 'Report structures translations table is not empty, skipping bootstrap', created: 0 };
+          break;
+        }
+
+        // Get all active report structures
+        const { data: structures, error: structError } = await supabaseClient
+          .from('report_structures')
+          .select('report_structure_uuid, report_structure_name, description, source_language_code')
+          .eq('is_active', true);
+        
+        if (structError) throw structError;
+
+        let structCreated = 0;
+        for (const structure of structures || []) {
+          const sourceLang = structure.source_language_code || 'de';
+          const translations = [];
+
+          // Create entries for name field
+          if (structure.report_structure_name) {
+            translations.push({
+              report_structure_uuid: structure.report_structure_uuid,
+              language_code_original: sourceLang,
+              language_code_target: sourceLang,
+              source_field_name: 'report_structure_name',
+              original_text: structure.report_structure_name,
+              translated_text: structure.report_structure_name,
+              source: 'bootstrap',
+              created_by: currentUserId,
+              updated_by: currentUserId
+            });
+          }
+
+          // Create entries for description field
+          if (structure.description) {
+            translations.push({
+              report_structure_uuid: structure.report_structure_uuid,
+              language_code_original: sourceLang,
+              language_code_target: sourceLang,
+              source_field_name: 'description',
+              original_text: structure.description,
+              translated_text: structure.description,
+              source: 'bootstrap',
+              created_by: currentUserId,
+              updated_by: currentUserId
+            });
+          }
+
+          if (translations.length > 0) {
+            const { error: insertError } = await supabaseClient
+              .from('report_structures_translations')
+              .insert(translations);
+            
+            if (!insertError) {
+              structCreated += translations.length;
+            }
+          }
+        }
+
+        result = { success: true, message: `Bootstrap completed for report structures translations`, created: structCreated };
+        break;
+
+      case 'bootstrap_line_items_translations':
+        // Bootstrap line item translations from existing line items
+        const { data: lineCount } = await supabaseClient
+          .from('report_line_items_translations')
+          .select('*', { count: 'exact', head: true });
+        
+        if (lineCount && lineCount > 0) {
+          result = { success: true, message: 'Line items translations table is not empty, skipping bootstrap', created: 0 };
+          break;
+        }
+
+        // Get all line items from active structures
+        const { data: lineItems, error: lineError } = await supabaseClient
+          .from('report_line_items')
+          .select(`
+            report_line_item_uuid, 
+            report_line_item_description,
+            level_1_line_item_description,
+            level_2_line_item_description,
+            level_3_line_item_description,
+            level_4_line_item_description,
+            level_5_line_item_description,
+            level_6_line_item_description,
+            level_7_line_item_description,
+            description_of_leaf,
+            source_language_code,
+            report_structures!inner(is_active)
+          `)
+          .eq('report_structures.is_active', true)
+          .limit(500); // Limit to prevent timeouts
+        
+        if (lineError) throw lineError;
+
+        let lineCreated = 0;
+        for (const lineItem of lineItems || []) {
+          const sourceLang = lineItem.source_language_code || 'de';
+          const translations = [];
+
+          // Create translations for all non-empty description fields
+          const fields = [
+            { key: 'report_line_item_description', value: lineItem.report_line_item_description },
+            { key: 'level_1_line_item_description', value: lineItem.level_1_line_item_description },
+            { key: 'level_2_line_item_description', value: lineItem.level_2_line_item_description },
+            { key: 'level_3_line_item_description', value: lineItem.level_3_line_item_description },
+            { key: 'level_4_line_item_description', value: lineItem.level_4_line_item_description },
+            { key: 'level_5_line_item_description', value: lineItem.level_5_line_item_description },
+            { key: 'level_6_line_item_description', value: lineItem.level_6_line_item_description },
+            { key: 'level_7_line_item_description', value: lineItem.level_7_line_item_description },
+            { key: 'description_of_leaf', value: lineItem.description_of_leaf }
+          ];
+
+          for (const field of fields) {
+            if (field.value && field.value.trim()) {
+              translations.push({
+                report_line_item_uuid: lineItem.report_line_item_uuid,
+                language_code_original: sourceLang,
+                language_code_target: sourceLang,
+                source_field_name: field.key,
+                original_text: field.value,
+                translated_text: field.value,
+                source: 'bootstrap',
+                created_by: currentUserId,
+                updated_by: currentUserId
+              });
+            }
+          }
+
+          if (translations.length > 0) {
+            const { error: insertError } = await supabaseClient
+              .from('report_line_items_translations')
+              .insert(translations);
+            
+            if (!insertError) {
+              lineCreated += translations.length;
+            }
+          }
+        }
+
+        result = { success: true, message: `Bootstrap completed for line items translations`, created: lineCreated };
+        break;
+
       case 'add_schema_constraints':
         // This would add NOT NULL constraints and validation triggers
         // For now, return success as constraints will be added separately
