@@ -348,16 +348,17 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
         const original = translationKeyMap[key] || key;
         for (const target of enabledLangs) {
           if (target === sourceLanguage) continue;
-          // Skip if already translated
+          // Skip if already translated (but not placeholder entries)
           const { data: existing, error: existErr } = await supabase
             .from('ui_translations')
-            .select('ui_translation_id')
+            .select('ui_translation_id, language_code_original, language_code_target')
             .eq('ui_key', key)
             .eq('language_code_target', target)
             .eq('source_field_name', 'text')
             .limit(1);
           if (existErr) throw existErr;
-          if (existing && existing.length > 0) continue;
+          // Only skip if there's a real translation (not a placeholder where source === target)
+          if (existing && existing.length > 0 && existing[0].language_code_original !== existing[0].language_code_target) continue;
 
           uiGaps.push({
             entityType: 'ui',
