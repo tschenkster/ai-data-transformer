@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserProfileDisplay, UserService } from '@/features/user-management';
-import { ReportStructureCard } from '@/features/report-structure-manager';
-import { WorkflowStatusManager } from '@/components/WorkflowStatusManager';
+import { UserService } from '@/features/user-management';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
@@ -17,20 +15,15 @@ import {
   Activity, 
   Plus, 
   Settings, 
-  TrendingUp, 
-  Clock, 
-  Shield, 
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  Pause,
   ArrowUp,
   ArrowDown,
-  Eye,
-  Zap
+  Zap,
+  Clock, 
+  Shield, 
+  CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { UserAccount, UserStats } from '@/features/user-management/types';
+import type { UserAccount } from '@/features/user-management/types';
 
 interface DashboardStats {
   total_structures: number;
@@ -267,157 +260,91 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* User Profile Section */}
-          <div className="lg:col-span-4">
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold">{t('HEADING_YOUR_PROFILE', 'Your Profile')}</h3>
-              <UserProfileDisplay />
-              
-              {/* Quick Actions Card */}
-              <Card className="bg-gradient-to-br from-muted/50 to-muted/25 border-dashed">
-                <CardHeader>
-                  <CardTitle className="text-lg">{t('HEADING_QUICK_ACTIONS', 'Quick Actions')}</CardTitle>
-                  <CardDescription>{t('DESC_QUICK_ACTIONS', 'Frequently used features')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button variant="ghost" className="w-full justify-start h-12">
-                    <Users className="h-4 w-4 mr-3" />
-                    {t('QUICK_ACTION_MANAGE_USERS', 'Manage Users')}
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start h-12">
-                    <FileText className="h-4 w-4 mr-3" />
-                    {t('QUICK_ACTION_VIEW_REPORTS', 'View Reports')}
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start h-12">
-                    <Settings className="h-4 w-4 mr-3" />
-                    {t('BTN_SETTINGS', 'Settings')}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* System Stats and Activity - Admin Only */}
-          {isAdmin && (
-            <div className="lg:col-span-8">
-              <div className="space-y-6">
-                <h3 className="text-xl font-semibold">System Activity</h3>
-                
-                {/* Enhanced System Overview */}
-                <Card className="bg-gradient-to-br from-background to-muted/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      System Metrics
-                    </CardTitle>
-                    <CardDescription>
-                      Real-time performance and usage statistics
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {loading ? (
-                      <div className="grid grid-cols-2 gap-6">
-                        {[...Array(4)].map((_, i) => (
-                          <div key={i} className="space-y-3">
-                            <Skeleton className="h-4 w-[100px]" />
-                            <Skeleton className="h-8 w-[60px]" />
-                            <Skeleton className="h-2 w-full" />
-                          </div>
-                        ))}
-                      </div>
-                    ) : dashboardStats ? (
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
-                              <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <span className="font-medium">Total Users</span>
-                          </div>
-                          <div className="text-2xl font-bold">{dashboardStats.user_count}</div>
-                          <Progress value={75} className="h-2" />
-                          <p className="text-xs text-muted-foreground">75% of capacity</p>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
-                              <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </div>
-                            <span className="font-medium">Recent Logins</span>
-                          </div>
-                          <div className="text-2xl font-bold">{dashboardStats.recent_logins}</div>
-                          <Progress value={90} className="h-2" />
-                          <p className="text-xs text-muted-foreground">High activity</p>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20">
-                              <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <span className="font-medium">Report Structures</span>
-                          </div>
-                          <div className="text-2xl font-bold">{dashboardStats.total_structures}</div>
-                          <Progress value={60} className="h-2" />
-                          <p className="text-xs text-muted-foreground">Growing collection</p>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                              <BarChart3 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <span className="font-medium">Line Items</span>
-                          </div>
-                          <div className="text-2xl font-bold">{dashboardStats.total_line_items}</div>
-                          <Progress value={85} className="h-2" />
-                          <p className="text-xs text-muted-foreground">Comprehensive data</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">No statistics available</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Active Report Structure Section */}
-        {activeStructureUuid && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">Active Report Structure</h2>
-              <Badge variant="default" className="px-3 py-1">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Active
-              </Badge>
-            </div>
-            <ReportStructureCard 
-              structureUuid={activeStructureUuid}
-              className="max-w-none"
-            />
-          </div>
-        )}
-
-        {/* Workflow Management Section */}
+        {/* System Stats and Activity - Admin Only */}
         {isAdmin && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">Workflow Management</h2>
-              <Badge variant="outline" className="px-3 py-1">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                Enhanced
-              </Badge>
-            </div>
-            <WorkflowStatusManager />
+            <h3 className="text-xl font-semibold">System Activity</h3>
+            
+            {/* Enhanced System Overview */}
+            <Card className="bg-gradient-to-br from-background to-muted/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  System Metrics
+                </CardTitle>
+                <CardDescription>
+                  Real-time performance and usage statistics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="grid grid-cols-2 gap-6">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="space-y-3">
+                        <Skeleton className="h-4 w-[100px]" />
+                        <Skeleton className="h-8 w-[60px]" />
+                        <Skeleton className="h-2 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : dashboardStats ? (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                          <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <span className="font-medium">Total Users</span>
+                      </div>
+                      <div className="text-2xl font-bold">{dashboardStats.user_count}</div>
+                      <Progress value={75} className="h-2" />
+                      <p className="text-xs text-muted-foreground">75% of capacity</p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+                          <Activity className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <span className="font-medium">Recent Logins</span>
+                      </div>
+                      <div className="text-2xl font-bold">{dashboardStats.recent_logins}</div>
+                      <Progress value={90} className="h-2" />
+                      <p className="text-xs text-muted-foreground">High activity</p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20">
+                          <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <span className="font-medium">Report Structures</span>
+                      </div>
+                      <div className="text-2xl font-bold">{dashboardStats.total_structures}</div>
+                      <Progress value={60} className="h-2" />
+                      <p className="text-xs text-muted-foreground">Growing collection</p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                          <BarChart3 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <span className="font-medium">Line Items</span>
+                      </div>
+                      <div className="text-2xl font-bold">{dashboardStats.total_line_items}</div>
+                      <Progress value={85} className="h-2" />
+                      <p className="text-xs text-muted-foreground">Comprehensive data</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No statistics available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
