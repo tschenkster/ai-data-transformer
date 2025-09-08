@@ -1145,6 +1145,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      can_manage_report_structure_status: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_permission_conflicts: {
         Args: { p_user_uuid: string }
         Returns: {

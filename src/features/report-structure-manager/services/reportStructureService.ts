@@ -57,10 +57,10 @@ export class ReportStructureService {
     return translatedStructures;
   }
 
-  static async setActiveStructure(structureId: number): Promise<void> {
+  static async toggleStructureStatus(structureId: number, newStatus: boolean): Promise<void> {
     const { error } = await supabase
       .from('report_structures')
-      .update({ is_active: true })
+      .update({ is_active: newStatus })
       .eq('report_structure_id', structureId);
 
     if (error) throw error;
@@ -113,7 +113,7 @@ export class ReportStructureService {
     return `${dayMonth} ${time}`;
   }
 
-  static getActiveStructure(structures: ReportStructure[]): ReportStructure | null {
-    return structures.find(s => s.is_active) || null;
+  static getActiveStructures(structures: ReportStructure[]): ReportStructure[] {
+    return structures.filter(s => s.is_active);
   }
 }

@@ -65,7 +65,7 @@ interface ReportLineItem {
 }
 
 export default function ReportStructureManager() {
-  const { user, isSuperAdmin } = useAuth();
+  const { user, userRoles, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const { contentLanguage } = useContentLanguage();
   const { t } = useUITranslations();
@@ -124,26 +124,36 @@ export default function ReportStructureManager() {
     checkStructuresWithMappings();
   }, [contentLanguage]);
 
-  const setActiveStructureHandler = async (structureId: number) => {
+  const toggleStructureStatus = async (structureId: number, currentStatus: boolean) => {
+    if (!isSuperAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only Super Admins can change report structure status",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('report_structures')
-        .update({ is_active: true })
+        .update({ is_active: !currentStatus })
         .eq('report_structure_id', structureId);
 
       if (error) throw error;
 
+      const statusText = !currentStatus ? "activated" : "deactivated";
       toast({
         title: "Success",
-        description: "Active structure updated successfully",
+        description: `Report structure ${statusText} successfully`,
       });
       
       fetchStructures();
     } catch (error) {
-      console.error('Error setting active structure:', error);
+      console.error('Error updating structure status:', error);
       toast({
         title: "Error",
-        description: "Failed to set active structure",
+        description: "Failed to update structure status",
         variant: "destructive",
       });
     }
@@ -271,11 +281,28 @@ export default function ReportStructureManager() {
   const getActionsForStructure = (structure: ReportStructure) => {
     const actions = [];
 
-    // Set Active action - only show when structure is not active
-    if (!structure.is_active) {
-      actions.push(createSetActiveAction(
-        () => setActiveStructureHandler(structure.report_structure_id)
-      ));
+    // Status toggle action - only for super admins  
+    if (isSuperAdmin) {
+      actions.push(
+        <Button
+          key="toggle-status"
+          variant="ghost"
+          size="sm"
+          onClick={() => toggleStructureStatus(structure.report_structure_id, !structure.is_active)}
+        >
+          {structure.is_active ? (
+            <>
+              <X className="h-4 w-4 mr-1" />
+              {t('BTN_DEACTIVATE', 'Deactivate')}
+            </>
+          ) : (
+            <>
+              <Check className="h-4 w-4 mr-1" />
+              {t('BTN_ACTIVATE', 'Activate')}
+            </>
+          )}
+        </Button>
+      );
     }
 
     // View action - always show

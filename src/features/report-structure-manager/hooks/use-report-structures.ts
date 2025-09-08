@@ -7,14 +7,14 @@ import { ReportStructure, ReportLineItem, ProcessStructureData } from '@/feature
 
 export function useReportStructures(): {
   structures: ReportStructure[];
-  activeStructure: ReportStructure | null;
+  activeStructures: ReportStructure[];
   lineItems: ReportLineItem[];
   loading: boolean;
   uploading: boolean;
   selectedStructureForModify: number | null;
   fetchStructures: () => Promise<void>;
   fetchLineItems: (structureId: number) => Promise<void>;
-  setActiveStructureHandler: (structureId: number) => Promise<void>;
+  toggleStructureStatus: (structureId: number, newStatus: boolean) => Promise<void>;
   deleteStructure: (structureId: number, structureName: string) => Promise<void>;
   handleFileProcessed: (fileData: ProcessStructureData) => Promise<void>;
   setSelectedStructureForModify: React.Dispatch<React.SetStateAction<number | null>>;
@@ -27,7 +27,6 @@ export function useReportStructures(): {
   const { toast } = useToast();
 
   const [structures, setStructures] = useState<ReportStructure[]>([]);
-  const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -37,10 +36,6 @@ export function useReportStructures(): {
     try {
       const data = await ReportStructureService.fetchStructures();
       setStructures(data);
-      
-      // Find active structure
-      const active = ReportStructureService.getActiveStructure(data);
-      setActiveStructure(active);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -65,18 +60,19 @@ export function useReportStructures(): {
     }
   };
 
-  const setActiveStructureHandler = async (structureId: number) => {
+  const toggleStructureStatus = async (structureId: number, newStatus: boolean) => {
     try {
-      await ReportStructureService.setActiveStructure(structureId);
+      await ReportStructureService.toggleStructureStatus(structureId, newStatus);
+      const statusText = newStatus ? "activated" : "deactivated";
       toast({
         title: "Success",
-        description: "Active structure updated successfully",
+        description: `Report structure ${statusText} successfully`,
       });
       fetchStructures();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to set active structure",
+        description: "Failed to update structure status",
         variant: "destructive",
       });
     }
@@ -135,10 +131,12 @@ export function useReportStructures(): {
     fetchStructures();
   }, []);
 
+  const activeStructures = ReportStructureService.getActiveStructures(structures);
+
   return {
     // Data
     structures,
-    activeStructure,
+    activeStructures,
     lineItems,
     loading,
     uploading,
@@ -147,7 +145,7 @@ export function useReportStructures(): {
     // Actions
     fetchStructures,
     fetchLineItems,
-    setActiveStructureHandler,
+    toggleStructureStatus,
     deleteStructure,
     handleFileProcessed,
     setSelectedStructureForModify,
