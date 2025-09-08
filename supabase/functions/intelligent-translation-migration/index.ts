@@ -44,7 +44,7 @@ serve(async (req) => {
   }
 
   try {
-    const { operation = 'analyze', filters = {}, contentTypes = [] } = await req.json();
+    const { operation = 'analyze', filters = {}, contentTypes = [], userId } = await req.json();
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -68,7 +68,7 @@ serve(async (req) => {
     // Selective migration operations
     if (operation === 'migrate' || operation.startsWith('migrate-')) {
       console.log(`Starting ${operation} translation migration...`);
-      const result = await performSelectiveMigration(supabase, operation, contentTypes, filters);
+      const result = await performSelectiveMigration(supabase, operation, contentTypes, filters, userId);
       
       return new Response(JSON.stringify({ 
         success: true,
@@ -285,7 +285,7 @@ async function performSelectiveAnalysis(supabase: any, operation: string, conten
   return analysis;
 }
 
-async function performSelectiveMigration(supabase: any, operation: string, contentTypes: string[] = [], filters: any = {}) {
+async function performSelectiveMigration(supabase: any, operation: string, contentTypes: string[] = [], filters: any = {}, userId?: string) {
   const results = {
     uiElementsProcessed: 0,
     structuresProcessed: 0,
@@ -308,7 +308,7 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
   if (analysis.uiKeysToBootstrap.length > 0) {
     console.log(`Bootstrapping ${analysis.uiKeysToBootstrap.length} UI keys...`);
     try {
-      await bootstrapUITranslations(supabase, analysis.uiKeysToBootstrap, filters.sourceLanguage || 'en');
+      await bootstrapUITranslations(supabase, analysis.uiKeysToBootstrap, filters.sourceLanguage || 'en', userId);
       results.uiElementsProcessed = analysis.uiKeysToBootstrap.length;
     } catch (error) {
       results.errors.push(`UI bootstrap failed: ${error.message}`);
@@ -326,7 +326,7 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
       const batch = gaps.slice(i, i + BATCH_SIZE);
       
       try {
-        const translationResults = await translateBatch(supabase, batch);
+        const translationResults = await translateBatch(supabase, batch, userId);
         results.translationsGenerated += translationResults.length;
         
         if (entityType === 'report_structure') {
@@ -412,8 +412,11 @@ async function checkTranslationExists(supabase: any, item: ContentItem, targetLa
   return !!data;
 }
 
-async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLanguage: string) {
-  const insertData = [];
+async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLanguage: string, userId?: string) {
+  if (!userId) {
+    throw new Error('Missing userId for attribution when bootstrapping UI translations');
+  }
+  const insertData = [] as any[];
   
   for (const key of uiKeys) {
     insertData.push({
@@ -423,7 +426,9 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
       source_field_name: 'text',
       original_text: key,
       translated_text: key, // Bootstrap with key as text
-      source: 'bootstrap'
+      source: 'bootstrap',
+      created_by: userId,
+      updated_by: userId
     });
   }
 
@@ -448,7 +453,7 @@ function groupTranslationGapsByType(gaps: TranslationGap[]): Record<string, Tran
   }, {});
 }
 
-async function translateBatch(supabase: any, gaps: TranslationGap[]): Promise<any[]> {
+async function translateBatch(supabase: any, gaps: TranslationGap[], userId?: string): Promise<any[]> {
   const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
   if (!OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY is not configured');
@@ -522,7 +527,7 @@ Provide only the translations, one per line, numbered.`;
         const translatedText = translations[i];
 
         try {
-          await saveTranslation(supabase, gap, translatedText);
+          await saveTranslation(supabase, gap, translatedText, userId);
           results.push({
             entityType: gap.entityType,
             entityUuid: gap.entityUuid,
@@ -544,7 +549,11 @@ Provide only the translations, one per line, numbered.`;
   return results;
 }
 
-async function saveTranslation(supabase: any, gap: TranslationGap, translatedText: string) {
+async function saveTranslation(supabase: any, gap: TranslationGap, translatedText: string, userId?: string) {
+  if (!userId) {
+    throw new Error('Missing userId for attribution (created_by/updated_by)');
+  }
+
   if (gap.entityType === 'ui') {
     const { error } = await supabase
       .from('ui_translations')
@@ -555,27 +564,60 @@ async function saveTranslation(supabase: any, gap: TranslationGap, translatedTex
         source_field_name: 'text',
         original_text: gap.originalText,
         translated_text: translatedText,
-        source: 'ai_generated'
+        source: 'ai_generated',
+        created_by: userId,
+        updated_by: userId
       }, {
         onConflict: 'ui_key,language_code_target,source_field_name'
       });
 
     if (error) throw error;
-  } else {
-    const { error } = await supabase.rpc('create_translation_entries', {
-      p_entity_type: gap.entityType,
-      p_entity_uuid: gap.entityUuid,
-      p_translations: [{
-        field_key: gap.fieldKey,
-        lang_code: gap.targetLanguage,
-        text_value: translatedText
-      }],
-      p_source_language: gap.sourceLanguage
-    });
+    return;
+  }
+
+  if (gap.entityType === 'report_structure') {
+    const { error } = await supabase
+      .from('report_structures_translations')
+      .upsert({
+        report_structure_uuid: gap.entityUuid,
+        language_code_original: gap.sourceLanguage,
+        language_code_target: gap.targetLanguage,
+        source_field_name: (gap.fieldKey === 'structure_name' || gap.fieldKey === 'name') ? 'report_structure_name' : gap.fieldKey,
+        original_text: gap.originalText,
+        translated_text: translatedText,
+        source: 'ai_generated',
+        created_by: userId,
+        updated_by: userId
+      }, {
+        onConflict: 'report_structure_uuid,language_code_target,source_field_name'
+      });
 
     if (error) throw error;
+    return;
+  }
+
+  if (gap.entityType === 'report_line_item') {
+    const { error } = await supabase
+      .from('report_line_items_translations')
+      .upsert({
+        report_line_item_uuid: gap.entityUuid,
+        language_code_original: gap.sourceLanguage,
+        language_code_target: gap.targetLanguage,
+        source_field_name: gap.fieldKey,
+        original_text: gap.originalText,
+        translated_text: translatedText,
+        source: 'ai_generated',
+        created_by: userId,
+        updated_by: userId
+      }, {
+        onConflict: 'report_line_item_uuid,language_code_target,source_field_name'
+      });
+
+    if (error) throw error;
+    return;
   }
 }
+
 
 function getLanguageName(code: string): string {
   const names: Record<string, string> = {

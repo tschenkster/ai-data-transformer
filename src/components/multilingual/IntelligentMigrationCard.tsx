@@ -76,10 +76,14 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
         });
       }, 400);
 
+      const { data: userRes } = await supabase.auth.getUser();
+      const userId = userRes?.user?.id;
+
       const { data, error } = await supabase.functions.invoke('intelligent-translation-migration', {
         body: { 
           operation: `migrate-${contentTypeId === 'report_structure' ? 'structures' : contentTypeId === 'report_line_item' ? 'line-items' : contentTypeId}`,
-          contentTypes: [contentTypeId]
+          contentTypes: [contentTypeId],
+          userId
         }
       });
 
@@ -127,8 +131,11 @@ export function IntelligentMigrationCard({ analysisData }: IntelligentMigrationC
     setGlobalMigration(null);
     
     try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const userId = userRes?.user?.id;
+
       const { data, error } = await supabase.functions.invoke('intelligent-translation-migration', {
-        body: { operation: 'migrate' }
+        body: { operation: 'migrate', userId }
       });
 
       if (error) {
