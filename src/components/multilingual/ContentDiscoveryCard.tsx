@@ -86,6 +86,9 @@ export function ContentDiscoveryCard({ onAnalysisComplete }: ContentDiscoveryCar
         [contentTypeId]: { loading: false, progress: 100, data: data.result }
       }));
 
+      // Also update parent analysis data for migration enabling
+      onAnalysisComplete(data.result);
+
       toast({
         title: "Analysis Complete",
         description: `Found ${data.result.contentByType[contentTypeId] || 0} ${contentTypes.find(ct => ct.id === contentTypeId)?.label} items`,
