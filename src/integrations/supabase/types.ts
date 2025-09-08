@@ -1122,24 +1122,7 @@ export type Database = {
       }
     }
     Views: {
-      audit_events: {
-        Row: {
-          event_action: string | null
-          event_date: string | null
-          event_id: string | null
-        }
-        Insert: {
-          event_action?: string | null
-          event_date?: never
-          event_id?: never
-        }
-        Update: {
-          event_action?: string | null
-          event_date?: never
-          event_id?: never
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assess_translation_data_completeness: {
