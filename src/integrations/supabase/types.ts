@@ -1171,6 +1171,10 @@ export type Database = {
           entity_name: string
         }[]
       }
+      check_translation_data_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       cleanup_old_documentation_files: {
         Args: { p_keep_count?: number }
         Returns: number
