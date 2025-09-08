@@ -133,13 +133,13 @@ async function performSelectiveAnalysis(supabase: any, operation: string, conten
   // 1. Discover UI content gaps
   if (shouldAnalyzeUI) {
     console.log('Analyzing UI translations...');
-    const uiKeys = await scanForUIKeys();
+    const uiKeys = await scanForUIKeys(supabase);
     analysis.uiKeysToBootstrap = uiKeys;
     analysis.contentByType.ui = uiKeys.length;
 
     // Sample UI keys for language detection
     if (uiKeys.length > 0) {
-      const sampleUITexts = uiKeys.slice(0, 10);
+      const sampleUITexts = uiKeys.slice(0, 10).map(k => ( (globalThis as any).translationKeyMap?.[k] || k ));
       const uiLanguage = await detectLanguage(supabase, sampleUITexts);
       analysis.detectedLanguages[uiLanguage.language] = (analysis.detectedLanguages[uiLanguage.language] || 0) + uiKeys.length;
     }
@@ -329,10 +329,54 @@ async function performSelectiveMigration(supabase: any, operation: string, conte
   if (analysis.uiKeysToBootstrap.length > 0) {
     console.log(`Bootstrapping ${analysis.uiKeysToBootstrap.length} UI keys...`);
     try {
-      await bootstrapUITranslations(supabase, analysis.uiKeysToBootstrap, filters.sourceLanguage || 'en', userId);
+      const sourceLanguage = filters.sourceLanguage || 'en';
+      await bootstrapUITranslations(supabase, analysis.uiKeysToBootstrap, sourceLanguage, userId);
       results.uiElementsProcessed = analysis.uiKeysToBootstrap.length;
-    } catch (error) {
-      results.errors.push(`UI bootstrap failed: ${error.message}`);
+
+      // Now generate missing target-language translations for UI keys
+      const { data: sysLangs, error: sysErr } = await supabase
+        .from('system_languages')
+        .select('language_code')
+        .eq('is_enabled', true);
+      if (sysErr) throw sysErr;
+      const enabledLangs = (sysLangs || []).map((l: any) => l.language_code);
+
+      const translationKeyMap: Record<string, string> = (globalThis as any).translationKeyMap || {};
+      const uiGaps: TranslationGap[] = [];
+
+      for (const key of analysis.uiKeysToBootstrap) {
+        const original = translationKeyMap[key] || key;
+        for (const target of enabledLangs) {
+          if (target === sourceLanguage) continue;
+          // Skip if already translated
+          const { data: existing, error: existErr } = await supabase
+            .from('ui_translations')
+            .select('ui_translation_id')
+            .eq('ui_key', key)
+            .eq('language_code_target', target)
+            .eq('source_field_name', 'text')
+            .limit(1);
+          if (existErr) throw existErr;
+          if (existing && existing.length > 0) continue;
+
+          uiGaps.push({
+            entityType: 'ui',
+            entityUuid: key,
+            fieldKey: 'text',
+            sourceLanguage,
+            targetLanguage: target,
+            originalText: original
+          });
+        }
+      }
+
+      if (uiGaps.length > 0) {
+        console.log(`Translating ${uiGaps.length} UI entries to target languages...`);
+        const uiResults = await translateBatch(supabase, uiGaps, userId);
+        results.translationsGenerated += uiResults.length;
+      }
+    } catch (error: any) {
+      results.errors.push(`UI bootstrap/translation failed: ${error.message}`);
     }
   }
 
@@ -371,7 +415,7 @@ interface TranslationKeyWithText {
   line: number;
 }
 
-async function scanForUIKeys(): Promise<string[]> {
+async function scanForUIKeys(supabase: any): Promise<string[]> {
   console.log('Scanning codebase for UI translation keys...');
   
   try {
@@ -388,7 +432,7 @@ async function scanForUIKeys(): Promise<string[]> {
     console.log(`Found ${translationKeys.length} UI translation keys with fallback text`);
     
     // Store the mapping globally for use in bootstrap
-    global.translationKeyMap = translationKeys.reduce((acc, item) => {
+    ;(globalThis as any).translationKeyMap = translationKeys.reduce((acc, item) => {
       acc[item.key] = item.fallbackText;
       return acc;
     }, {} as Record<string, string>);
@@ -458,7 +502,7 @@ async function bootstrapUITranslations(supabase: any, uiKeys: string[], sourceLa
   }
   
   // Get the translation key mapping from global storage (set by scanForUIKeys)
-  const translationKeyMap = (global as any).translationKeyMap || {};
+  const translationKeyMap = (globalThis as any).translationKeyMap || {};
   
   const insertData = [] as any[];
   
