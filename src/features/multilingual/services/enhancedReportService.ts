@@ -43,8 +43,39 @@ export class EnhancedReportService {
    */
   static async fetchLineItemsWithTranslations(
     structureUuid: string, 
+    languageCode?: string
+  ): Promise<ReportLineItem[]>;
+  
+  /**
+   * Overload for integer structure ID - converts to UUID internally
+   */
+  static async fetchLineItemsWithTranslations(
+    structureId: number,
+    languageCode?: string
+  ): Promise<ReportLineItem[]>;
+
+  static async fetchLineItemsWithTranslations(
+    structureIdentifier: string | number,
     languageCode = 'de'
   ): Promise<ReportLineItem[]> {
+    let structureUuid: string;
+
+    // Handle ID to UUID conversion
+    if (typeof structureIdentifier === 'number') {
+      const { data: structure, error } = await supabase
+        .from('report_structures')
+        .select('report_structure_uuid')
+        .eq('report_structure_id', structureIdentifier)
+        .single();
+
+      if (error || !structure) {
+        throw new Error(`Structure not found for ID: ${structureIdentifier}`);
+      }
+      
+      structureUuid = structure.report_structure_uuid;
+    } else {
+      structureUuid = structureIdentifier;
+    }
     const { data: items, error } = await supabase
       .from('report_line_items')
       .select('*')

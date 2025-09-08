@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database, Languages } from 'lucide-react';
 import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
-import { useContentLanguagePreference } from '@/hooks/useContentLanguagePreference';
-import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
+import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 
 interface ReportStructure {
   report_structure_id: number;
@@ -73,7 +73,7 @@ export default function ReportStructureViewer({
   onStructureChange 
 }: ReportStructureViewerProps) {
   const { toast } = useToast();
-  const { language, changeLanguage } = useContentLanguagePreference();
+  const { contentLanguage } = useContentLanguage();
   const [selectedStructure, setSelectedStructure] = useState<string>('');
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<ReportLineItem[]>([]);
@@ -81,7 +81,6 @@ export default function ReportStructureViewer({
   const [loading, setLoading] = useState(false);
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [translatedItems, setTranslatedItems] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (activeStructure) {
@@ -111,57 +110,22 @@ export default function ReportStructureViewer({
 
   useEffect(() => {
     buildTreeData();
-  }, [filteredItems, expandedNodes, translatedItems]);
+  }, [filteredItems, expandedNodes]);
 
   useEffect(() => {
-    // Load translations when language changes
-    if (lineItems.length > 0) {
-      loadTranslations();
+    // Re-fetch line items when language changes
+    if (selectedStructure && contentLanguage) {
+      fetchLineItems(parseInt(selectedStructure));
     }
-  }, [language, lineItems]);
-
-  const loadTranslations = async () => {
-    if (!language || language === 'original') return;
-
-    const translations = new Map<string, string>();
-    
-    // Load translations for line items in batches
-    const batchSize = 20;
-    for (let i = 0; i < lineItems.length; i += batchSize) {
-      const batch = lineItems.slice(i, i + batchSize);
-      
-      await Promise.all(batch.map(async (item) => {
-        try {
-          const translatedDesc = await EnhancedTranslationService.getTranslationWithFallback(
-            'report_line_item',
-            item.report_line_item_uuid,
-            'report_line_item_description',
-            language
-          );
-          
-          if (translatedDesc && !translatedDesc.startsWith('[missing:') && !translatedDesc.startsWith('[error:')) {
-            translations.set(item.report_line_item_uuid, translatedDesc);
-          }
-        } catch (error) {
-          console.error('Translation fetch failed for item:', item.report_line_item_uuid, error);
-        }
-      }));
-    }
-    
-    setTranslatedItems(translations);
-  };
+  }, [contentLanguage]);
 
   const fetchLineItems = async (structureId: number) => {
     setLoading(true);
     try {
-      // Use integer ID for performance in joins
-      const { data, error } = await supabase
-        .from('report_line_items')
-        .select('*')
-        .eq('report_structure_id', structureId)
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
+      const data = await EnhancedReportService.fetchLineItemsWithTranslations(
+        structureId,
+        contentLanguage
+      );
 
       setLineItems(data || []);
       onStructureChange(structureId);
@@ -233,18 +197,13 @@ export default function ReportStructureViewer({
   };
 
   const getItemDisplayName = (item: ReportLineItem) => {
-    // Check for translated version first
-    const translatedName = translatedItems.get(item.report_line_item_uuid);
-    if (translatedName && !translatedName.startsWith('[missing:')) {
-      return translatedName;
-    }
-
+    // Items come pre-translated from EnhancedReportService
     // Use report_line_item_description as primary display field
     if (item.report_line_item_description) {
       return item.report_line_item_description;
     }
     
-    // Fallback to hierarchy path
+    // Fallback to hierarchy path (also localized)
     if (item.hierarchy_path) {
       return item.hierarchy_path;
     }

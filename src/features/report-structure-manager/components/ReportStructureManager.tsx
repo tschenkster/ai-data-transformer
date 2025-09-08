@@ -15,8 +15,9 @@ import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
 import ReportStructureViewer from './ReportStructureViewer';
 import ReportStructureModifier from './ReportStructureModifier';
 import { ActionButtons, createSetActiveAction, createViewAction, createModifyAction, createDeleteAction } from '@/components/ui/action-buttons';
-import { useContentLanguagePreference } from '@/hooks/useContentLanguagePreference';
+import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
 import { ReportStructureService } from '../services/reportStructureService';
+import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 import { TranslationTestButton } from '@/components/admin/TranslationTestButton';
 
 interface ReportStructure {
@@ -65,7 +66,7 @@ interface ReportLineItem {
 export default function ReportStructureManager() {
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
-  const { language } = useContentLanguagePreference();
+  const { contentLanguage } = useContentLanguage();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
@@ -76,7 +77,7 @@ export default function ReportStructureManager() {
 
   const fetchStructures = async () => {
     try {
-      const data = await ReportStructureService.fetchStructures(language);
+      const data = await ReportStructureService.fetchStructures(contentLanguage);
       setStructures(data || []);
       const active = data?.find(s => s.is_active) || null;
       setActiveStructure(active);
@@ -94,14 +95,10 @@ export default function ReportStructureManager() {
 
   const fetchLineItems = async (structureId: number) => {
     try {
-      // Use integer ID for performance in joins
-      const { data, error } = await supabase
-        .from('report_line_items')
-        .select('*')
-        .eq('report_structure_id', structureId)
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
+      const data = await EnhancedReportService.fetchLineItemsWithTranslations(
+        structureId,
+        contentLanguage
+      );
 
       setLineItems(data || []);
     } catch (error) {
@@ -123,7 +120,7 @@ export default function ReportStructureManager() {
   useEffect(() => {
     fetchStructures();
     checkStructuresWithMappings();
-  }, [language]);
+  }, [contentLanguage]);
 
   const setActiveStructureHandler = async (structureId: number) => {
     try {
