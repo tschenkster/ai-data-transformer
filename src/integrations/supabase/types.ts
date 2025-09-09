@@ -1477,6 +1477,16 @@ export type Database = {
           granted_by_name: string
         }[]
       }
+      get_user_session_activity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          is_active: boolean
+          is_current_session: boolean
+          last_activity_at: string
+          session_created_at: string
+          session_duration_minutes: number
+        }[]
+      }
       get_user_summary: {
         Args: Record<PropertyKey, never>
         Returns: {
