@@ -1252,14 +1252,15 @@ export type Database = {
       get_all_user_profiles_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
+          approved_at: string
+          approved_by: string
           created_at: string
           email: string
-          failed_login_attempts: number
           first_name: string
           last_login_at: string
           last_name: string
-          preferred_content_language: string
-          preferred_ui_language: string
+          supabase_user_uuid: string
+          user_id: number
           user_status: Database["public"]["Enums"]["user_account_status"]
           user_uuid: string
         }[]
