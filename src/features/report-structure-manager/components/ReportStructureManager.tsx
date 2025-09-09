@@ -368,152 +368,190 @@ export default function ReportStructureManager() {
   }
 
   return (
-    <Tabs defaultValue="overview" className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <TabsList>
-          <TabsTrigger value="overview">
-            <Database className="w-4 h-4 mr-2" />
-            {t('TAB_LIST_REPORT_STRUCTURES', 'List Report Structures')}
-          </TabsTrigger>
-          <TabsTrigger value="upload">
-            <Upload className="w-4 h-4 mr-2" />
-            {t('TAB_UPLOAD_NEW_STRUCTURE', 'Upload New Structure')}
-          </TabsTrigger>
-          <TabsTrigger value="viewer">
-            <Eye className="w-4 h-4 mr-2" />
-            {t('TAB_VIEW_STRUCTURE', 'View Structure')}
-          </TabsTrigger>
-          {isSuperAdmin && (
-            <TabsTrigger value="modifier">
-              <Edit className="w-4 h-4 mr-2" />
-              {t('TAB_MODIFY_STRUCTURE', 'Modify Structure')}
+    <div className="space-y-6">
+      <Tabs defaultValue="overview" className="w-full">
+        <div className="border-b bg-card/50 rounded-t-lg p-4">
+          <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/30">
+            <TabsTrigger value="overview" className="flex items-center gap-2 text-sm font-medium">
+              <Database className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('TAB_LIST_REPORT_STRUCTURES', 'List Report Structures')}</span>
+              <span className="sm:hidden">List</span>
             </TabsTrigger>
-          )}
-        </TabsList>
-      </div>
-
-      <TabsContent value="overview" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('HEADING_REPORT_STRUCTURES', 'Report Structures')}</CardTitle>
-            <CardDescription>
-              {t('DESC_MANAGE_REPORT_STRUCTURES', 'Manage your report structures and generate missing translations')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {structures.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No report structures found</p>
-                <p className="text-sm">Upload a CSV or Excel file to create your first structure</p>
-              </div>
-            ) : (
-              <>
-                {/* Translation Test Section */}
-                <div className="mb-6 p-4 border rounded-lg bg-muted/50">
-                  <h3 className="font-semibold text-sm mb-3">Translation Management</h3>
-                  <div className="space-y-2">
-                    {structures.map((structure) => (
-                      <TranslationTestButton
-                        key={structure.report_structure_uuid}
-                        structureUuid={structure.report_structure_uuid}
-                        structureName={structure.report_structure_name}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('TABLE_ID', 'ID')}</TableHead>
-                      <TableHead>{t('TABLE_NAME', 'Name')}</TableHead>
-                      <TableHead>{t('TABLE_VERSION', 'Version')}</TableHead>
-                      <TableHead>{t('TABLE_STATUS', 'Status')}</TableHead>
-                      <TableHead>{t('TABLE_CREATED_BY', 'Created By')}</TableHead>
-                      <TableHead>{t('TABLE_CREATED_AT', 'Created At')}</TableHead>
-                      <TableHead>{t('TABLE_ACTIONS', 'Actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {structures.map((structure) => (
-                      <TableRow key={structure.report_structure_id}>
-                        <TableCell className="font-mono text-sm">
-                          {structure.report_structure_id}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {structure.report_structure_name}
-                        </TableCell>
-                        <TableCell>{structure.version}</TableCell>
-                        <TableCell>
-                          {structure.is_active ? (
-                             <Badge variant="default">
-                               <Check className="w-3 h-3 mr-1" />
-                               {t('STATUS_ACTIVE', 'Active')}
-                             </Badge>
-                           ) : (
-                             <Badge variant="secondary">{t('STATUS_INACTIVE', 'Disabled')}</Badge>
-                           )}
-                        </TableCell>
-                        <TableCell>{structure.created_by_user_name}</TableCell>
-                        <TableCell>{formatDate(structure.created_at)}</TableCell>
-                         <TableCell>
-                           <div className="flex items-center gap-2">
-                             {getActionsForStructure(structure)}
-                           </div>
-                         </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </>
+            <TabsTrigger value="upload" className="flex items-center gap-2 text-sm font-medium">
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('TAB_UPLOAD_NEW_STRUCTURE', 'Upload New Structure')}</span>
+              <span className="sm:hidden">Upload</span>
+            </TabsTrigger>
+            <TabsTrigger value="viewer" className="flex items-center gap-2 text-sm font-medium">
+              <Eye className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('TAB_VIEW_STRUCTURE', 'View Structure')}</span>
+              <span className="sm:hidden">View</span>
+            </TabsTrigger>
+            {isSuperAdmin && (
+              <TabsTrigger value="modifier" className="flex items-center gap-2 text-sm font-medium">
+                <Edit className="w-4 h-4" />
+                <span className="hidden sm:inline">{t('TAB_MODIFY_STRUCTURE', 'Modify Structure')}</span>
+                <span className="sm:hidden">Modify</span>
+              </TabsTrigger>
             )}
-          </CardContent>
-        </Card>
-      </TabsContent>
+          </TabsList>
+        </div>
 
-      <TabsContent value="upload" className="space-y-4">
-        <Card>
-          <CardContent className="pt-6">
-            <AdvancedFileUpload onFileProcessed={handleFileProcessed} />
-          </CardContent>
-        </Card>
-      </TabsContent>
+        <div className="bg-background rounded-b-lg">
+          <TabsContent value="overview" className="mt-0 p-6">
+            <div className="space-y-6">
+              <div className="flex flex-col space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight">{t('HEADING_REPORT_STRUCTURES', 'Report Structures')}</h2>
+                <p className="text-muted-foreground">
+                  {t('DESC_MANAGE_REPORT_STRUCTURES', 'Manage your report structures and generate missing translations')}
+                </p>
+              </div>
+              {structures.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-muted rounded-lg bg-muted/20">
+                  <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                  <h3 className="text-lg font-medium mb-2">No report structures found</h3>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    Upload a CSV or Excel file to create your first structure and start managing your reports.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Translation Management Section */}
+                  <Card className="border-muted/40 bg-gradient-to-r from-muted/30 to-muted/20">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-lg font-medium">Translation Management</CardTitle>
+                      <CardDescription>Generate and manage translations for your report structures</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {structures.map((structure) => (
+                        <TranslationTestButton
+                          key={structure.report_structure_uuid}
+                          structureUuid={structure.report_structure_uuid}
+                          structureName={structure.report_structure_name}
+                        />
+                      ))}
+                    </CardContent>
+                  </Card>
 
-      <TabsContent value="viewer" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('HEADING_STRUCTURE_VIEWER', 'Structure Viewer')}</CardTitle>
-            <CardDescription>
-              {t('DESC_STRUCTURE_VIEWER', 'Browse and explore the hierarchical structure of report line items')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ReportStructureViewer
-              structures={structures}
-              activeStructure={activeStructure}
-              onStructureChange={(structureId) => {
-                if (structureId) {
-                  fetchLineItems(structureId);
-                } else {
-                  setLineItems([]);
-                }
-              }}
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
+                  {/* Structures Table */}
+                  <Card className="border-muted/40">
+                    <CardContent className="p-0">
+                      <div className="overflow-hidden rounded-lg border border-muted/40">
+                        <Table>
+                          <TableHeader className="bg-muted/30">
+                            <TableRow className="border-muted/40 hover:bg-muted/40">
+                              <TableHead className="font-semibold text-foreground/90">{t('TABLE_ID', 'ID')}</TableHead>
+                              <TableHead className="font-semibold text-foreground/90">{t('TABLE_NAME', 'Name')}</TableHead>
+                              <TableHead className="font-semibold text-foreground/90">{t('TABLE_VERSION', 'Version')}</TableHead>
+                              <TableHead className="font-semibold text-foreground/90">{t('TABLE_STATUS', 'Status')}</TableHead>
+                              <TableHead className="font-semibold text-foreground/90">{t('TABLE_CREATED_BY', 'Created By')}</TableHead>
+                              <TableHead className="font-semibold text-foreground/90">{t('TABLE_CREATED_AT', 'Created At')}</TableHead>
+                              <TableHead className="font-semibold text-foreground/90 text-right">{t('TABLE_ACTIONS', 'Actions')}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {structures.map((structure, index) => (
+                              <TableRow 
+                                key={structure.report_structure_id} 
+                                className={`border-muted/30 hover:bg-muted/20 transition-colors ${
+                                  index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+                                }`}
+                              >
+                                <TableCell className="font-mono text-sm text-muted-foreground">
+                                  {structure.report_structure_id}
+                                </TableCell>
+                                <TableCell className="font-medium text-foreground">
+                                  {structure.report_structure_name}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{structure.version}</TableCell>
+                                <TableCell>
+                                  {structure.is_active ? (
+                                    <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                                      <Check className="w-3 h-3 mr-1" />
+                                      {t('STATUS_ACTIVE', 'Active')}
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                                      {t('STATUS_INACTIVE', 'Disabled')}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{structure.created_by_user_name}</TableCell>
+                                <TableCell className="text-muted-foreground text-sm">{formatDate(structure.created_at)}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center justify-end gap-1">
+                                    {getActionsForStructure(structure)}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </TabsContent>
 
-  {isSuperAdmin && (
-    <TabsContent value="modifier" className="space-y-4">
-      <Card>
-        <CardContent className="pt-6">
-          {/* Structure selection is now handled within ReportStructureModifier */}
-          <ReportStructureModifier />
-        </CardContent>
-      </Card>
-    </TabsContent>
-  )}
-    </Tabs>
+          <TabsContent value="upload" className="mt-0 p-6">
+            <div className="space-y-6">
+              <div className="flex flex-col space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight">Upload New Structure</h2>
+                <p className="text-muted-foreground">
+                  Import a new report structure from CSV or Excel files
+                </p>
+              </div>
+              <Card className="border-muted/40">
+                <CardContent className="pt-6">
+                  <AdvancedFileUpload onFileProcessed={handleFileProcessed} />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="viewer" className="mt-0 p-6">
+            <div className="space-y-6">
+              <div className="flex flex-col space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight">{t('HEADING_STRUCTURE_VIEWER', 'Structure Viewer')}</h2>
+                <p className="text-muted-foreground">
+                  {t('DESC_STRUCTURE_VIEWER', 'Browse and explore the hierarchical structure of report line items')}
+                </p>
+              </div>
+              <Card className="border-muted/40">
+                <CardContent className="pt-6">
+                  <ReportStructureViewer
+                    structures={structures}
+                    activeStructure={activeStructure}
+                    onStructureChange={(structureId) => {
+                      if (structureId) {
+                        fetchLineItems(structureId);
+                      } else {
+                        setLineItems([]);
+                      }
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {isSuperAdmin && (
+            <TabsContent value="modifier" className="mt-0 p-6">
+              <div className="space-y-6">
+                <div className="flex flex-col space-y-2">
+                  <h2 className="text-2xl font-semibold tracking-tight">{t('HEADING_STRUCTURE_MODIFIER', 'Structure Modifier')}</h2>
+                  <p className="text-muted-foreground">
+                    {t('DESC_STRUCTURE_MODIFIER', 'Edit and manage report structure line items and hierarchy')}
+                  </p>
+                </div>
+                <ReportStructureModifier />
+              </div>
+            </TabsContent>
+          )}
+        </div>
+      </Tabs>
+    </div>
   );
 }
