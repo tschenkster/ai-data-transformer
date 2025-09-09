@@ -2,7 +2,7 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Languages } from 'lucide-react';
-import { useLanguageContext } from '@/components/LanguageProvider';
+import { useLanguageContext } from '@/hooks/useLanguageContext';
 
 interface UserLanguageSelectorProps {
   showLabel?: boolean;

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Search, ChevronRight, ChevronDown, FileText, Folder, Calculator, Database, Languages } from 'lucide-react';
 import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
-import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { useUnifiedTranslation } from '@/contexts/UnifiedTranslationProvider';
 import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 
 interface ReportStructure {
@@ -73,7 +73,7 @@ export default function ReportStructureViewer({
   onStructureChange 
 }: ReportStructureViewerProps) {
   const { toast } = useToast();
-  const { contentLanguage } = useContentLanguage();
+  const { contentLanguage } = useUnifiedTranslation();
   const [selectedStructure, setSelectedStructure] = useState<string>('');
   const [lineItems, setLineItems] = useState<ReportLineItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<ReportLineItem[]>([]);

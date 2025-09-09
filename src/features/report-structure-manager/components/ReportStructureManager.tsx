@@ -14,7 +14,7 @@ import { Upload, Eye, Settings, Plus, FileText, Database, AlertTriangle, Edit, C
 import { AdvancedFileUpload } from '@/features/imports/shared-pipeline';
 import ReportStructureViewer from './ReportStructureViewer';
 import ReportStructureModifier from './ReportStructureModifier';
-import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { useUnifiedTranslation } from '@/contexts/UnifiedTranslationProvider';
 import { ReportStructureService } from '../services/reportStructureService';
 import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 import { TranslationTestButton } from '@/components/admin/TranslationTestButton';
@@ -66,7 +66,7 @@ interface ReportLineItem {
 export default function ReportStructureManager() {
   const { user, userRoles, isSuperAdmin } = useAuth();
   const { toast } = useToast();
-  const { contentLanguage } = useContentLanguage();
+  const { contentLanguage } = useUnifiedTranslation();
   const { t } = useUITranslations();
   const [structures, setStructures] = useState<ReportStructure[]>([]);
   const [activeStructure, setActiveStructure] = useState<ReportStructure | null>(null);

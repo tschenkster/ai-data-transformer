@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Globe, Loader2 } from 'lucide-react';
-import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { useUnifiedTranslation } from '@/contexts/UnifiedTranslationProvider';
 
 interface ContentLanguageSelectorProps {
   showLabel?: boolean;
@@ -14,13 +14,7 @@ export function ContentLanguageSelector({
   size = 'default',
   className 
 }: ContentLanguageSelectorProps) {
-  const { 
-    contentLanguage, 
-    setContentLanguage, 
-    availableLanguages, 
-    loading,
-    hasUrlOverride 
-  } = useContentLanguage();
+  const { contentLanguage, setContentLanguage, availableLanguages, loading, hasUrlOverride } = useUnifiedTranslation();
 
   if (loading) {
     return (

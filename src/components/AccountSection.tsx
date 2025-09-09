@@ -1,7 +1,7 @@
 import { User, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
-import { useLanguageContext } from '@/hooks/useLanguageContext';
+import { useLanguageContext } from "@/hooks/useLanguageContext";
 import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 
 interface AccountSectionProps {

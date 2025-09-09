@@ -12,7 +12,7 @@ import CreateLineItemDialog from './CreateLineItemDialog';
 import DeleteLineItemDialog from './DeleteLineItemDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUITranslations } from '@/hooks/useUITranslations';
-import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { useUnifiedTranslation } from '@/contexts/UnifiedTranslationProvider';
 import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
 import { 
   DndContext, 
@@ -285,7 +285,7 @@ interface ReportStructureModifierProps {
 export default function ReportStructureModifier({}: ReportStructureModifierProps) {
   const { toast } = useToast();
   const { t } = useUITranslations();
-  const { contentLanguage } = useContentLanguage();
+  const { contentLanguage } = useUnifiedTranslation();
   
   // Track component lifecycle
   useEffect(() => {

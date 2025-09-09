@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RotateCcw } from 'lucide-react';
-import { useContentLanguage } from '@/contexts/ContentLanguageProvider';
+import { useUnifiedTranslation } from '@/contexts/UnifiedTranslationProvider';
 import { EnhancedTranslationService } from '@/services/enhancedTranslationService';
 import { useUITranslations } from '@/hooks/useUITranslations';
 
@@ -40,7 +40,7 @@ interface ChangeHistoryTableProps {
 export default function ChangeHistoryTable({ changeHistory, onUndo, recentlyUndoneItems }: ChangeHistoryTableProps) {
   const [undoingItems, setUndoingItems] = useState<Set<string>>(new Set());
   const [translatedDescriptions, setTranslatedDescriptions] = useState<Map<string, string>>(new Map());
-  const { contentLanguage } = useContentLanguage();
+  const { contentLanguage } = useUnifiedTranslation();
   const { t } = useUITranslations();
 
   // Translate descriptions when language changes or history updates

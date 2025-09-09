@@ -4,7 +4,7 @@ import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Languages } from 'lucide-react';
-import { useLanguageContext } from '@/components/LanguageProvider';
+import { useLanguageContext } from "@/hooks/useLanguageContext";
 import Footer from '@/components/Footer';
 
 export default function AccountProfile() {
