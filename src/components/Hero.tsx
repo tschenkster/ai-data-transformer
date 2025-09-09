@@ -5,14 +5,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useBetaDialog } from '@/hooks/useBetaDialog';
-import { useUITranslations } from '@/hooks/useUITranslations';
+import { useTranslation } from '@/contexts/UnifiedTranslationProvider';
 
 export function Hero() {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { showBetaDialog, BetaDialog } = useBetaDialog();
-  const { t } = useUITranslations();
+  const { t } = useTranslation();
 
   // Analytics event simulation
   const trackEvent = useCallback((event: string, properties?: Record<string, any>) => {

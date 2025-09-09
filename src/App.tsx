@@ -10,9 +10,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { AppRoutes } from "@/app/routes/app-routes";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LanguageProvider } from "@/components/LanguageProvider";
-import { ContentLanguageProvider } from "@/contexts/ContentLanguageProvider";
-import { useUITranslations } from "@/hooks/useUITranslations";
+import { UnifiedTranslationProvider, useUnifiedTranslation } from "@/contexts/UnifiedTranslationProvider";
 import Homepage from "./pages/Homepage";
 import Pricing from "./pages/Pricing";
 import Register from "./pages/Register";
@@ -25,14 +23,18 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const { user, authLoading } = useAuth();
-  const { t } = useUITranslations();
+  const { t, loading: translationsLoading, translationsLoaded } = useUnifiedTranslation();
 
-  // Render a non-blocking loading overlay instead of halting all routes
-  const loadingOverlay = authLoading ? (
+  // Enhanced loading overlay that prevents triple loading
+  const loadingOverlay = (authLoading || translationsLoading || !translationsLoaded) ? (
     <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 backdrop-blur-sm">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-muted-foreground">{t('MSG_LOADING', 'Loading...')}</p>
+        <p className="text-muted-foreground">
+          {authLoading ? t('MSG_LOADING_AUTH', 'Authenticating...') : 
+           translationsLoading ? t('MSG_LOADING_TRANSLATIONS', 'Loading interface...') : 
+           t('MSG_LOADING', 'Loading...')}
+        </p>
       </div>
     </div>
   ) : null;
@@ -87,11 +89,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <LanguageProvider>
-              <ContentLanguageProvider>
-                <AppContent />
-              </ContentLanguageProvider>
-            </LanguageProvider>
+            <UnifiedTranslationProvider>
+              <AppContent />
+            </UnifiedTranslationProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
