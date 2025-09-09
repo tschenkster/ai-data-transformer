@@ -1,8 +1,6 @@
 import { ReportStructureManager as ReportStructureManagerComponent } from '@/features/report-structure-manager';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { ErrorBoundaryWithRecovery } from '@/components/ErrorBoundaryWithRecovery';
-import { Button } from '@/components/ui/button';
-import { Plus, Upload, Settings } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { useEffect } from 'react';
 import { useUITranslations } from '@/hooks/useUITranslations';
@@ -31,23 +29,6 @@ export default function ReportStructureManager() {
     };
   }, []);
 
-  const pageActions = (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm">
-        <Settings className="h-4 w-4 mr-2" />
-        {t('BTN_SETTINGS', 'Settings')}
-      </Button>
-      <Button variant="outline" size="sm">
-        <Upload className="h-4 w-4 mr-2" />
-        {t('BTN_IMPORT', 'Import')}
-      </Button>
-      <Button size="sm">
-        <Plus className="h-4 w-4 mr-2" />
-        {t('BTN_NEW_STRUCTURE', 'New Structure')}
-      </Button>
-    </div>
-  );
-
   return (
     <ErrorBoundaryWithRecovery
       onError={(error, errorInfo) => {
@@ -56,7 +37,6 @@ export default function ReportStructureManager() {
     >
       <CompactPageLayout 
         currentPage={t('NAV_REPORT_STRUCTURE_MANAGER', 'Report Structure Manager')}
-        actions={pageActions}
       >
         <ErrorBoundaryWithRecovery
           onError={(error, errorInfo) => {
