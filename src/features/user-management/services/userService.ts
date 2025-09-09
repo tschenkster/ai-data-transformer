@@ -6,27 +6,16 @@ import { ErrorHandler } from '@/shared/utils/errorHandling';
 export class UserService {
   static async fetchUsers(isSuperAdmin: boolean, userUuid?: string): Promise<UserAccount[]> {
     if (isSuperAdmin) {
+      // Use secure admin function with audit logging
       const { data, error } = await supabase
-        .from('user_accounts')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_all_user_profiles_admin');
 
       if (error) throw error;
       return (data || []) as UserAccount[];
     } else {
-      // Entity admins can only see users within their accessible entities
-      if (!userUuid) {
-        throw new Error('User UUID required for entity admin scope filtering');
-      }
-      
-      // Get users through entity access scope - fallback to standard query
-      const { data, error } = await supabase
-        .from('user_accounts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data || []) as UserAccount[];
+      // Entity admins should not have access to user lists for security
+      // Only super admins can view all users to prevent data exposure
+      throw new Error('Access denied: Only super admins can view user lists');
     }
   }
 
@@ -60,13 +49,12 @@ export class UserService {
         required: false
       });
 
-      const { error } = await supabase
-        .from('user_accounts')
-        .update({
-          first_name: firstName,
-          last_name: lastName
-        })
-        .eq('user_uuid', validatedUuid);
+      // Use secure update function with validation and audit logging
+      const { data, error } = await supabase
+        .rpc('update_own_profile', {
+          p_first_name: firstName,
+          p_last_name: lastName
+        });
 
       if (error) throw error;
     } catch (validationError) {
@@ -76,12 +64,12 @@ export class UserService {
   }
 
   static async deleteUser(userUuid: string): Promise<void> {
-    // Fetch user details for proper deletion request
-    const { data: userAccount, error: fetchError } = await supabase
-      .from('user_accounts')
-      .select('user_uuid, email')
-      .eq('user_uuid', userUuid)
-      .single();
+    // Only super admins can delete users - this will be enforced by RLS
+    // Get user details through secure function
+    const { data: profileData, error: fetchError } = await supabase
+      .rpc('get_all_user_profiles_admin');
+    
+    const userAccount = profileData?.find(u => u.user_uuid === userUuid);
 
     if (fetchError || !userAccount) {
       throw new Error(`User account not found: ${fetchError?.message || 'Unknown error'}`);

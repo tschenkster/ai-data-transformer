@@ -102,13 +102,6 @@ export type Database = {
             referencedRelation: "user_accounts"
             referencedColumns: ["user_uuid"]
           },
-          {
-            foreignKeyName: "fk_coa_translation_sessions_user_account"
-            columns: ["user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
         ]
       }
       entities: {
@@ -160,13 +153,6 @@ export type Database = {
             referencedColumns: ["user_uuid"]
           },
           {
-            foreignKeyName: "fk_entities_created_by"
-            columns: ["created_by_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
-          {
             foreignKeyName: "fk_entities_entity_group"
             columns: ["entity_group_uuid"]
             isOneToOne: false
@@ -215,13 +201,6 @@ export type Database = {
             columns: ["created_by_user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_uuid"]
-          },
-          {
-            foreignKeyName: "fk_entity_groups_created_by"
-            columns: ["created_by_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
             referencedColumns: ["user_uuid"]
           },
         ]
@@ -353,13 +332,6 @@ export type Database = {
             referencedColumns: ["user_uuid"]
           },
           {
-            foreignKeyName: "fk_report_line_items_created_by_user_account"
-            columns: ["created_by_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
-          {
             foreignKeyName: "fk_report_line_items_entity"
             columns: ["entity_uuid"]
             isOneToOne: false
@@ -371,13 +343,6 @@ export type Database = {
             columns: ["updated_by_user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_uuid"]
-          },
-          {
-            foreignKeyName: "fk_report_line_items_updated_by_user_account"
-            columns: ["updated_by_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
             referencedColumns: ["user_uuid"]
           },
           {
@@ -621,13 +586,6 @@ export type Database = {
             referencedColumns: ["user_uuid"]
           },
           {
-            foreignKeyName: "fk_report_structures_archived_by_user_account"
-            columns: ["archived_by_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
-          {
             foreignKeyName: "fk_report_structures_entity"
             columns: ["entity_uuid"]
             isOneToOne: false
@@ -775,24 +733,10 @@ export type Database = {
             referencedColumns: ["user_uuid"]
           },
           {
-            foreignKeyName: "fk_security_audit_logs_target_user_account"
-            columns: ["target_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
-          {
             foreignKeyName: "fk_security_audit_logs_user_account"
             columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_uuid"]
-          },
-          {
-            foreignKeyName: "fk_security_audit_logs_user_account"
-            columns: ["user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
             referencedColumns: ["user_uuid"]
           },
         ]
@@ -1075,24 +1019,10 @@ export type Database = {
             referencedColumns: ["user_uuid"]
           },
           {
-            foreignKeyName: "fk_user_entity_access_granted_by"
-            columns: ["granted_by_user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
-          {
             foreignKeyName: "fk_user_entity_access_user"
             columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_uuid"]
-          },
-          {
-            foreignKeyName: "fk_user_entity_access_user"
-            columns: ["user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
             referencedColumns: ["user_uuid"]
           },
         ]
@@ -1137,24 +1067,10 @@ export type Database = {
             referencedColumns: ["user_uuid"]
           },
           {
-            foreignKeyName: "fk_user_roles_assigned_by_user_account"
-            columns: ["assigned_by_user_account_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
-            referencedColumns: ["user_uuid"]
-          },
-          {
             foreignKeyName: "fk_user_roles_user_account"
             columns: ["user_uuid"]
             isOneToOne: false
             referencedRelation: "user_accounts"
-            referencedColumns: ["user_uuid"]
-          },
-          {
-            foreignKeyName: "fk_user_roles_user_account"
-            columns: ["user_uuid"]
-            isOneToOne: false
-            referencedRelation: "user_profiles_safe"
             referencedColumns: ["user_uuid"]
           },
         ]
@@ -1206,57 +1122,7 @@ export type Database = {
       }
     }
     Views: {
-      user_profiles_safe: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          first_name: string | null
-          last_name: string | null
-          locale: string | null
-          preferred_content_language: string | null
-          preferred_ui_language: string | null
-          timezone: string | null
-          user_status: Database["public"]["Enums"]["user_account_status"] | null
-          user_uuid: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email?: string | null
-          first_name?: string | null
-          last_name?: string | null
-          locale?: string | null
-          preferred_content_language?: string | null
-          preferred_ui_language?: string | null
-          timezone?: string | null
-          user_status?:
-            | Database["public"]["Enums"]["user_account_status"]
-            | null
-          user_uuid?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string | null
-          first_name?: string | null
-          last_name?: string | null
-          locale?: string | null
-          preferred_content_language?: string | null
-          preferred_ui_language?: string | null
-          timezone?: string | null
-          user_status?:
-            | Database["public"]["Enums"]["user_account_status"]
-            | null
-          user_uuid?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_accounts_preferred_ui_language_fkey"
-            columns: ["preferred_ui_language"]
-            isOneToOne: false
-            referencedRelation: "system_languages"
-            referencedColumns: ["language_code"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       assess_translation_data_completeness: {
@@ -1382,6 +1248,21 @@ export type Database = {
       extract_structure_id_from_line_item_id: {
         Args: { p_line_item_id: number }
         Returns: number
+      }
+      get_all_user_profiles_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          email: string
+          failed_login_attempts: number
+          first_name: string
+          last_login_at: string
+          last_name: string
+          preferred_content_language: string
+          preferred_ui_language: string
+          user_status: Database["public"]["Enums"]["user_account_status"]
+          user_uuid: string
+        }[]
       }
       get_column_info: {
         Args: Record<PropertyKey, never>
@@ -1609,6 +1490,21 @@ export type Database = {
           entity_uuid: string
           granted_at: string
           granted_by_name: string
+        }[]
+      }
+      get_user_profile_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          email: string
+          first_name: string
+          last_name: string
+          locale: string
+          preferred_content_language: string
+          preferred_ui_language: string
+          timezone: string
+          user_status: Database["public"]["Enums"]["user_account_status"]
+          user_uuid: string
         }[]
       }
       get_user_session_activity: {
