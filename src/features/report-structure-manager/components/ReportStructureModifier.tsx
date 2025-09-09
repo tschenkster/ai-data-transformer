@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUITranslations } from '@/hooks/useUITranslations';
 import { useUnifiedTranslation } from '@/contexts/UnifiedTranslationProvider';
 import { EnhancedReportService } from '@/features/multilingual/services/enhancedReportService';
+import { ContentLanguageSelector } from '@/components/ContentLanguageSelector';
 import { 
   DndContext, 
   closestCenter, 
@@ -337,7 +338,7 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
       setLineItems([]);
       setTreeData([]);
     }
-  }, [selectedStructureUuid]);
+  }, [selectedStructureUuid, contentLanguage]);
 
   const fetchStructures = async () => {
     setStructuresLoading(true);
@@ -1102,6 +1103,11 @@ export default function ReportStructureModifier({}: ReportStructureModifierProps
           </div>
           
           <div className="flex items-center gap-3">
+            <ContentLanguageSelector 
+              showLabel={false} 
+              size="sm" 
+              className="w-48"
+            />
             <Select value={selectedStructureUuid} onValueChange={setSelectedStructureUuid}>
               <SelectTrigger className="w-64 lg:w-80">
                 <SelectValue placeholder="Select structure..." />
