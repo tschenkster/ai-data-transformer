@@ -1,16 +1,12 @@
 import { CoATranslator } from '@/features/coa-translation';
 import { CompactPageLayout } from '@/components/layout/CompactPageLayout';
 import { Button } from '@/components/ui/button';
-import { Upload, Download, History } from 'lucide-react';
+import { Upload, Download } from 'lucide-react';
 import Footer from '@/components/Footer';
 
 export default function CoATranslatorPage() {
   const pageActions = (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm">
-        <History className="h-4 w-4 mr-2" />
-        History
-      </Button>
       <Button variant="outline" size="sm">
         <Download className="h-4 w-4 mr-2" />
         Export
