@@ -44,12 +44,12 @@ export function UnifiedTranslationProvider({ children }: UnifiedTranslationProvi
   const { toast } = useToast();
   
   // State management
-  const [contentLanguage, setContentLanguageState] = useState<string>('de');
-  const [uiLanguage, setUILanguageState] = useState<string>('de');
+  const [contentLanguage, setContentLanguageState] = useState<string>('en');
+  const [uiLanguage, setUILanguageState] = useState<string>('en');
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [availableLanguages] = useState([
-    { code: 'de', name: 'Deutsch', isDefault: true },
-    { code: 'en', name: 'English', isDefault: false }
+    { code: 'en', name: 'English', isDefault: true },
+    { code: 'de', name: 'Deutsch', isDefault: false }
   ]);
   const [loading, setLoading] = useState(true);
   const [translationsLoaded, setTranslationsLoaded] = useState(false);
@@ -99,8 +99,8 @@ export function UnifiedTranslationProvider({ children }: UnifiedTranslationProvi
         await loadUserLanguagePreferences();
       } else {
         // Guest defaults
-        setContentLanguageState('de');
-        setUILanguageState('de');
+        setContentLanguageState('en');
+        setUILanguageState('en');
       }
       
       // Load UI translations for the active language
@@ -109,8 +109,8 @@ export function UnifiedTranslationProvider({ children }: UnifiedTranslationProvi
     } catch (error) {
       console.error('Failed to initialize translations:', error);
       // Set fallback values on error
-      setContentLanguageState('de');
-      setUILanguageState('de');
+      setContentLanguageState('en');
+      setUILanguageState('en');
     } finally {
       setLoading(false);
       setTranslationsLoaded(true);
@@ -129,16 +129,16 @@ export function UnifiedTranslationProvider({ children }: UnifiedTranslationProvi
 
       if (error) throw error;
 
-      const contentLang = data?.preferred_content_language || 'de';
-      const uiLang = data?.preferred_ui_language || 'de';
+      const contentLang = data?.preferred_content_language || 'en';
+      const uiLang = data?.preferred_ui_language || 'en';
       
       setContentLanguageState(contentLang);
       setUILanguageState(uiLang);
     } catch (error) {
       console.error('Failed to load user language preferences:', error);
       // Use defaults on error
-      setContentLanguageState('de');
-      setUILanguageState('de');
+      setContentLanguageState('en');
+      setUILanguageState('en');
     }
   };
 
