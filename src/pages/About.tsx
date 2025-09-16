@@ -56,19 +56,15 @@ export default function About() {
               </div>
               
               <div>
-                <h3 className="text-lg font-medium mb-3 text-text-heading">{t('HEADING_WHAT_BUILDING', 'What I\'m building')}</h3>
+                <h3 className="text-lg font-medium mb-3 text-text-heading">What I'm building</h3>
                 <ul className="space-y-2 text-text-body">
                   <li className="flex items-start">
                     <span className="font-medium mr-2">•</span>
-                    <span><strong>Lightweight → Insightful</strong>: Turn raw DATEV exports into clean, CFO‑ready data.</span>
+                    <span><strong>Lightweight solution</strong>: No need to implement anything. Upload an xlsx, pdf or csv file. Done.</span>
                   </li>
                   <li className="flex items-start">
                     <span className="font-medium mr-2">•</span>
-                    <span><strong>Fast</strong>: Minutes to a usable P&L/Balance Sheet — not another month‑end marathon.</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="font-medium mr-2">•</span>
-                    <span><strong>Practical</strong>: Automations that eliminate spreadsheet gymnastics (and the swearing).</span>
+                    <span><strong>Fast</strong>: Minutes to a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel file.</span>
                   </li>
                 </ul>
               </div>
