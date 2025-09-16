@@ -71,6 +71,27 @@ export default function About() {
             </CardContent>
           </Card>
 
+          {/* About Building the App */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold">About Building the App</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="aspect-video w-full mb-4">
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src="https://www.youtube.com/embed/arxz2xINLLg" 
+                  title="About Building the DATEV Converter App"
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  allowFullScreen
+                  className="rounded-lg"
+                ></iframe>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* About Fractional CFO Work */}
           <Card>
             <CardHeader>
