@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
       console.log('Inserting to database:', processedRows.length, 'rows')
       
       const { data: insertResult, error: insertError } = await supabase.rpc('insert_trial_balance_data', {
-        p_data: JSON.stringify(processedRows)
+        p_data: processedRows
       })
       
       if (insertError) {
