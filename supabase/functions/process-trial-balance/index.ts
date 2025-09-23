@@ -124,6 +124,7 @@ Deno.serve(async (req) => {
     }
 
     // Transform to trial balance format
+    console.log('Starting data transformation with characteristics:', characteristics);
     const transformedData = await transformToTrialBalanceFormat(
       parsedData,
       entityUuid,
@@ -132,6 +133,15 @@ Deno.serve(async (req) => {
     );
 
     console.log('Transformed', transformedData.length, 'records');
+    
+    // Add detailed logging for debugging
+    if (transformedData.length === 0) {
+      console.warn('⚠️ No records were transformed. Debugging info:');
+      console.log('Sample parsed data (first 3 rows):', parsedData.slice(0, 3));
+      console.log('Available columns:', parsedData.length > 0 ? Object.keys(parsedData[0]) : 'No data');
+    } else {
+      console.log('✅ Transformation successful. Sample transformed record:', transformedData[0]);
+    }
 
     if (persistToDatabase) {
       // Save to database
@@ -217,46 +227,155 @@ class DocumentProcessor {
 
   static parseExcelDocument(buffer: Uint8Array): any[] {
     try {
-      console.log('Processing Excel document with Docling-inspired parser');
+      console.log('Processing Excel document with enhanced German accounting support');
       
       // Read the workbook using XLSX library
       const workbook = XLSX.read(buffer, { 
         type: 'buffer',
         cellText: false,
-        cellDates: true
+        cellDates: true,
+        sheetStubs: true // Include empty cells to detect merged ranges
       });
       
       // Get the first worksheet
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       
-      // Convert to JSON with smart header detection
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-        header: 1,
-        defval: '',
-        blankrows: false,
-        raw: false
-      });
+      console.log(`Processing worksheet: ${sheetName}`);
       
-      if (jsonData.length === 0) return [];
+      // Handle merged cells and find data start
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+      console.log(`Worksheet range: ${worksheet['!ref']}, ${range.e.r + 1} rows, ${range.e.c + 1} columns`);
       
-      // Smart header detection and normalization
-      const headers = this.normalizeHeaders(jsonData[0] as string[]);
-      const dataRows = jsonData.slice(1);
+      // Extract all data first, then process
+      const allData: any[][] = [];
+      for (let row = 0; row <= range.e.r; row++) {
+        const rowData: any[] = [];
+        for (let col = 0; col <= range.e.c; col++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+          const cell = worksheet[cellAddress];
+          
+          let cellValue = '';
+          if (cell) {
+            if (cell.t === 'n') { // Numeric
+              cellValue = cell.v;
+            } else if (cell.t === 's' || cell.t === 'str') { // String
+              cellValue = cell.v || cell.w || '';
+            } else {
+              cellValue = cell.w || cell.v || '';
+            }
+          }
+          
+          rowData.push(cellValue);
+        }
+        allData.push(rowData);
+      }
       
-      // Convert to objects with normalized headers and row tracking
-      return dataRows.map((row: any[], index) => {
-        const obj: any = { _row_number: index + 2 };
-        headers.forEach((header, i) => {
-          obj[header] = this.cleanCellValue(row[i] || '');
-        });
-        return obj;
-      }).filter(row => this.hasSignificantData(row));
+      // Find the actual data start (skip titles, merged headers, etc.)
+      const dataStart = this.findDataStartRow(allData);
+      console.log(`Data starts at row: ${dataStart + 1}`);
+      
+      if (dataStart === -1 || dataStart >= allData.length - 1) {
+        console.warn('No valid data rows found');
+        return [];
+      }
+      
+      // Extract headers and normalize them
+      const rawHeaders = allData[dataStart] || [];
+      const headers = this.normalizeHeaders(rawHeaders.map(h => String(h).trim()));
+      
+      console.log('Normalized headers:', headers);
+      
+      // Process data rows
+      const dataRows = allData.slice(dataStart + 1)
+        .filter(row => this.isValidDataRow(row))
+        .map((row, index) => {
+          const obj: any = { _row_number: dataStart + index + 2 };
+          headers.forEach((header, i) => {
+            const cellValue = row[i] || '';
+            obj[header] = this.cleanCellValue(cellValue);
+          });
+          return obj;
+        })
+        .filter(row => this.hasSignificantData(row));
+      
+      console.log(`Extracted ${dataRows.length} valid data rows from ${allData.length} total rows`);
+      
+      return dataRows;
       
     } catch (error) {
       console.error('Excel parsing error:', error);
       throw new Error(`Failed to parse Excel file: ${error.message}`);
     }
+  }
+  
+  static findDataStartRow(data: any[][]): number {
+    // Look for the row that contains the most accounting-related keywords
+    let bestRow = -1;
+    let bestScore = 0;
+    
+    const accountingKeywords = [
+      'konto', 'account', 'bezeichnung', 'description', 'soll', 'haben', 
+      'debit', 'credit', 'saldo', 'balance', 'betrag', 'amount'
+    ];
+    
+    for (let i = 0; i < Math.min(15, data.length); i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+      
+      let score = 0;
+      let nonEmptyColumns = 0;
+      
+      for (const cell of row) {
+        const cellStr = String(cell).toLowerCase().trim();
+        if (cellStr.length > 0) {
+          nonEmptyColumns++;
+          // Check for exact keyword matches
+          if (accountingKeywords.includes(cellStr)) {
+            score += 3;
+          }
+          // Check for partial matches
+          else if (accountingKeywords.some(keyword => cellStr.includes(keyword))) {
+            score += 2;
+          }
+          // Bonus for numeric patterns (could be account numbers)
+          else if (/^\d{3,8}$/.test(cellStr)) {
+            score += 1;
+          }
+        }
+      }
+      
+      // Must have at least 2 non-empty columns to be a valid header row
+      if (nonEmptyColumns >= 2 && score > bestScore) {
+        bestScore = score;
+        bestRow = i;
+      }
+    }
+    
+    // If no clear header found, use first row with multiple non-empty cells
+    if (bestRow === -1) {
+      for (let i = 0; i < Math.min(10, data.length); i++) {
+        const row = data[i];
+        const nonEmptyCount = row.filter(cell => String(cell).trim().length > 0).length;
+        if (nonEmptyCount >= 2) {
+          bestRow = i;
+          break;
+        }
+      }
+    }
+    
+    return bestRow;
+  }
+  
+  static isValidDataRow(row: any[]): boolean {
+    if (!row || row.length === 0) return false;
+    
+    const nonEmptyCount = row.filter(cell => {
+      const str = String(cell).trim();
+      return str.length > 0 && str !== '0' && str !== '-';
+    }).length;
+    
+    return nonEmptyCount >= 2; // Must have at least 2 meaningful values
   }
 
   static async parsePDFDocument(buffer: Uint8Array): Promise<any[]> {
@@ -308,21 +427,88 @@ class DocumentProcessor {
   }
 
   static normalizeHeaders(headers: string[]): string[] {
-    return headers.map(header => {
+    return headers.map((header, index) => {
+      if (!header || header.trim() === '') {
+        return `Column_${index + 1}`;
+      }
+      
       const normalized = header.toLowerCase().trim();
       
-      // Trial balance specific header mapping
-      if (normalized.includes('account') && (normalized.includes('number') || normalized.includes('code'))) return 'Account Number';
-      if (normalized.includes('account') && normalized.includes('description')) return 'Account Description';
-      if (normalized.includes('account') && !normalized.includes('number') && !normalized.includes('description')) return 'Account Description';
-      if (normalized.includes('description') || normalized.includes('bezeichnung')) return 'Account Description';
-      if (normalized.includes('debit') || normalized.includes('soll')) return 'Debit';
-      if (normalized.includes('credit') || normalized.includes('haben')) return 'Credit';
-      if (normalized.includes('balance') || normalized.includes('saldo')) return 'Balance';
-      if (normalized.includes('amount') || normalized.includes('betrag')) return 'Amount';
-      if (normalized.match(/^\d+$/)) return `Account Number`; // Pure numbers likely account numbers
+      // Enhanced German accounting field mappings
+      const mappings: Record<string, string> = {
+        // Account number variations
+        'konto': 'Account Number',
+        'kontonummer': 'Account Number', 
+        'konto-nr': 'Account Number',
+        'kto': 'Account Number',
+        'kto.': 'Account Number',
+        'account': 'Account Number',
+        'account_number': 'Account Number',
+        'acc_no': 'Account Number',
+        'sachkonto': 'Account Number',
+        
+        // Description variations
+        'bezeichnung': 'Account Description',
+        'beschreibung': 'Account Description',
+        'description': 'Account Description',
+        'kontenbezeichnung': 'Account Description',
+        'kontobezeichnung': 'Account Description',
+        'text': 'Account Description',
+        'name': 'Account Description',
+        
+        // Amount variations
+        'saldo': 'Balance',
+        'betrag': 'Amount',
+        'amount': 'Amount',
+        'summe': 'Amount',
+        'endsaldo': 'Balance',
+        'balance': 'Balance',
+        
+        // Debit variations
+        'sollsaldo': 'Debit',
+        'soll': 'Debit',
+        'debit': 'Debit',
+        'sollbetrag': 'Debit',
+        
+        // Credit variations  
+        'habensaldo': 'Credit',
+        'haben': 'Credit',
+        'credit': 'Credit',
+        'kredit': 'Credit',
+        'habenbetrag': 'Credit',
+        
+        // Period variations
+        'periode': 'Period',
+        'monat': 'Period',
+        'month': 'Period',
+        'jahr': 'Year',
+        'year': 'Year'
+      };
       
-      return header.trim() || `Column_${Math.random().toString(36).substr(2, 5)}`;
+      // Check for exact matches first
+      if (mappings[normalized]) {
+        return mappings[normalized];
+      }
+      
+      // Check for partial matches
+      for (const [german, english] of Object.entries(mappings)) {
+        if (normalized.includes(german)) {
+          return english;
+        }
+      }
+      
+      // Special pattern matching
+      if (normalized.match(/^\d+$/)) return 'Account Number'; // Pure numbers
+      if (normalized.includes('account') && (normalized.includes('number') || normalized.includes('nr'))) return 'Account Number';
+      if (normalized.includes('account') && normalized.includes('description')) return 'Account Description';
+      
+      // BWA specific patterns
+      if (normalized.includes('bwa') && normalized.includes('nr')) return 'Account Number';
+      if (normalized.includes('summen') && normalized.includes('saldenliste')) return 'Balance';
+      
+      // Return cleaned original if no mapping found
+      const cleaned = header.replace(/[^a-zA-Z0-9_äöüÄÖÜß]/g, '_').replace(/_+/g, '_').toLowerCase();
+      return cleaned || `Column_${index + 1}`;
     });
   }
 
@@ -766,7 +952,17 @@ Focus on:
     }
 
     const result = await response.json();
-    const aiAnalysis = JSON.parse(result.choices[0].message.content);
+    let aiContent = result.choices[0].message.content;
+    
+    // Handle markdown-wrapped JSON responses
+    if (aiContent.includes('```json')) {
+      const jsonMatch = aiContent.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        aiContent = jsonMatch[1];
+      }
+    }
+    
+    const aiAnalysis = JSON.parse(aiContent);
     
     console.log('AI file analysis:', aiAnalysis);
 
@@ -788,6 +984,7 @@ Focus on:
 
   } catch (error) {
     console.error('Error in AI file analysis:', error);
+    console.log('Using fallback file characteristic detection');
     return detectFileCharacteristicsFallback(data, fileName, extension);
   }
 }
@@ -891,25 +1088,91 @@ async function transformToTrialBalanceFormat(
 
 // Helper functions for data extraction and classification
 function extractAccountNumber(row: any): string | null {
-  const possibleKeys = ['Account Number', 'Account Code', 'Konto', 'Account', 'Acc No', 'account_number'];
+  // Primary keys to search for account numbers
+  const primaryKeys = ['Account Number', 'Account Code', 'account_number', 'Account'];
   
-  for (const key of possibleKeys) {
-    const value = row[key] || row[key.toLowerCase()] || row[key.replace(/\s+/g, '_').toLowerCase()];
-    if (value && String(value).trim().length > 0) {
+  // Try primary keys first
+  for (const key of primaryKeys) {
+    const value = getRowValue(row, key);
+    if (value && isValidAccountNumber(value)) {
       return String(value).trim();
+    }
+  }
+  
+  // Fallback: search all keys for numeric patterns that could be account numbers
+  for (const [key, value] of Object.entries(row)) {
+    if (key === '_row_number') continue;
+    
+    const strValue = String(value).trim();
+    if (isValidAccountNumber(strValue)) {
+      // Additional validation: must be in a column that looks like it contains account numbers
+      const keyLower = key.toLowerCase();
+      if (keyLower.includes('konto') || keyLower.includes('account') || 
+          keyLower.includes('nr') || /^\d+$/.test(strValue)) {
+        return strValue;
+      }
     }
   }
   
   return null;
 }
 
-function extractAccountDescription(row: any): string | null {
-  const possibleKeys = ['Account Description', 'Description', 'Bezeichnung', 'Name', 'account_description'];
+function isValidAccountNumber(value: string): boolean {
+  if (!value || value.trim() === '') return false;
   
-  for (const key of possibleKeys) {
-    const value = row[key] || row[key.toLowerCase()] || row[key.replace(/\s+/g, '_').toLowerCase()];
+  const cleaned = value.trim();
+  // German accounting: typically 4-8 digit account numbers
+  return /^\d{3,8}$/.test(cleaned) && parseInt(cleaned) > 0;
+}
+
+function getRowValue(row: any, key: string): any {
+  // Try exact match first
+  if (row[key] !== undefined) return row[key];
+  
+  // Try case-insensitive match
+  const lowerKey = key.toLowerCase();
+  for (const [rowKey, value] of Object.entries(row)) {
+    if (rowKey.toLowerCase() === lowerKey) return value;
+  }
+  
+  // Try with underscores
+  const underscoreKey = key.replace(/\s+/g, '_').toLowerCase();
+  for (const [rowKey, value] of Object.entries(row)) {
+    if (rowKey.toLowerCase() === underscoreKey) return value;
+  }
+  
+  return null;
+}
+
+function extractAccountDescription(row: any): string | null {
+  // Primary keys for account descriptions
+  const primaryKeys = ['Account Description', 'Description', 'account_description'];
+  
+  // Try primary keys first
+  for (const key of primaryKeys) {
+    const value = getRowValue(row, key);
     if (value && String(value).trim().length > 0) {
-      return String(value).trim();
+      const strValue = String(value).trim();
+      // Skip if it looks like an account number
+      if (!isValidAccountNumber(strValue)) {
+        return strValue;
+      }
+    }
+  }
+  
+  // Fallback: look for text columns that aren't account numbers
+  for (const [key, value] of Object.entries(row)) {
+    if (key === '_row_number') continue;
+    
+    const strValue = String(value).trim();
+    if (strValue.length > 0 && !isValidAccountNumber(strValue)) {
+      const keyLower = key.toLowerCase();
+      // Check if key suggests it's a description field
+      if (keyLower.includes('beschreibung') || keyLower.includes('bezeichnung') || 
+          keyLower.includes('description') || keyLower.includes('text') ||
+          keyLower.includes('name')) {
+        return strValue;
+      }
     }
   }
   
@@ -934,26 +1197,76 @@ function determineAccountType(accountNumber: string, description?: string | null
 function extractAmounts(row: any): Array<{ type: 'opening' | 'movement' | 'ending' | 'debit_total' | 'credit_total', amount: number }> {
   const amounts: Array<{ type: 'opening' | 'movement' | 'ending' | 'debit_total' | 'credit_total', amount: number }> = [];
   
-  // Look for debit/credit columns
-  const debitValue = parseAmount(row['Debit'] || row['debit'] || row['Soll'] || '0');
-  const creditValue = parseAmount(row['Credit'] || row['credit'] || row['Haben'] || '0');
+  // Look for debit/credit columns with multiple variants
+  const debitKeys = ['Debit', 'debit', 'Soll', 'soll', 'Sollsaldo', 'sollsaldo'];
+  const creditKeys = ['Credit', 'credit', 'Haben', 'haben', 'Habensaldo', 'habensaldo', 'Kredit', 'kredit'];
+  
+  let debitValue = 0;
+  let creditValue = 0;
+  
+  // Try to find debit amount
+  for (const key of debitKeys) {
+    const value = getRowValue(row, key);
+    if (value !== null) {
+      debitValue = parseAmount(value);
+      if (debitValue !== 0) break;
+    }
+  }
+  
+  // Try to find credit amount  
+  for (const key of creditKeys) {
+    const value = getRowValue(row, key);
+    if (value !== null) {
+      creditValue = parseAmount(value);
+      if (creditValue !== 0) break;
+    }
+  }
   
   if (debitValue !== 0) {
-    amounts.push({ type: 'debit_total', amount: debitValue });
+    amounts.push({ type: 'debit_total', amount: Math.abs(debitValue) });
   }
   
   if (creditValue !== 0) {
-    amounts.push({ type: 'credit_total', amount: -creditValue }); // Credits are negative
+    amounts.push({ type: 'credit_total', amount: -Math.abs(creditValue) }); // Credits are negative
   }
   
-  // If no debit/credit columns, look for other amount columns
+  // If no debit/credit columns found, look for single amount/balance columns
   if (amounts.length === 0) {
-    const possibleAmountKeys = ['Amount', 'Balance', 'Betrag', 'Saldo', 'amount', 'balance'];
+    const amountKeys = ['Amount', 'amount', 'Balance', 'balance', 'Saldo', 'saldo', 'Betrag', 'betrag', 'Summe', 'summe'];
     
-    for (const key of possibleAmountKeys) {
-      const value = parseAmount(row[key] || '0');
-      if (value !== 0) {
-        amounts.push({ type: 'ending', amount: value });
+    for (const key of amountKeys) {
+      const value = getRowValue(row, key);
+      if (value !== null) {
+        const parsedAmount = parseAmount(value);
+        if (parsedAmount !== 0) {
+          // Determine if it's debit or credit based on sign
+          if (parsedAmount > 0) {
+            amounts.push({ type: 'debit_total', amount: parsedAmount });
+          } else {
+            amounts.push({ type: 'credit_total', amount: parsedAmount });
+          }
+          break; // Only take the first amount found
+        }
+      }
+    }
+  }
+  
+  // If still no amounts found, search all numeric columns
+  if (amounts.length === 0) {
+    for (const [key, value] of Object.entries(row)) {
+      if (key === '_row_number') continue;
+      
+      const parsedAmount = parseAmount(value);
+      if (parsedAmount !== 0) {
+        // Skip if this looks like an account number
+        const strValue = String(value).trim();
+        if (isValidAccountNumber(strValue)) continue;
+        
+        // Take the first numeric value that isn't an account number
+        amounts.push({ 
+          type: parsedAmount > 0 ? 'debit_total' : 'credit_total', 
+          amount: Math.abs(parsedAmount) * (parsedAmount > 0 ? 1 : -1)
+        });
         break;
       }
     }
