@@ -1760,6 +1760,15 @@ export type Database = {
         }
         Returns: string
       }
+      log_trial_balance_upload: {
+        Args: {
+          p_entity_uuid: string
+          p_file_name: string
+          p_file_size: number
+          p_processing_result?: Json
+        }
+        Returns: string
+      }
       log_user_data_access: {
         Args: {
           p_access_type: string

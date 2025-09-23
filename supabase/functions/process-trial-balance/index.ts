@@ -144,6 +144,23 @@ Deno.serve(async (req) => {
 
       console.log('Data saved to database:', insertResult);
 
+      // Log the upload for audit purposes
+      try {
+        await supabase.rpc('log_trial_balance_upload', {
+          p_file_name: fileName,
+          p_file_size: transformedData.length,
+          p_entity_uuid: entityUuid,
+          p_processing_result: {
+            success: true,
+            row_count: transformedData.length,
+            characteristics: characteristics
+          }
+        });
+      } catch (auditError) {
+        console.warn('⚠️ Failed to log audit trail:', auditError);
+        // Don't fail the main operation for audit logging failures
+      }
+
       return new Response(JSON.stringify({
         success: true,
         characteristics,

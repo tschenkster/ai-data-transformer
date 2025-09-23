@@ -350,14 +350,72 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
                 </Alert>
 
                 {processingResult.characteristics && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Detected File Characteristics:</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>Content Type: <Badge variant="secondary">{processingResult.characteristics.contentType}</Badge></div>
-                      <div>Frequency: <Badge variant="secondary">{processingResult.characteristics.reportingFrequency}</Badge></div>
-                      <div>Currency: <Badge variant="secondary">{processingResult.characteristics.currency}</Badge></div>
-                      <div>Origin: <Badge variant="secondary">{processingResult.characteristics.originSystem}</Badge></div>
+                  <div className="space-y-3">
+                    <h4 className="font-medium">AI-Detected File Characteristics:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      {processingResult.characteristics.contentType && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Content Type:</span>
+                          <Badge variant="secondary">{processingResult.characteristics.contentType}</Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.reportingFrequency && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Frequency:</span>
+                          <Badge variant="secondary">{processingResult.characteristics.reportingFrequency}</Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.currency && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Currency:</span>
+                          <Badge variant="secondary">{processingResult.characteristics.currency}</Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.originSystem && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Origin System:</span>
+                          <Badge variant="secondary">{processingResult.characteristics.originSystem}</Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.quality && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Data Quality:</span>
+                          <Badge variant={processingResult.characteristics.quality === 'high' ? 'default' : 'outline'}>
+                            {processingResult.characteristics.quality}
+                          </Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.structure && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Structure:</span>
+                          <Badge variant="secondary">{processingResult.characteristics.structure}</Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.complexity && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Complexity:</span>
+                          <Badge variant="outline">{processingResult.characteristics.complexity}</Badge>
+                        </div>
+                      )}
+                      {processingResult.characteristics.confidence && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">AI Confidence:</span>
+                          <Badge variant={processingResult.characteristics.confidence >= 0.8 ? 'default' : 'outline'}>
+                            {Math.round(processingResult.characteristics.confidence * 100)}%
+                          </Badge>
+                        </div>
+                      )}
                     </div>
+                    {processingResult.characteristics.recommendations && processingResult.characteristics.recommendations.length > 0 && (
+                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                        <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">AI Recommendations:</h5>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-blue-800 dark:text-blue-200">
+                          {processingResult.characteristics.recommendations.map((rec: string, idx: number) => (
+                            <li key={idx}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
 
