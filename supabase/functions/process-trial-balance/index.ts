@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { filePath, fileName, entityUuid, options = {} } = await req.json()
+    const { filePath, fileName, entityUuid, persistToDatabase = false } = await req.json()
     
     console.log('Processing trial balance file:', { filePath, fileName, entityUuid })
 
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     console.log('Processed rows:', processedRows.length)
 
     // Handle persistence or download
-    if (options.persistToDatabase) {
+    if (persistToDatabase) {
       // For now, simulate database insertion - the function will be available once types are updated
       console.log('Would insert to database:', processedRows.length, 'rows')
       

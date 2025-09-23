@@ -66,9 +66,12 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
   });
 
   const uploadFile = async (file: File): Promise<string> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+    
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `trial-balance-uploaded-${file.name}-${timestamp}`;
-    const filePath = `${entityUuid}/${fileName}`;
+    const filePath = `${user.id}/${fileName}`;
 
     const { error } = await supabase.storage
       .from('user-uploads-trial-balances')
@@ -92,7 +95,7 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
         filePath,
         fileName,
         entityUuid,
-        options
+        persistToDatabase: options.persistToDatabase
       }
     });
 
