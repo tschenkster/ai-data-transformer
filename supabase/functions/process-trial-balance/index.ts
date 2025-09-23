@@ -104,15 +104,27 @@ Deno.serve(async (req) => {
 
     // Handle persistence or download
     if (persistToDatabase) {
-      // For now, simulate database insertion - the function will be available once types are updated
-      console.log('Would insert to database:', processedRows.length, 'rows')
+      // Actually insert data to database
+      console.log('Inserting to database:', processedRows.length, 'rows')
+      
+      const { data: insertResult, error: insertError } = await supabase.rpc('insert_trial_balance_data', {
+        p_data: JSON.stringify(processedRows)
+      })
+      
+      if (insertError) {
+        console.error('Database insertion error:', insertError)
+        throw new Error(`Failed to save data: ${insertError.message}`)
+      }
+      
+      console.log('Database insertion result:', insertResult)
       
       return new Response(
         JSON.stringify({
           success: true,
-          message: `Successfully processed and would save ${processedRows.length} rows`,
+          message: `Successfully processed and saved ${processedRows.length} rows`,
           rowCount: processedRows.length,
-          characteristics: fileCharacteristics
+          characteristics: fileCharacteristics,
+          insertResult: insertResult
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

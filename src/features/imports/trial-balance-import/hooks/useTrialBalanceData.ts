@@ -34,55 +34,39 @@ export function useTrialBalanceData(entityUuid?: string) {
       setLoading(true);
       setError(null);
 
-      // For now, use mock data since the table is in data schema and not typed yet
-      // This will be updated once the Supabase types are regenerated
-      const mockData: TrialBalanceData[] = [
-        {
-          trial_balance_uploaded_uuid: '123e4567-e89b-12d3-a456-426614174000',
-          entity_uuid: entityUuid || 'default-entity',
-          account_number: '1000',
-          account_description: 'Cash Account',
-          account_type: 'bs',
-          amount_periodicity: 'monthly',
-          amount_type: 'ending',
-          amount_aggregation_scope: 'period',
-          period_key_yyyymm: 202501,
-          period_start_date: '2025-01-01',
-          period_end_date: '2025-01-31',
-          as_of_date: '2025-01-31',
-          amount: 50000.00,
-          currency_code: 'EUR',
-          source_system: 'Demo System',
-          source_file_name: 'trial-balance-demo.xlsx',
-          source_row_number: 1,
-          created_at: new Date().toISOString()
-        },
-        {
-          trial_balance_uploaded_uuid: '123e4567-e89b-12d3-a456-426614174001',
-          entity_uuid: entityUuid || 'default-entity',
-          account_number: '2000',
-          account_description: 'Accounts Payable',
-          account_type: 'bs',
-          amount_periodicity: 'monthly',
-          amount_type: 'ending',
-          amount_aggregation_scope: 'period',
-          period_key_yyyymm: 202501,
-          period_start_date: '2025-01-01',
-          period_end_date: '2025-01-31',
-          as_of_date: '2025-01-31',
-          amount: -25000.00,
-          currency_code: 'EUR',
-          source_system: 'Demo System',
-          source_file_name: 'trial-balance-demo.xlsx',
-          source_row_number: 2,
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Fetch actual data from database
+      const { data: trialBalanceData, error: fetchError } = await supabase.rpc('get_trial_balance_data', {
+        p_entity_uuid: entityUuid || null
+      });
 
-      // Simulate async operation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (fetchError) {
+        console.error('Error fetching trial balance data:', fetchError);
+        throw new Error(fetchError.message);
+      }
+
+      // Transform data to match interface
+      const transformedData: TrialBalanceData[] = (trialBalanceData || []).map((row: any) => ({
+        trial_balance_uploaded_uuid: row.trial_balance_uploaded_uuid,
+        entity_uuid: row.entity_uuid,
+        account_number: row.account_number,
+        account_description: row.account_description,
+        account_type: row.account_type,
+        amount_periodicity: row.amount_periodicity,
+        amount_type: row.amount_type,
+        amount_aggregation_scope: row.amount_aggregation_scope,
+        period_key_yyyymm: row.period_key_yyyymm,
+        period_start_date: row.period_start_date,
+        period_end_date: row.period_end_date,
+        as_of_date: row.as_of_date,
+        amount: parseFloat(row.amount),
+        currency_code: row.currency_code,
+        source_system: row.source_system,
+        source_file_name: row.source_file_name,
+        source_row_number: row.source_row_number,
+        created_at: row.created_at
+      }));
       
-      setData(mockData);
+      setData(transformedData);
     } catch (err: any) {
       console.error('Error fetching trial balance data:', err);
       setError(err.message);
@@ -94,13 +78,30 @@ export function useTrialBalanceData(entityUuid?: string) {
 
   const deleteTrialBalanceData = async (uuid: string) => {
     try {
-      // For now, just remove from local state since DB function isn't typed yet
-      setData(prev => prev.filter(item => item.trial_balance_uploaded_uuid !== uuid));
-      
-      toast({
-        title: 'Success',
-        description: 'Trial balance record deleted successfully'
+      // Call actual database function to delete record
+      const { data: deleteResult, error: deleteError } = await supabase.rpc('delete_trial_balance_record', {
+        p_uuid: uuid
       });
+
+      if (deleteError) {
+        console.error('Error deleting trial balance data:', deleteError);
+        throw new Error(deleteError.message);
+      }
+
+      // Parse the JSON result
+      const result = deleteResult as { success: boolean; message: string } | null;
+
+      if (result?.success) {
+        // Remove from local state after successful deletion
+        setData(prev => prev.filter(item => item.trial_balance_uploaded_uuid !== uuid));
+        
+        toast({
+          title: 'Success',
+          description: 'Trial balance record deleted successfully'
+        });
+      } else {
+        throw new Error(result?.message || 'Failed to delete record');
+      }
     } catch (err: any) {
       console.error('Error deleting trial balance data:', err);
       toast({

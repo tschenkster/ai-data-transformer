@@ -1215,8 +1215,8 @@ export type Database = {
         Returns: Json
       }
       delete_trial_balance_record: {
-        Args: { p_record_uuid: string }
-        Returns: undefined
+        Args: { p_uuid: string }
+        Returns: Json
       }
       detect_suspicious_activity: {
         Args: { p_time_window_minutes?: number; p_user_id: string }
@@ -1467,11 +1467,11 @@ export type Database = {
         Returns: {
           account_description: string
           account_number: string
-          account_type: Database["public"]["Enums"]["account_type"]
+          account_type: string
           amount: number
-          amount_aggregation_scope: Database["public"]["Enums"]["aggregation_scope"]
-          amount_periodicity: Database["public"]["Enums"]["time_grain"]
-          amount_type: Database["public"]["Enums"]["amount_type"]
+          amount_aggregation_scope: string
+          amount_periodicity: string
+          amount_type: string
           as_of_date: string
           created_at: string
           currency_code: string
@@ -1620,7 +1620,7 @@ export type Database = {
       }
       insert_trial_balance_data: {
         Args: { p_data: Json }
-        Returns: undefined
+        Returns: Json
       }
       invite_user_with_role: {
         Args: {
