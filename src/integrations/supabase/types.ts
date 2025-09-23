@@ -1821,14 +1821,25 @@ export type Database = {
     }
     Enums: {
       access_level: "viewer" | "entity_admin"
+      account_type: "pl" | "bs" | "subledger" | "statistical"
+      aggregation_scope: "period" | "ytd" | "qtd" | "mtd" | "ltm" | "ltd"
+      amount_type:
+        | "opening"
+        | "movement"
+        | "ending"
+        | "total"
+        | "debit_total"
+        | "credit_total"
       app_role: "super_admin" | "entity_admin" | "viewer"
       change_action_type: "create" | "delete" | "rename" | "move"
+      measurement_basis: "instant" | "movement"
       report_structure_lifecycle_status:
         | "draft"
         | "active"
         | "inactive"
         | "archived"
         | "deprecated"
+      time_grain: "monthly" | "quarterly" | "annual"
       translation_session_status:
         | "pending"
         | "processing"
@@ -1970,8 +1981,19 @@ export const Constants = {
   public: {
     Enums: {
       access_level: ["viewer", "entity_admin"],
+      account_type: ["pl", "bs", "subledger", "statistical"],
+      aggregation_scope: ["period", "ytd", "qtd", "mtd", "ltm", "ltd"],
+      amount_type: [
+        "opening",
+        "movement",
+        "ending",
+        "total",
+        "debit_total",
+        "credit_total",
+      ],
       app_role: ["super_admin", "entity_admin", "viewer"],
       change_action_type: ["create", "delete", "rename", "move"],
+      measurement_basis: ["instant", "movement"],
       report_structure_lifecycle_status: [
         "draft",
         "active",
@@ -1979,6 +2001,7 @@ export const Constants = {
         "archived",
         "deprecated",
       ],
+      time_grain: ["monthly", "quarterly", "annual"],
       translation_session_status: [
         "pending",
         "processing",
