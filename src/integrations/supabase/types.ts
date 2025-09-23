@@ -1853,7 +1853,16 @@ export type Database = {
     Enums: {
       access_level: "viewer" | "entity_admin"
       account_type: "pl" | "bs" | "subledger" | "statistical"
-      aggregation_scope: "period" | "ytd" | "qtd" | "mtd" | "ltm" | "ltd"
+      aggregation_scope:
+        | "period"
+        | "ytd"
+        | "qtd"
+        | "mtd"
+        | "ltm"
+        | "ltd"
+        | "custom_period"
+      amount_periodicity: "monthly" | "quarterly" | "annual"
+      amount_time_basis: "point-in-time" | "time-span"
       amount_type:
         | "opening"
         | "movement"
@@ -2013,7 +2022,17 @@ export const Constants = {
     Enums: {
       access_level: ["viewer", "entity_admin"],
       account_type: ["pl", "bs", "subledger", "statistical"],
-      aggregation_scope: ["period", "ytd", "qtd", "mtd", "ltm", "ltd"],
+      aggregation_scope: [
+        "period",
+        "ytd",
+        "qtd",
+        "mtd",
+        "ltm",
+        "ltd",
+        "custom_period",
+      ],
+      amount_periodicity: ["monthly", "quarterly", "annual"],
+      amount_time_basis: ["point-in-time", "time-span"],
       amount_type: [
         "opening",
         "movement",
