@@ -1214,6 +1214,10 @@ export type Database = {
         Args: { p_entity_uuid: string; p_force_delete?: boolean }
         Returns: Json
       }
+      delete_trial_balance_record: {
+        Args: { p_record_uuid: string }
+        Returns: undefined
+      }
       detect_suspicious_activity: {
         Args: { p_time_window_minutes?: number; p_user_id: string }
         Returns: boolean
@@ -1458,6 +1462,29 @@ export type Database = {
         }
         Returns: string
       }
+      get_trial_balance_data: {
+        Args: { p_entity_uuid?: string }
+        Returns: {
+          account_description: string
+          account_number: string
+          account_type: Database["public"]["Enums"]["account_type"]
+          amount: number
+          amount_aggregation_scope: Database["public"]["Enums"]["aggregation_scope"]
+          amount_periodicity: Database["public"]["Enums"]["time_grain"]
+          amount_type: Database["public"]["Enums"]["amount_type"]
+          as_of_date: string
+          created_at: string
+          currency_code: string
+          entity_uuid: string
+          period_end_date: string
+          period_key_yyyymm: number
+          period_start_date: string
+          source_file_name: string
+          source_row_number: number
+          source_system: string
+          trial_balance_uploaded_uuid: string
+        }[]
+      }
       get_user_accessible_entities: {
         Args: { p_user_uuid: string }
         Returns: {
@@ -1590,6 +1617,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      insert_trial_balance_data: {
+        Args: { p_data: Json }
+        Returns: undefined
       }
       invite_user_with_role: {
         Args: {
