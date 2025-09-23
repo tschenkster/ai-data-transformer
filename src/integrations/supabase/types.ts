@@ -1468,9 +1468,10 @@ export type Database = {
           account_description: string
           account_number: string
           account_type: string
+          aggregation_scope: string
           amount: number
-          amount_aggregation_scope: string
           amount_periodicity: string
+          amount_time_basis: string
           amount_type: string
           as_of_date: string
           created_at: string

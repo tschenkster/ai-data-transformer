@@ -1,8 +1,9 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
-import { corsHeaders } from '../_shared/cors.ts'
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+import { corsHeaders } from '../_shared/cors.ts';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 interface ProcessedTrialBalanceRow {
   entity_uuid: string;
@@ -10,8 +11,8 @@ interface ProcessedTrialBalanceRow {
   account_description?: string;
   account_type: 'pl' | 'bs' | 'subledger' | 'statistical';
   amount_periodicity: 'monthly' | 'quarterly' | 'annual';
-  amount_type: 'opening' | 'movement' | 'ending' | 'total' | 'debit_total' | 'credit_total';
-  amount_aggregation_scope: 'period' | 'ytd' | 'qtd' | 'mtd' | 'ltm' | 'ltd';
+  amount_type: 'opening' | 'movement' | 'ending' | 'debit_total' | 'credit_total';
+  aggregation_scope: 'period' | 'ytd' | 'qtd' | 'mtd' | 'ltm' | 'ltd' | 'custom_period';
   period_key_yyyymm: number;
   period_start_date: string;
   period_end_date: string;
@@ -24,273 +25,561 @@ interface ProcessedTrialBalanceRow {
   source_hash: string;
 }
 
+interface FileCharacteristics {
+  file_type: 'xlsx' | 'csv' | 'pdf';
+  content_type: 'trial_balance' | 'working_trial_balance' | 'pl' | 'cashflow' | 'financial_package' | 'other';
+  reporting_frequency: 'monthly' | 'quarterly' | 'annual';
+  reporting_period: {
+    start_date: string;
+    end_date: string;
+    period_key_yyyymm: number;
+  };
+  origin_system: string;
+  currency_code: string;
+  entity_name?: string;
+  fiscal_year?: number;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Get user from Authorization header
-    const authHeader = req.headers.get('Authorization')
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header')
+      throw new Error('No authorization header');
     }
 
     // Verify the user
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
-    )
+    );
     
     if (authError || !user) {
-      throw new Error('Unauthorized')
+      throw new Error('Unauthorized');
     }
 
-    const { filePath, fileName, entityUuid, persistToDatabase = false } = await req.json()
+    const { filePath, fileName, entityUuid, persistToDatabase = false } = await req.json();
     
-    console.log('Processing trial balance file:', { filePath, fileName, entityUuid })
+    console.log('Processing trial balance file:', { fileName, entityUuid, persistToDatabase });
 
     // Download file from storage
-    const { data: fileData, error: downloadError } = await supabase
-      .storage
+    const { data: fileData, error: downloadError } = await supabase.storage
       .from('user-uploads-trial-balances')
-      .download(filePath)
+      .download(filePath);
 
     if (downloadError) {
-      throw new Error(`Failed to download file: ${downloadError.message}`)
+      throw new Error(`Failed to download file: ${downloadError.message}`);
     }
 
-    // Convert file to buffer for processing
-    const fileBuffer = await fileData.arrayBuffer()
-    const uint8Array = new Uint8Array(fileBuffer)
-    
+    // Convert to buffer for processing
+    const buffer = await fileData.arrayBuffer();
+    const uint8Array = new Uint8Array(buffer);
+    console.log('File downloaded, size:', uint8Array.length, 'bytes');
+
+    // Determine file extension
+    const extension = fileName.toLowerCase().split('.').pop() || '';
+    console.log('File extension:', extension);
+
     // Parse file based on extension
-    const fileExtension = fileName.toLowerCase().split('.').pop()
-    let parsedData: any[] = []
-
-    if (fileExtension === 'csv') {
-      // Parse CSV
-      const textDecoder = new TextDecoder()
-      const csvContent = textDecoder.decode(uint8Array)
-      parsedData = parseCSV(csvContent)
-    } else if (fileExtension === 'xlsx') {
-      // For now, simulate XLSX parsing - would use Docling in production
-      parsedData = await parseXLSX(uint8Array)
-    } else if (fileExtension === 'pdf') {
-      // For now, simulate PDF parsing - would use Docling in production  
-      parsedData = await parsePDF(uint8Array)
-    } else {
-      throw new Error(`Unsupported file format: ${fileExtension}`)
+    let parsedData: any[] = [];
+    switch (extension) {
+      case 'csv':
+        parsedData = await parseCSV(new TextDecoder().decode(uint8Array));
+        break;
+      case 'xlsx':
+      case 'xls':
+        parsedData = await parseXLSX(uint8Array);
+        break;
+      case 'pdf':
+        parsedData = await parsePDF(uint8Array);
+        break;
+      default:
+        throw new Error(`Unsupported file format: ${extension}`);
     }
 
-    console.log('Parsed data rows:', parsedData.length)
+    console.log('Parsed', parsedData.length, 'rows from file');
 
-    // Detect file characteristics
-    const fileCharacteristics = await detectFileCharacteristics(parsedData, fileName)
-    
-    console.log('Detected characteristics:', fileCharacteristics)
+    // AI-powered file characteristic detection
+    const characteristics = await detectFileCharacteristicsWithAI(parsedData, fileName, extension);
+    console.log('Detected file characteristics:', characteristics);
+
+    // Content type workflow branching
+    if (characteristics.content_type !== 'trial_balance') {
+      return new Response(JSON.stringify({
+        success: true,
+        characteristics,
+        message: `This file is a ${characteristics.content_type.replace('_', ' ')} report. Please use the dedicated ${characteristics.content_type.replace('_', ' ')} workflow.`,
+        data: null,
+        requires_different_workflow: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Transform to trial balance format
-    const processedRows = await transformToTrialBalanceFormat(
-      parsedData, 
-      entityUuid, 
-      fileName, 
-      fileCharacteristics
-    )
+    const transformedData = await transformToTrialBalanceFormat(
+      parsedData,
+      entityUuid,
+      fileName,
+      characteristics
+    );
 
-    console.log('Processed rows:', processedRows.length)
+    console.log('Transformed', transformedData.length, 'records');
 
-    // Handle persistence or download
     if (persistToDatabase) {
-      // Actually insert data to database
-      console.log('Inserting to database:', processedRows.length, 'rows')
-      
-      const { data: insertResult, error: insertError } = await supabase.rpc('insert_trial_balance_data', {
-        p_data: processedRows
-      })
-      
+      // Save to database
+      const { data: insertResult, error: insertError } = await supabase
+        .rpc('insert_trial_balance_data', { p_data: transformedData });
+
       if (insertError) {
-        console.error('Database insertion error:', insertError)
-        throw new Error(`Failed to save data: ${insertError.message}`)
+        console.error('Database insert error:', insertError);
+        throw new Error(`Failed to save data: ${insertError.message}`);
       }
-      
-      console.log('Database insertion result:', insertResult)
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: `Successfully processed and saved ${processedRows.length} rows`,
-          rowCount: processedRows.length,
-          characteristics: fileCharacteristics,
-          insertResult: insertResult
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      )
+
+      console.log('Data saved to database:', insertResult);
+
+      return new Response(JSON.stringify({
+        success: true,
+        characteristics,
+        data: transformedData,
+        rowCount: transformedData.length,
+        persistResult: insertResult,
+        message: `Successfully processed and saved ${transformedData.length} trial balance records`
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     } else {
       // Return processed data for download
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: processedRows,
-          rowCount: processedRows.length,
-          characteristics: fileCharacteristics
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      )
+      return new Response(JSON.stringify({
+        success: true,
+        characteristics,
+        data: transformedData,
+        rowCount: transformedData.length,
+        message: `Successfully processed ${transformedData.length} trial balance records for download`
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
   } catch (error) {
-    console.error('Error processing trial balance:', error)
-    return new Response(
-      JSON.stringify({
-        error: error.message || 'Internal server error'
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
-    )
+    console.error('Error processing trial balance:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message,
+      message: 'Failed to process trial balance file'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
-})
+});
 
-function parseCSV(csvContent: string): any[] {
-  const lines = csvContent.split('\n').filter(line => line.trim())
-  if (lines.length === 0) return []
-  
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-  const rows = []
-  
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
-    const row: any = {}
-    headers.forEach((header, index) => {
-      row[header] = values[index] || ''
-    })
-    rows.push(row)
+// Enhanced CSV parsing with better normalization
+async function parseCSV(csvContent: string): Promise<any[]> {
+  try {
+    const lines = csvContent.split('\n').filter(line => line.trim().length > 0);
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const rows = lines.slice(1).map((line, index) => {
+      const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const row: any = { _row_number: index + 2 };
+      
+      headers.forEach((header, i) => {
+        row[header] = values[i] || '';
+      });
+      
+      return row;
+    });
+
+    console.log('CSV parsed:', rows.length, 'rows with headers:', headers);
+    return rows;
+  } catch (error) {
+    console.error('Error parsing CSV:', error);
+    throw new Error('Failed to parse CSV file');
   }
-  
-  return rows
 }
 
+// Enhanced XLSX parsing (placeholder for future Docling integration)
 async function parseXLSX(buffer: Uint8Array): Promise<any[]> {
-  // Placeholder for XLSX parsing with Docling
-  console.log('Parsing XLSX file with Docling (placeholder)')
-  
-  // Mock data for demonstration
-  return [
-    { account_number: '1000', account_description: 'Cash', amount: '10000.00' },
-    { account_number: '2000', account_description: 'Accounts Payable', amount: '-5000.00' },
-    { account_number: '4000', account_description: 'Revenue', amount: '-15000.00' },
-    { account_number: '6000', account_description: 'Cost of Sales', amount: '8000.00' }
-  ]
+  try {
+    console.log('Parsing XLSX file (enhanced placeholder)');
+    
+    // TODO: Implement Docling integration here
+    // For now, return enhanced mock data with realistic trial balance structure
+    return [
+      {
+        'Account Number': '1000',
+        'Account Description': 'Cash and Cash Equivalents',
+        'Debit': '50000.00',
+        'Credit': '',
+        _row_number: 2
+      },
+      {
+        'Account Number': '1200',
+        'Account Description': 'Accounts Receivable',
+        'Debit': '25000.00',
+        'Credit': '',
+        _row_number: 3
+      },
+      {
+        'Account Number': '2000',
+        'Account Description': 'Accounts Payable',
+        'Debit': '',
+        'Credit': '15000.00',
+        _row_number: 4
+      },
+      {
+        'Account Number': '3000',
+        'Account Description': 'Equity',
+        'Debit': '',
+        'Credit': '60000.00',
+        _row_number: 5
+      }
+    ];
+  } catch (error) {
+    console.error('Error parsing XLSX:', error);
+    throw new Error('Failed to parse XLSX file');
+  }
 }
 
+// Enhanced PDF parsing (placeholder for future Docling integration)
 async function parsePDF(buffer: Uint8Array): Promise<any[]> {
-  // Placeholder for PDF parsing with Docling
-  console.log('Parsing PDF file with Docling (placeholder)')
-  
-  // Mock data for demonstration
-  return [
-    { account_number: '1000', account_description: 'Cash', amount: '10000.00' },
-    { account_number: '2000', account_description: 'Accounts Payable', amount: '-5000.00' },
-    { account_number: '4000', account_description: 'Revenue', amount: '-15000.00' },
-    { account_number: '6000', account_description: 'Cost of Sales', amount: '8000.00' }
-  ]
+  try {
+    console.log('Parsing PDF file (enhanced placeholder)');
+    
+    // TODO: Implement Docling integration here
+    // For now, return enhanced mock data
+    return [
+      {
+        'Account Number': '4000',
+        'Account Description': 'Revenue',
+        'Debit': '',
+        'Credit': '100000.00',
+        _row_number: 2
+      },
+      {
+        'Account Number': '5000',
+        'Account Description': 'Cost of Goods Sold',
+        'Debit': '60000.00',
+        'Credit': '',
+        _row_number: 3
+      },
+      {
+        'Account Number': '6000',
+        'Account Description': 'Operating Expenses',
+        'Debit': '30000.00',
+        'Credit': '',
+        _row_number: 4
+      }
+    ];
+  } catch (error) {
+    console.error('Error parsing PDF:', error);
+    throw new Error('Failed to parse PDF file');
+  }
 }
 
-async function detectFileCharacteristics(data: any[], fileName: string) {
-  // AI/LLM-driven detection would go here
+// AI-powered file characteristics detection using OpenAI
+async function detectFileCharacteristicsWithAI(
+  data: any[], 
+  fileName: string, 
+  extension: string
+): Promise<FileCharacteristics> {
+  try {
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    
+    if (!openaiApiKey) {
+      console.warn('OpenAI API key not available, using fallback detection');
+      return detectFileCharacteristicsFallback(data, fileName, extension);
+    }
+
+    // Prepare sample data for AI analysis
+    const sampleData = data.slice(0, 5).map(row => {
+      const cleaned = { ...row };
+      delete cleaned._row_number;
+      return cleaned;
+    });
+
+    const prompt = `Analyze this financial data sample and determine the file characteristics:
+
+File Name: ${fileName}
+File Type: ${extension}
+Sample Data (first 5 rows):
+${JSON.stringify(sampleData, null, 2)}
+
+Please analyze and respond with a JSON object containing:
+{
+  "content_type": "trial_balance" | "working_trial_balance" | "pl" | "cashflow" | "financial_package" | "other",
+  "reporting_frequency": "monthly" | "quarterly" | "annual",
+  "period_info": {
+    "start_date": "YYYY-MM-DD",
+    "end_date": "YYYY-MM-DD", 
+    "period_key_yyyymm": number
+  },
+  "origin_system": "DATEV" | "SAP" | "NetSuite" | "Excel" | "Other",
+  "currency_code": "EUR" | "USD" | "GBP" | etc,
+  "entity_name": "detected entity name or null",
+  "fiscal_year": number or null,
+  "confidence": number (0-1)
+}
+
+Focus on:
+1. Is this a trial balance (balanced debits/credits) or other financial report?
+2. What time period does this represent?
+3. What's the likely source system based on formatting?
+4. What currency is being used?
+5. Can you detect the entity name from the data?`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a financial data analysis expert. Analyze the provided data and return only valid JSON.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText);
+      return detectFileCharacteristicsFallback(data, fileName, extension);
+    }
+
+    const result = await response.json();
+    const aiAnalysis = JSON.parse(result.choices[0].message.content);
+    
+    console.log('AI file analysis:', aiAnalysis);
+
+    // Map AI response to our interface
+    return {
+      file_type: extension as 'xlsx' | 'csv' | 'pdf',
+      content_type: aiAnalysis.content_type,
+      reporting_frequency: aiAnalysis.reporting_frequency,
+      reporting_period: {
+        start_date: aiAnalysis.period_info.start_date,
+        end_date: aiAnalysis.period_info.end_date,
+        period_key_yyyymm: aiAnalysis.period_info.period_key_yyyymm
+      },
+      origin_system: aiAnalysis.origin_system,
+      currency_code: aiAnalysis.currency_code,
+      entity_name: aiAnalysis.entity_name,
+      fiscal_year: aiAnalysis.fiscal_year
+    };
+
+  } catch (error) {
+    console.error('Error in AI file analysis:', error);
+    return detectFileCharacteristicsFallback(data, fileName, extension);
+  }
+}
+
+// Fallback detection logic
+function detectFileCharacteristicsFallback(
+  data: any[], 
+  fileName: string, 
+  extension: string
+): FileCharacteristics {
+  console.log('Using fallback file characteristic detection');
   
-  const currentDate = new Date()
-  const year = currentDate.getFullYear()
-  const month = currentDate.getMonth() + 1
+  // Basic heuristics for content type detection
+  let contentType: FileCharacteristics['content_type'] = 'trial_balance';
+  
+  // Check for P&L indicators
+  const plKeywords = ['revenue', 'sales', 'income', 'expense', 'cost', 'profit', 'loss'];
+  const hasPlKeywords = data.some(row => 
+    Object.values(row).some(value => 
+      typeof value === 'string' && 
+      plKeywords.some(keyword => value.toLowerCase().includes(keyword))
+    )
+  );
+  
+  if (hasPlKeywords) {
+    contentType = 'pl';
+  }
+
+  // Basic period detection from filename
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
   
   return {
-    fileType: fileName.toLowerCase().split('.').pop(),
-    contentType: 'trial_balance', // Detected as trial balance
-    reportingFrequency: 'monthly',
-    reportingPeriod: {
-      start_date: `${year}-${month.toString().padStart(2, '0')}-01`,
-      end_date: new Date(year, month, 0).toISOString().split('T')[0]
+    file_type: extension as 'xlsx' | 'csv' | 'pdf',
+    content_type: contentType,
+    reporting_frequency: 'monthly',
+    reporting_period: {
+      start_date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`,
+      end_date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-${new Date(currentYear, currentMonth, 0).getDate()}`,
+      period_key_yyyymm: currentYear * 100 + currentMonth
     },
-    originSystem: 'detected_system',
-    currency: 'EUR',
-    entityName: 'Uploaded Entity'
-  }
+    origin_system: fileName.toLowerCase().includes('datev') ? 'DATEV' : 'Excel',
+    currency_code: 'EUR'
+  };
 }
 
+// Enhanced transformation to PRD-compliant trial balance format
 async function transformToTrialBalanceFormat(
-  data: any[], 
-  entityUuid: string, 
-  fileName: string, 
-  characteristics: any
+  data: any[],
+  entityUuid: string,
+  fileName: string,
+  characteristics: FileCharacteristics
 ): Promise<ProcessedTrialBalanceRow[]> {
-  const processedRows: ProcessedTrialBalanceRow[] = []
-  
-  // Generate period key from characteristics
-  const periodStart = new Date(characteristics.reportingPeriod.start_date)
-  const periodKey = parseInt(
-    `${periodStart.getFullYear()}${(periodStart.getMonth() + 1).toString().padStart(2, '0')}`
-  )
-  
-  // Generate source hash
-  const sourceHash = await generateHash(JSON.stringify(data) + fileName)
-  
-  data.forEach((row, index) => {
-    if (!row.account_number || !row.amount) return
+  const transformed: ProcessedTrialBalanceRow[] = [];
+  const sourceHash = await generateHash(`${fileName}-${Date.now()}`);
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const rowNumber = row._row_number || i + 1;
+
+    // Extract account information
+    const accountNumber = extractAccountNumber(row);
+    const accountDescription = extractAccountDescription(row);
     
-    const amount = parseFloat(row.amount.toString().replace(/[^-0-9.]/g, ''))
-    if (isNaN(amount)) return
-    
+    if (!accountNumber) continue; // Skip rows without account numbers
+
     // Determine account type based on account number patterns
-    let accountType: 'pl' | 'bs' | 'subledger' | 'statistical' = 'bs'
-    const accountNum = row.account_number.toString()
+    const accountType = determineAccountType(accountNumber, accountDescription);
     
-    if (accountNum.startsWith('4') || accountNum.startsWith('5') || 
-        accountNum.startsWith('6') || accountNum.startsWith('7')) {
-      accountType = 'pl'
-    } else if (accountNum.startsWith('1') || accountNum.startsWith('2') || 
-               accountNum.startsWith('3')) {
-      accountType = 'bs'
+    // Extract amounts (handle both debit/credit and single amount columns)
+    const amounts = extractAmounts(row);
+    
+    // Create records for each amount type found
+    for (const amountInfo of amounts) {
+      if (amountInfo.amount === 0) continue; // Skip zero amounts
+
+      transformed.push({
+        entity_uuid: entityUuid,
+        account_number: accountNumber,
+        account_description: accountDescription,
+        account_type: accountType,
+        amount_periodicity: characteristics.reporting_frequency,
+        amount_type: amountInfo.type,
+        aggregation_scope: 'period',
+        period_key_yyyymm: characteristics.reporting_period.period_key_yyyymm,
+        period_start_date: characteristics.reporting_period.start_date,
+        period_end_date: characteristics.reporting_period.end_date,
+        as_of_date: amountInfo.type === 'ending' ? characteristics.reporting_period.end_date : characteristics.reporting_period.start_date,
+        amount: amountInfo.amount,
+        currency_code: characteristics.currency_code,
+        source_system: characteristics.origin_system,
+        source_file_name: fileName,
+        source_row_number: rowNumber,
+        source_hash: sourceHash
+      });
     }
-    
-    processedRows.push({
-      entity_uuid: entityUuid,
-      account_number: accountNum,
-      account_description: row.account_description || row.description || '',
-      account_type: accountType,
-      amount_periodicity: characteristics.reportingFrequency as 'monthly' | 'quarterly' | 'annual',
-      amount_type: 'ending', // Default to ending balance
-      amount_aggregation_scope: 'period',
-      period_key_yyyymm: periodKey,
-      period_start_date: characteristics.reportingPeriod.start_date,
-      period_end_date: characteristics.reportingPeriod.end_date,
-      as_of_date: characteristics.reportingPeriod.end_date,
-      amount: amount,
-      currency_code: characteristics.currency,
-      source_system: characteristics.originSystem,
-      source_file_name: fileName,
-      source_row_number: index + 1,
-      source_hash: sourceHash
-    })
-  })
-  
-  return processedRows
+  }
+
+  return transformed;
 }
 
+// Helper functions for data extraction and classification
+function extractAccountNumber(row: any): string | null {
+  const possibleKeys = ['Account Number', 'Account Code', 'Konto', 'Account', 'Acc No', 'account_number'];
+  
+  for (const key of possibleKeys) {
+    const value = row[key] || row[key.toLowerCase()] || row[key.replace(/\s+/g, '_').toLowerCase()];
+    if (value && String(value).trim().length > 0) {
+      return String(value).trim();
+    }
+  }
+  
+  return null;
+}
+
+function extractAccountDescription(row: any): string | null {
+  const possibleKeys = ['Account Description', 'Description', 'Bezeichnung', 'Name', 'account_description'];
+  
+  for (const key of possibleKeys) {
+    const value = row[key] || row[key.toLowerCase()] || row[key.replace(/\s+/g, '_').toLowerCase()];
+    if (value && String(value).trim().length > 0) {
+      return String(value).trim();
+    }
+  }
+  
+  return null;
+}
+
+function determineAccountType(accountNumber: string, description?: string | null): 'pl' | 'bs' | 'subledger' | 'statistical' {
+  const accountNum = parseInt(accountNumber);
+  
+  // German DATEV account classification
+  if (accountNum >= 1000 && accountNum <= 1999) return 'bs'; // Assets
+  if (accountNum >= 2000 && accountNum <= 2999) return 'bs'; // Liabilities  
+  if (accountNum >= 3000 && accountNum <= 3999) return 'bs'; // Equity
+  if (accountNum >= 4000 && accountNum <= 4999) return 'pl'; // Revenue
+  if (accountNum >= 5000 && accountNum <= 7999) return 'pl'; // Expenses
+  if (accountNum >= 8000 && accountNum <= 8999) return 'pl'; // Other income/expenses
+  if (accountNum >= 9000 && accountNum <= 9999) return 'statistical'; // Statistical accounts
+  
+  return 'bs'; // Default to balance sheet
+}
+
+function extractAmounts(row: any): Array<{ type: 'opening' | 'movement' | 'ending' | 'debit_total' | 'credit_total', amount: number }> {
+  const amounts: Array<{ type: 'opening' | 'movement' | 'ending' | 'debit_total' | 'credit_total', amount: number }> = [];
+  
+  // Look for debit/credit columns
+  const debitValue = parseAmount(row['Debit'] || row['debit'] || row['Soll'] || '0');
+  const creditValue = parseAmount(row['Credit'] || row['credit'] || row['Haben'] || '0');
+  
+  if (debitValue !== 0) {
+    amounts.push({ type: 'debit_total', amount: debitValue });
+  }
+  
+  if (creditValue !== 0) {
+    amounts.push({ type: 'credit_total', amount: -creditValue }); // Credits are negative
+  }
+  
+  // If no debit/credit columns, look for other amount columns
+  if (amounts.length === 0) {
+    const possibleAmountKeys = ['Amount', 'Balance', 'Betrag', 'Saldo', 'amount', 'balance'];
+    
+    for (const key of possibleAmountKeys) {
+      const value = parseAmount(row[key] || '0');
+      if (value !== 0) {
+        amounts.push({ type: 'ending', amount: value });
+        break;
+      }
+    }
+  }
+  
+  return amounts;
+}
+
+function parseAmount(value: any): number {
+  if (typeof value === 'number') return value;
+  if (typeof value !== 'string') return 0;
+  
+  // Remove currency symbols, spaces, and convert European decimal format
+  const cleaned = value
+    .replace(/[€$£¥,\s]/g, '')
+    .replace(/\.(?=\d{3})/g, '') // Remove thousands separators
+    .replace(/,(\d{2})$/, '.$1'); // Convert European decimal comma to dot
+  
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+// Generate hash for deduplication
 async function generateHash(input: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(input)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-  return hashHex.substring(0, 16) // First 16 chars for brevity
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
 }
