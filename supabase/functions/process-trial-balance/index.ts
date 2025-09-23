@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { corsHeaders } from '../_shared/cors.ts';
+import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -197,8 +198,6 @@ Deno.serve(async (req) => {
   }
 });
 
-// Import XLSX library for real Excel processing
-import * as XLSX from 'https://deno.land/x/xlsx@0.18.5/mod.ts';
 
 // Docling-inspired Document Processing Class
 class DocumentProcessor {
