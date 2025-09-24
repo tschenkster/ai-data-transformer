@@ -5,13 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { FileSpreadsheet, Upload, Download, Database, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileSpreadsheet, Upload, Database, AlertCircle, CheckCircle, Clock, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRawDataProcessing } from '../hooks/useRawDataProcessing';
 
 interface TrialBalanceUploadProps {
   entityUuid: string;
@@ -20,33 +17,29 @@ interface TrialBalanceUploadProps {
 
 interface ProcessingResult {
   success: boolean;
-  data?: any[];
-  rowCount?: number;
-  characteristics?: any;
-  message?: string;
+  phase: 'raw_storage' | 'normalization' | 'full_pipeline';
+  file_uuid?: string;
+  summary?: string;
+  detailed_summary?: any;
   error?: string;
-  enhanced_processing?: boolean;
-  processing_method?: string;
-  processing_capabilities?: string[];
-  validation_results?: any;
-  quality_report?: any;
-  content_type_warning?: boolean;
-  detected_content_type?: string;
-  preview_data?: any[];
-  persistResult?: any;
 }
 
 export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanceUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingResult, setPendingResult] = useState<ProcessingResult | null>(null);
-  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'raw_storage' | 'normalization' | 'full_pipeline'>('full_pipeline');
+  const [storedFileUuid, setStoredFileUuid] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const {
+    uploading,
+    processing,
+    uploadProgress,
+    currentPhase,
+    processingResult,
+    processFile,
+    processStoredFile,
+    reset
+  } = useRawDataProcessing();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -60,7 +53,7 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
     onDrop: (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
         setSelectedFile(acceptedFiles[0]);
-        setProcessingResult(null);
+        reset();
       }
     },
     onDropRejected: (fileRejections) => {
@@ -81,285 +74,67 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
     }
   });
 
-  // Utility function to sanitize file names for Supabase Storage
-  const sanitizeFileName = (fileName: string): string => {
-    // Get file extension
-    const lastDotIndex = fileName.lastIndexOf('.');
-    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
-    const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
-    
-    // Normalize and sanitize the name part
-    const sanitized = name
-      .normalize('NFD') // Decompose combined characters
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics/accents
-      .replace(/[^a-zA-Z0-9\s-_]/g, '') // Keep only alphanumeric, spaces, hyphens, underscores
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Collapse multiple hyphens
-      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-      .toLowerCase();
-    
-    return sanitized + extension.toLowerCase();
-  };
-
-  const uploadFile = async (file: File): Promise<string> => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-    
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const sanitizedOriginalName = sanitizeFileName(file.name);
-    const fileName = `trial-balance-uploaded-${sanitizedOriginalName}-${timestamp}`;
-    const filePath = `${user.id}/${fileName}`;
-
-    const { error } = await supabase.storage
-      .from('user-uploads-trial-balances')
-      .upload(filePath, file);
-
-    if (error) {
-      // Provide more helpful error messages
-      if (error.message.includes('Invalid key')) {
-        throw new Error('File name contains invalid characters. Please rename your file using only letters, numbers, and hyphens.');
-      }
-      throw new Error(`Upload failed: ${error.message}`);
-    }
-
-    return filePath;
-  };
-
-  const processFile = async (filePath: string, fileName: string, options: { persistToDatabase: boolean; forcePersist?: boolean }) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('No active session');
-    }
-
-    const response = await supabase.functions.invoke('process-trial-balance', {
-      body: {
-        filePath,
-        fileName,
-        entityUuid,
-        persistToDatabase: options.persistToDatabase,
-        forcePersist: options.forcePersist || false
-      }
-    });
-
-    if (response.error) {
-      throw new Error(response.error.message);
-    }
-
-    return response.data;
-  };
-
-  const handleProcess = async (persistToDatabase: boolean) => {
+  const handleProcessRawStorage = async () => {
     if (!selectedFile) return;
 
     try {
-      setUploading(true);
-      setUploadProgress(0);
-
-      // Upload file
-      setUploadProgress(25);
-      const filePath = await uploadFile(selectedFile);
-
-      // Process file
-      setUploading(false);
-      setProcessing(true);
-      setUploadProgress(50);
-
-      // Always process with persistToDatabase: false initially to check for warnings
-      const result = await processFile(filePath, selectedFile.name, { 
-        persistToDatabase: false 
+      const result = await processFile(selectedFile, entityUuid, {
+        processing_phase: 'raw_storage',
+        persist_to_database: false
       });
-      
-      setUploadProgress(100);
 
-      // Check if we have a content type warning and user wants to save to database
-      if (result.content_type_warning && persistToDatabase) {
-        console.log('Content type warning detected, showing confirmation dialog:', result.detected_content_type);
-        setPendingResult(result);
-        setShowConfirmDialog(true);
-        setProcessing(false);
-        return;
+      if (result.success && result.file_uuid) {
+        setStoredFileUuid(result.file_uuid);
+        setActiveTab('normalization');
       }
 
-      // If no warning or user chose download only, proceed normally
-      let finalResult = result;
-      if (persistToDatabase && !result.content_type_warning) {
-        console.log('No content type warning, processing as trial balance with persistence');
-        // Re-process with persistToDatabase: true for clean trial balance files
-        finalResult = await processFile(filePath, selectedFile.name, { persistToDatabase: true });
-      }
-
-      
-      console.log('Final result:', { success: finalResult.success, rowCount: finalResult.rowCount, persistResult: !!finalResult.persistResult });
-      setProcessingResult(finalResult);
-      
-      toast({
-        title: 'Success',
-        description: persistToDatabase 
-          ? `Successfully processed and saved ${finalResult.rowCount} rows`
-          : `Successfully processed ${finalResult.rowCount} rows for download`,
-      });
-
-      onUploadComplete?.(finalResult);
-
-    } catch (error: any) {
-      console.error('Processing error:', error);
-      setProcessingResult({
-        success: false,
-        error: error.message
-      });
-      toast({
-        title: 'Processing Failed',
-        description: error.message,
-        variant: 'destructive'
-      });
-    } finally {
-      setUploading(false);
-      setProcessing(false);
-      setUploadProgress(0);
+      onUploadComplete?.(result);
+    } catch (error) {
+      console.error('Raw storage processing error:', error);
     }
   };
 
-  const handleConfirmSave = async () => {
-    if (!selectedFile || !pendingResult) return;
-    
+  const handleProcessNormalization = async () => {
+    if (!storedFileUuid) return;
+
     try {
-      setProcessing(true);
-      setShowConfirmDialog(false);
-      
-      console.log('Force persisting non-trial balance data to database');
-      // Re-process with persistToDatabase: true and forcePersist: true
-      const filePath = await uploadFile(selectedFile);
-      const result = await processFile(filePath, selectedFile.name, { 
-        persistToDatabase: true, 
-        forcePersist: true 
-      });
-      
-      console.log('Force persist result:', { success: result.success, rowCount: result.rowCount, persistResult: !!result.persistResult });
-      setProcessingResult(result);
-      
-      toast({
-        title: 'Success',
-        description: `Successfully processed and saved ${result.rowCount} rows to database`,
+      const result = await processStoredFile(storedFileUuid, {
+        processing_phase: 'normalization',
+        persist_to_database: true
       });
 
       onUploadComplete?.(result);
-      setPendingResult(null);
-      
-    } catch (error: any) {
-      console.error('Processing error:', error);
-      setProcessingResult({
-        success: false,
-        error: error.message
-      });
-      toast({
-        title: 'Processing Failed',
-        description: error.message,
-        variant: 'destructive'
-      });
-    } finally {
-      setProcessing(false);
+    } catch (error) {
+      console.error('Normalization processing error:', error);
     }
   };
 
-  const handleConfirmForceInsert = async () => {
-    if (!selectedFile || !previewData) return;
-    
+  const handleProcessFullPipeline = async (persistToDatabase: boolean) => {
+    if (!selectedFile) return;
+
     try {
-      setProcessing(true);
-      setShowPreviewDialog(false);
-      
-      // Re-process with persistToDatabase: true and forcePersist: true
-      const filePath = await uploadFile(selectedFile);
-      const result = await processFile(filePath, selectedFile.name, { 
-        persistToDatabase: true, 
-        forcePersist: true 
-      });
-      
-      setProcessingResult(result);
-      
-      toast({
-        title: 'Success',
-        description: `Successfully processed and saved ${result.rowCount} rows to database`,
+      const result = await processFile(selectedFile, entityUuid, {
+        processing_phase: 'full_pipeline',
+        persist_to_database: persistToDatabase
       });
 
       onUploadComplete?.(result);
-      setPreviewData(null);
-      
-    } catch (error: any) {
-      console.error('Processing error:', error);
-      setProcessingResult({
-        success: false,
-        error: error.message
-      });
-      toast({
-        title: 'Processing Failed',
-        description: error.message,
-        variant: 'destructive'
-      });
-    } finally {
-      setProcessing(false);
+    } catch (error) {
+      console.error('Full pipeline processing error:', error);
     }
   };
 
-  const handleDownloadOnlyFromPreview = () => {
-    if (previewData) {
-      setProcessingResult(previewData);
-      toast({
-        title: 'Success',
-        description: `Successfully processed ${previewData.rowCount} rows for download`,
-      });
+  const getPhaseDescription = (phase: string) => {
+    switch (phase) {
+      case 'raw_storage':
+        return 'Store file data in its original format for inspection and validation';
+      case 'normalization':
+        return 'Transform raw data into structured trial balance format';
+      case 'full_pipeline':
+        return 'Complete end-to-end processing with both storage and normalization';
+      default:
+        return '';
     }
-    setShowPreviewDialog(false);
-    setPreviewData(null);
-  };
-
-  const handleDownloadOnly = () => {
-    if (pendingResult) {
-      setProcessingResult(pendingResult);
-      toast({
-        title: 'Success',
-        description: `Successfully processed ${pendingResult.rowCount} rows for download`,
-      });
-    }
-    setShowConfirmDialog(false);
-    setPendingResult(null);
-  };
-
-  const formatContentType = (contentType: string | undefined): string => {
-    if (!contentType) return 'unknown file type';
-    
-    const typeMap: Record<string, string> = {
-      'pl': 'P&L Report',
-      'balance_sheet': 'Balance Sheet',
-      'cash_flow': 'Cash Flow Statement',
-      'trial_balance': 'Trial Balance'
-    };
-    
-    return typeMap[contentType] || contentType.replace(/_/g, ' ').toUpperCase();
-  };
-
-  const downloadProcessedData = () => {
-    if (!processingResult?.data) return;
-
-    // Convert to CSV format
-    const headers = Object.keys(processingResult.data[0]);
-    const csvContent = [
-      headers.join(','),
-      ...processingResult.data.map(row => 
-        headers.map(header => `"${row[header] || ''}"`).join(',')
-      )
-    ].join('\n');
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `processed-trial-balance-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -377,11 +152,11 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
-            Upload Trial Balance
+            Trial Balance Upload - Two-Phase Processing
           </CardTitle>
           <CardDescription>
             Upload your trial balance in XLSX, CSV, or PDF format. Maximum file size: 20MB.
-            Enhanced processing with Docling + pandas provides superior accuracy for complex documents.
+            Choose between raw storage first or complete processing pipeline.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -432,56 +207,121 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary animate-spin" />
                 <span className="text-sm font-medium">
-                  {uploading ? 'Uploading file...' : 'Processing trial balance...'}
+                  {uploading && 'Uploading file...'}
+                  {processing && currentPhase === 'raw_storage' && 'Processing raw data storage...'}
+                  {processing && currentPhase === 'normalization' && 'Normalizing data...'}
+                  {processing && !currentPhase && 'Processing trial balance...'}
                 </span>
               </div>
               <Progress value={uploadProgress} className="w-full" />
               <p className="text-sm text-muted-foreground">
-                This may take up to 60 seconds for large files.
+                {currentPhase === 'raw_storage' && 'Phase 1: Storing raw file data...'}
+                {currentPhase === 'normalization' && 'Phase 2: Converting to trial balance format...'}
+                {!currentPhase && 'This may take up to 60 seconds for large files.'}
               </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Processing Options */}
+      {/* Processing Options - Two-Phase System */}
       {selectedFile && !uploading && !processing && (
         <Card>
           <CardHeader>
             <CardTitle>Processing Options</CardTitle>
             <CardDescription>
-              Choose how you want to handle the processed trial balance data.
+              Choose your processing approach: phase-by-phase control or complete pipeline.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Button 
-                onClick={() => handleProcess(false)}
-                variant="outline"
-                className="h-auto p-4 flex flex-col items-start gap-2"
-              >
-                <div className="flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  <span className="font-medium">Download Only</span>
-                </div>
-                <p className="text-sm text-muted-foreground text-left">
-                  Process and download as XLSX/CSV without saving to database
-                </p>
-              </Button>
-
-              <Button 
-                onClick={() => handleProcess(true)}
-                className="h-auto p-4 flex flex-col items-start gap-2"
-              >
-                <div className="flex items-center gap-2">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="raw_storage" className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
-                  <span className="font-medium">Save to Database</span>
+                  Raw Storage
+                </TabsTrigger>
+                <TabsTrigger value="normalization" className="flex items-center gap-2" disabled={!storedFileUuid}>
+                  <ArrowRight className="h-4 w-4" />
+                  Normalization
+                </TabsTrigger>
+                <TabsTrigger value="full_pipeline" className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Full Pipeline
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="raw_storage" className="space-y-4">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium mb-2">Phase 1: Raw Storage</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {getPhaseDescription('raw_storage')}
+                  </p>
+                  <Button onClick={handleProcessRawStorage} className="w-full">
+                    <Database className="h-4 w-4 mr-2" />
+                    Store Raw Data
+                  </Button>
                 </div>
-                <p className="text-sm text-muted-foreground text-left">
-                  Process and persist data for future analysis and reporting
-                </p>
-              </Button>
-            </div>
+              </TabsContent>
+
+              <TabsContent value="normalization" className="space-y-4">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium mb-2">Phase 2: Normalization</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {getPhaseDescription('normalization')}
+                  </p>
+                  {storedFileUuid ? (
+                    <Button onClick={handleProcessNormalization} className="w-full">
+                      <ArrowRight className="h-4 w-4 mr-2" />
+                      Normalize Stored Data
+                    </Button>
+                  ) : (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Complete Phase 1 (Raw Storage) first to enable normalization.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="full_pipeline" className="space-y-4">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium mb-2">Complete Pipeline</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {getPhaseDescription('full_pipeline')}
+                  </p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <Button 
+                      onClick={() => handleProcessFullPipeline(false)}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-start gap-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="font-medium">Process Only</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground text-left">
+                        Complete processing without database persistence
+                      </p>
+                    </Button>
+
+                    <Button 
+                      onClick={() => handleProcessFullPipeline(true)}
+                      className="h-auto p-4 flex flex-col items-start gap-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Database className="h-4 w-4" />
+                        <span className="font-medium">Process & Save</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground text-left">
+                        Complete processing and save to database
+                      </p>
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       )}
@@ -494,174 +334,47 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
               {processingResult.success ? (
                 <CheckCircle className="h-5 w-5 text-green-600" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-destructive" />
+                <AlertCircle className="h-5 w-5 text-red-600" />
               )}
-              Processing Results
+              Processing Results - {processingResult.phase.replace('_', ' ').toUpperCase()}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {processingResult.success ? (
               <div className="space-y-4">
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    {processingResult.message || `Successfully processed ${processingResult.rowCount} rows`}
-                  </AlertDescription>
-                </Alert>
-
-                {/* Enhanced Processing Indicator */}
-                {processingResult.enhanced_processing && (
-                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-900 dark:text-green-100">Enhanced Processing Used</span>
-                    </div>
-                    <p className="text-sm text-green-800 dark:text-green-200">
-                      This file was processed using Docling + pandas for superior accuracy and data quality.
-                    </p>
-                    {processingResult.processing_capabilities && (
-                      <ul className="mt-2 text-xs text-green-700 dark:text-green-300 list-disc list-inside">
-                        {processingResult.processing_capabilities.map((capability: string, idx: number) => (
-                          <li key={idx}>{capability}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-
-                {/* Processing Method Indicator */}
-                <div className="mb-3 flex items-center gap-2">
-                  <Badge variant={processingResult.enhanced_processing ? "default" : "outline"}>
-                    {processingResult.enhanced_processing ? "Enhanced Processing" : "Standard Processing"}
-                  </Badge>
-                  {processingResult.processing_method && (
-                    <Badge variant="secondary">{processingResult.processing_method}</Badge>
-                  )}
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="font-medium">
+                    {processingResult.phase === 'raw_storage' && 'Raw data stored successfully'}
+                    {processingResult.phase === 'normalization' && 'Data normalized successfully'}
+                    {processingResult.phase === 'full_pipeline' && 'Processing completed successfully'}
+                  </span>
                 </div>
 
-                {processingResult.characteristics && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium">AI-Detected File Characteristics:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      {processingResult.characteristics.contentType && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Content Type:</span>
-                          <Badge variant="secondary">{processingResult.characteristics.contentType}</Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.reportingFrequency && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Frequency:</span>
-                          <Badge variant="secondary">{processingResult.characteristics.reportingFrequency}</Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.currency && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Currency:</span>
-                          <Badge variant="secondary">{processingResult.characteristics.currency}</Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.originSystem && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Origin System:</span>
-                          <Badge variant="secondary">{processingResult.characteristics.originSystem}</Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.quality && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Data Quality:</span>
-                          <Badge variant={processingResult.characteristics.quality === 'high' ? 'default' : 'outline'}>
-                            {processingResult.characteristics.quality}
-                          </Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.structure && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Structure:</span>
-                          <Badge variant="secondary">{processingResult.characteristics.structure}</Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.complexity && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Complexity:</span>
-                          <Badge variant="outline">{processingResult.characteristics.complexity}</Badge>
-                        </div>
-                      )}
-                      {processingResult.characteristics.confidence && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">AI Confidence:</span>
-                          <Badge variant={processingResult.characteristics.confidence >= 0.8 ? 'default' : 'outline'}>
-                            {Math.round(processingResult.characteristics.confidence * 100)}%
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                    {processingResult.characteristics.recommendations && processingResult.characteristics.recommendations.length > 0 && (
-                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                        <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">AI Recommendations:</h5>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-blue-800 dark:text-blue-200">
-                          {processingResult.characteristics.recommendations.map((rec: string, idx: number) => (
-                            <li key={idx}>{rec}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                {processingResult.summary && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{processingResult.summary}</AlertDescription>
+                  </Alert>
+                )}
 
-                    {/* Enhanced Quality Report */}
-                    {processingResult.quality_report && (
-                      <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg">
-                        <h5 className="font-medium mb-2">Data Quality Analysis:</h5>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                          <div className="text-center">
-                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.overall_score * 100)}%</div>
-                            <div className="text-muted-foreground">Overall</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.completeness_score * 100)}%</div>
-                            <div className="text-muted-foreground">Complete</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.consistency_score * 100)}%</div>
-                            <div className="text-muted-foreground">Consistent</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.accuracy_score * 100)}%</div>
-                            <div className="text-muted-foreground">Accurate</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Validation Results */}
-                    {processingResult.validation_results && (
-                      <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
-                        <h5 className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">Validation Summary:</h5>
-                        <div className="grid grid-cols-3 gap-3 text-sm">
-                          <div className="text-center">
-                            <div className="font-medium text-lg">{processingResult.validation_results.validation_score || 'N/A'}</div>
-                            <div className="text-muted-foreground">Score</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium text-lg text-red-600">{processingResult.validation_results.error_count || 0}</div>
-                            <div className="text-muted-foreground">Errors</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium text-lg text-yellow-600">{processingResult.validation_results.warning_count || 0}</div>
-                            <div className="text-muted-foreground">Warnings</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                {processingResult.detailed_summary && (
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">Processing Details</h4>
+                    <pre className="text-sm whitespace-pre-wrap">
+                      {typeof processingResult.detailed_summary === 'string' 
+                        ? processingResult.detailed_summary 
+                        : JSON.stringify(processingResult.detailed_summary, null, 2)}
+                    </pre>
                   </div>
                 )}
 
-                {processingResult.data && (
-                  <div className="pt-4">
-                    <Separator className="mb-4" />
-                    <Button onClick={downloadProcessedData} variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Processed Data (CSV)
-                    </Button>
+                {processingResult.file_uuid && (
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">File Information</h4>
+                    <p className="text-sm text-muted-foreground">
+                      File UUID: <code className="bg-muted px-2 py-1 rounded text-xs">{processingResult.file_uuid}</code>
+                    </p>
                   </div>
                 )}
               </div>
@@ -676,79 +389,6 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
           </CardContent>
         </Card>
       )}
-
-      {/* Confirmation Dialog for Non-Trial Balance Files */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>File Type Confirmation</DialogTitle>
-            <DialogDescription>
-              This file appears to be a {formatContentType(pendingResult?.detected_content_type)} rather than a trial balance.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {pendingResult?.preview_data && (
-            <div className="my-4">
-              <h4 className="mb-2 font-medium">Data Preview (first 5 rows):</h4>
-              <div className="border rounded-md overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Account Number</TableHead>
-                      <TableHead>Account Description</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead>Account Type</TableHead>
-                      <TableHead>Period</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pendingResult.preview_data.slice(0, 5).map((row, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{row.account_number || 'N/A'}</TableCell>
-                        <TableCell>{row.account_description || 'N/A'}</TableCell>
-                        <TableCell className="text-right">
-                          {row.amount ? new Intl.NumberFormat('de-DE', { 
-                            style: 'currency', 
-                            currency: row.currency_code || 'EUR' 
-                          }).format(row.amount) : 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {row.account_type?.toUpperCase() || 'N/A'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{row.period_key_yyyymm || 'N/A'}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          )}
-          
-          <p className="text-sm text-muted-foreground">
-            Do you want to save this data to the trial balance table anyway?
-          </p>
-          
-          <DialogFooter className="gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowConfirmDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleDownloadOnly}
-            >
-              No, Download Only
-            </Button>
-            <Button onClick={handleConfirmSave}>
-              Yes, Save to Database
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

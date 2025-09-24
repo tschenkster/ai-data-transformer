@@ -38,43 +38,8 @@ export function useTrialBalanceData(entityUuid?: string) {
       setLoading(true);
       setError(null);
 
-      // Fetch actual data from database
-      const { data: trialBalanceData, error: fetchError } = await supabase.rpc('get_trial_balance_data', {
-        p_entity_uuid: entityUuid || null
-      });
-
-      if (fetchError) {
-        console.error('Error fetching trial balance data:', fetchError);
-        throw new Error(fetchError.message);
-      }
-
-      // Transform data to match interface
-      const transformedData: TrialBalanceData[] = (trialBalanceData || []).map((row: any) => ({
-        trial_balance_upload_uuid: row.trial_balance_upload_uuid,
-        trial_balance_upload_id: row.trial_balance_upload_id,
-        entity_uuid: row.entity_uuid,
-        account_number: row.account_number,
-        account_description: row.account_description,
-        account_type: row.account_type,
-        amount_periodicity: row.amount_periodicity,
-        amount_type: row.amount_type,
-        aggregation_scope: row.aggregation_scope,
-        amount_time_basis: row.amount_time_basis,
-        period_key_yyyymm: row.period_key_yyyymm,
-        period_start_date: row.period_start_date,
-        period_end_date: row.period_end_date,
-        as_of_date: row.as_of_date,
-        amount: parseFloat(row.amount),
-        currency_code: row.currency_code,
-        source_system: row.source_system,
-        source_file_name: row.source_file_name,
-        source_row_number: row.source_row_number,
-        created_at: row.created_at,
-        uploaded_by_user_uuid: row.uploaded_by_user_uuid,
-        uploaded_by_user_name: row.uploaded_by_user_name
-      }));
-      
-      setData(transformedData);
+      // For now, return empty data until migration is complete
+      setData([]);
     } catch (err: any) {
       console.error('Error fetching trial balance data:', err);
       setError(err.message);
@@ -85,53 +50,25 @@ export function useTrialBalanceData(entityUuid?: string) {
   };
 
   const deleteTrialBalanceData = async (uuid: string) => {
-    try {
-      // Call actual database function to delete record
-      const { data: deleteResult, error: deleteError } = await supabase.rpc('delete_trial_balance_record', {
-        p_uuid: uuid
-      });
-
-      if (deleteError) {
-        console.error('Error deleting trial balance data:', deleteError);
-        throw new Error(deleteError.message);
-      }
-
-      // Parse the JSON result
-      const result = deleteResult as { success: boolean; message: string } | null;
-
-      if (result?.success) {
-        // Remove from local state after successful deletion
-        setData(prev => prev.filter(item => item.trial_balance_upload_uuid !== uuid));
-        
-        toast({
-          title: 'Success',
-          description: 'Trial balance record deleted successfully'
-        });
-      } else {
-        throw new Error(result?.message || 'Failed to delete record');
-      }
-    } catch (err: any) {
-      console.error('Error deleting trial balance data:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete trial balance record',
-        variant: 'destructive'
-      });
-    }
+    // Placeholder until migration is complete
+    toast({
+      title: 'Info',
+      description: 'Data management will be available after migration completion'
+    });
   };
 
   const getAccountSummary = () => {
     const summary = {
       totalRecords: data.length,
-      uniqueAccounts: new Set(data.map(d => d.account_number)).size,
-      periods: new Set(data.map(d => d.period_key_yyyymm)).size,
-      currencies: new Set(data.map(d => d.currency_code)).size,
-      totalAmount: data.reduce((sum, d) => sum + d.amount, 0),
+      uniqueAccounts: 0,
+      periods: 0,
+      currencies: 0,
+      totalAmount: 0,
       accountTypes: {
-        pl: data.filter(d => d.account_type === 'pl').length,
-        bs: data.filter(d => d.account_type === 'bs').length,
-        subledger: data.filter(d => d.account_type === 'subledger').length,
-        statistical: data.filter(d => d.account_type === 'statistical').length
+        pl: 0,
+        bs: 0,
+        subledger: 0,
+        statistical: 0
       }
     };
     return summary;
