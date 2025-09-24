@@ -1478,10 +1478,9 @@ export type Database = {
           account_description: string
           account_number: string
           account_type: string
-          aggregation_scope: string
           amount: number
+          amount_aggregation_scope: string
           amount_periodicity: string
-          amount_time_basis: string
           amount_type: string
           as_of_date: string
           created_at: string
@@ -1493,7 +1492,8 @@ export type Database = {
           source_file_name: string
           source_row_number: number
           source_system: string
-          trial_balance_uploaded_uuid: string
+          trial_balance_upload_id: number
+          trial_balance_upload_uuid: string
         }[]
       }
       get_user_accessible_entities: {
@@ -1820,6 +1820,10 @@ export type Database = {
       }
       revoke_all_user_access: {
         Args: { p_reason?: string; p_user_uuid: string }
+        Returns: Json
+      }
+      save_trial_balance_data: {
+        Args: { p_trial_balance_data: Json }
         Returns: Json
       }
       secure_insert_audit_log: {
