@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // Download file from Supabase Storage
     const { data: fileData, error: downloadError } = await supabase.storage
-      .from('file-uploads')
+      .from('user-uploads-trial-balances')
       .download(file_path)
 
     if (downloadError || !fileData) {
