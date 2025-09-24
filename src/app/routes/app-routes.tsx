@@ -13,6 +13,7 @@ import ReportStructureManager from '@/pages/ReportStructureManager';
 import CoATranslator from '@/pages/CoATranslator';
 import CoAMapper from '@/pages/CoAMapper';
 import TrialBalanceImport from '@/pages/TrialBalanceImport';
+import RawDataProcessor from '@/pages/RawDataProcessor';
 import JournalImport from '@/pages/JournalImport';
 import FinancialReports from '@/pages/FinancialReports';
 import SqlTables from '@/pages/SqlTables';
@@ -129,6 +130,11 @@ export function AppRoutes() {
       <Route path="/data/trial-balance-import" element={
         <AuthRoute>
           <TrialBalanceImport />
+        </AuthRoute>
+      } />
+      <Route path="/data/raw-data-processor" element={
+        <AuthRoute>
+          <RawDataProcessor />
         </AuthRoute>
       } />
       <Route path="/data/journal-import" element={
