@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { FileSpreadsheet, Upload, Download, Database, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +43,8 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingResult, setPendingResult] = useState<ProcessingResult | null>(null);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
   const { toast } = useToast();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -121,7 +124,7 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
     return filePath;
   };
 
-  const processFile = async (filePath: string, fileName: string, options: { persistToDatabase: boolean }) => {
+  const processFile = async (filePath: string, fileName: string, options: { persistToDatabase: boolean; forcePersist?: boolean }) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       throw new Error('No active session');
@@ -132,7 +135,7 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
         filePath,
         fileName,
         entityUuid,
-        persistToDatabase: options.persistToDatabase
+        forcePersist: options.forcePersist || false
       }
     });
 
@@ -168,8 +171,8 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
 
       // Check if we have a content type warning and the user wants to save to database
       if (result.content_type_warning && persistToDatabase) {
-        setPendingResult(result);
-        setShowConfirmDialog(true);
+        setPreviewData(result);
+        setShowPreviewDialog(true);
         setProcessing(false);
         return;
       }
@@ -245,6 +248,58 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
     } finally {
       setProcessing(false);
     }
+  };
+
+  const handleConfirmForceInsert = async () => {
+    if (!selectedFile || !previewData) return;
+    
+    try {
+      setProcessing(true);
+      setShowPreviewDialog(false);
+      
+      // Re-process with persistToDatabase: true and forcePersist: true
+      const filePath = await uploadFile(selectedFile);
+      const result = await processFile(filePath, selectedFile.name, { 
+        persistToDatabase: true, 
+        forcePersist: true 
+      });
+      
+      setProcessingResult(result);
+      
+      toast({
+        title: 'Success',
+        description: `Successfully processed and saved ${result.rowCount} rows to database`,
+      });
+
+      onUploadComplete?.(result);
+      setPreviewData(null);
+      
+    } catch (error: any) {
+      console.error('Processing error:', error);
+      setProcessingResult({
+        success: false,
+        error: error.message
+      });
+      toast({
+        title: 'Processing Failed',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleDownloadOnlyFromPreview = () => {
+    if (previewData) {
+      setProcessingResult(previewData);
+      toast({
+        title: 'Success',
+        description: `Successfully processed ${previewData.rowCount} rows for download`,
+      });
+    }
+    setShowPreviewDialog(false);
+    setPreviewData(null);
   };
 
   const handleDownloadOnly = () => {

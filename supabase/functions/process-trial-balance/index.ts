@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { filePath, fileName, entityUuid, persistToDatabase = false } = await req.json();
+    const { filePath, fileName, entityUuid, persistToDatabase = false, forcePersist = false } = await req.json();
     
     // Check if Python service is available (enhanced processing)
     const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL');
@@ -125,18 +125,9 @@ Deno.serve(async (req) => {
     const characteristics = await detectFileCharacteristicsWithAI(parsedData, fileName, extension);
     console.log('Detected file characteristics:', characteristics);
 
-    // Content type workflow branching
-    if (characteristics.content_type !== 'trial_balance') {
-      return new Response(JSON.stringify({
-        success: true,
-        characteristics,
-        message: `This file is a ${characteristics.content_type.replace('_', ' ')} report. Please use the dedicated ${characteristics.content_type.replace('_', ' ')} workflow.`,
-        data: null,
-        requires_different_workflow: true
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // Always transform data, but handle non-trial_balance types with confirmation flow
+    const isTrialBalance = characteristics.content_type === 'trial_balance';
+    console.log(`Content type detected as '${characteristics.content_type}', is trial balance: ${isTrialBalance}`);
 
     // Transform to trial balance format
     console.log('Starting data transformation with characteristics:', characteristics);
@@ -158,7 +149,35 @@ Deno.serve(async (req) => {
       console.log('✅ Transformation successful. Sample transformed record:', transformedData[0]);
     }
 
-    if (persistToDatabase) {
+    // For non-trial balance files, return confirmation data unless forcePersist is true
+    if (!isTrialBalance && !forcePersist) {
+      const previewData = transformedData.slice(0, 5).map(row => ({
+        account_number: row.account_number,
+        account_description: row.account_description,
+        account_type: row.account_type,
+        amount: row.amount,
+        period_key_yyyymm: row.period_key_yyyymm,
+        as_of_date: row.as_of_date
+      }));
+
+      return new Response(JSON.stringify({
+        success: true,
+        content_type_warning: true,
+        detected_content_type: characteristics.content_type,
+        message: `This file appears to be a ${characteristics.content_type.replace('_', ' ')} rather than a trial balance.`,
+        data: transformedData,
+        preview_data: previewData,
+        rowCount: transformedData.length,
+        characteristics
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Only persist to database if requested (and either is trial balance OR forcePersist is true)
+    if (persistToDatabase && (isTrialBalance || forcePersist)) {
+      console.log(`Persisting ${transformedData.length} rows to database for entity ${entityUuid} (forcePersist: ${forcePersist})`);
+      
       // Save to database
       const { data: insertResult, error: insertError } = await supabase
         .rpc('insert_trial_balance_data', { p_data: transformedData });
