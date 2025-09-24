@@ -55,8 +55,14 @@ serve(async (req) => {
 
     console.log(`Processing file with two-phase approach: ${file_path}, phase: ${processing_phase}`)
 
-    // Get Python service URL
-    const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL') || 'http://localhost:8000'
+    // Check if Python service is available
+    const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL')
+    
+    if (!pythonServiceUrl) {
+      throw new Error('Python service is not configured. Please set PYTHON_SERVICE_URL environment variable or use the legacy trial balance import system.')
+    }
+
+    console.log(`Using Python service at: ${pythonServiceUrl}`)
 
     // Download file from Supabase Storage
     const { data: fileData, error: downloadError } = await supabase.storage
@@ -64,7 +70,8 @@ serve(async (req) => {
       .download(file_path)
 
     if (downloadError || !fileData) {
-      throw new Error(`Failed to download file: ${downloadError?.message}`)
+      console.error('File download error:', downloadError)
+      throw new Error(`Failed to download file: ${downloadError?.message || 'Unknown download error'}`)
     }
 
     const filename = file_path.split('/').pop() || 'unknown_file'
