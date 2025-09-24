@@ -52,6 +52,174 @@ class GPT5ColumnAnalyzer:
         
         logger.info("GPT-5 Column Analyzer initialized with German accounting expertise")
     
+    async def analyze_raw_excel_structure(
+        self, 
+        sheet_names: List[str], 
+        sheet_previews: Dict[str, str], 
+        filename: str
+    ) -> 'RawAnalysisResult':
+        """Analyze raw Excel structure before processing"""
+        from .models import RawAnalysisResult, RawFileStructure
+        
+        prompt = self._build_raw_excel_analysis_prompt(sheet_names, sheet_previews, filename)
+        
+        try:
+            gpt_response = await self._call_gpt5_api(prompt)
+            return self._parse_raw_analysis_response(gpt_response, sheet_previews)
+        except Exception as e:
+            logger.error(f"GPT-5 raw Excel analysis failed: {str(e)}")
+            return self._fallback_raw_analysis("excel", sheet_names, sheet_previews)
+    
+    async def analyze_raw_csv_structure(
+        self, 
+        lines: List[str], 
+        preview_text: str, 
+        filename: str, 
+        delimiter: str
+    ) -> 'RawAnalysisResult':
+        """Analyze raw CSV structure before processing"""
+        from .models import RawAnalysisResult, RawFileStructure
+        
+        prompt = self._build_raw_csv_analysis_prompt(lines, preview_text, filename, delimiter)
+        
+        try:
+            gpt_response = await self._call_gpt5_api(prompt)
+            return self._parse_raw_analysis_response(gpt_response, [preview_text])
+        except Exception as e:
+            logger.error(f"GPT-5 raw CSV analysis failed: {str(e)}")
+            return self._fallback_raw_analysis("csv", [filename], [preview_text])
+    
+    def _build_raw_excel_analysis_prompt(self, sheet_names: List[str], sheet_previews: Dict[str, str], filename: str) -> str:
+        """Build GPT-5 prompt for raw Excel analysis"""
+        return f"""
+You are a German accounting expert analyzing raw Excel file structure BEFORE processing.
+
+FILENAME: {filename}
+AVAILABLE SHEETS: {', '.join(sheet_names)}
+
+SHEET PREVIEWS:
+{chr(10).join([f"Sheet: {name}{chr(10)}{preview[:2000]}" for name, preview in sheet_previews.items()])}
+
+ANALYSIS TASKS:
+1. SELECT BEST SHEET: Which sheet contains the main accounting data?
+2. DETECT HEADERS: What row number contains the column headers?
+3. FIND DATA START: What row number does the actual data start?
+4. COLUMN MAPPING: Map columns to these types:
+   - account_number (Konto/Sachkonto)
+   - account_description (Bezeichnung/Beschreibung)
+   - amounts (Beträge/Saldo)
+   - periods (Monate/Perioden)
+5. PATTERN DETECTION: Identify German accounting patterns (SKR03, SKR04, BWA)
+
+GERMAN ACCOUNTING CONTEXT:
+- Trial Balance (Saldenliste/Summen- und Saldenliste)
+- P&L (BWA/Gewinn- und Verlustrechnung)
+- Balance Sheet (Bilanz)
+- Common account ranges: 1000-1999 (Assets), 2000-2999 (Liabilities), 4000-7999 (P&L)
+
+Return JSON:
+{{
+  "recommended_sheet": "sheet_name",
+  "header_row": row_number,
+  "data_start_row": row_number,
+  "column_hints": {{"column_name": "type"}},
+  "detected_patterns": ["pattern1", "pattern2"],
+  "confidence": 0.0-1.0,
+  "recommendations": ["recommendation1", "recommendation2"]
+}}
+"""
+    
+    def _build_raw_csv_analysis_prompt(self, lines: List[str], preview_text: str, filename: str, delimiter: str) -> str:
+        """Build GPT-5 prompt for raw CSV analysis"""
+        first_10_lines = '\n'.join(lines[:10])
+        return f"""
+You are a German accounting expert analyzing raw CSV file structure BEFORE processing.
+
+FILENAME: {filename}
+DELIMITER: "{delimiter}"
+
+FIRST 10 LINES:
+{first_10_lines}
+
+FULL PREVIEW:
+{preview_text[:2000]}
+
+ANALYSIS TASKS:
+1. DETECT HEADERS: What row number (0-based) contains the column headers?
+2. FIND DATA START: What row number does the actual data start?
+3. COLUMN MAPPING: Map columns to these types:
+   - account_number (Konto/Sachkonto)
+   - account_description (Bezeichnung/Beschreibung)
+   - amounts (Beträge/Saldo)
+   - periods (Monate/Perioden)
+4. PATTERN DETECTION: Identify German accounting patterns
+
+GERMAN ACCOUNTING KEYWORDS:
+- Account: Konto, Sachkonto, Kontonummer
+- Description: Bezeichnung, Beschreibung, Kontobezeichnung
+- Amount: Betrag, Saldo, Balance, Wert
+- Debit/Credit: Soll, Haben, S, H
+
+Return JSON:
+{{
+  "header_row": row_number,
+  "data_start_row": row_number,
+  "column_hints": {{"column_name": "type"}},
+  "detected_patterns": ["pattern1", "pattern2"],
+  "confidence": 0.0-1.0,
+  "recommendations": ["recommendation1", "recommendation2"]
+}}
+"""
+    
+    def _parse_raw_analysis_response(self, gpt_response: str, content_preview: List[str]) -> 'RawAnalysisResult':
+        """Parse GPT-5 response for raw analysis"""
+        from .models import RawAnalysisResult, RawFileStructure
+        
+        try:
+            analysis_data = json.loads(gpt_response)
+            
+            structure = RawFileStructure(
+                recommended_sheet=analysis_data.get('recommended_sheet'),
+                header_row=analysis_data.get('header_row'),
+                data_start_row=analysis_data.get('data_start_row'),
+                column_hints=analysis_data.get('column_hints', {}),
+                detected_patterns=analysis_data.get('detected_patterns', []),
+                confidence=analysis_data.get('confidence', 0.8),
+                recommendations=analysis_data.get('recommendations', [])
+            )
+            
+            return RawAnalysisResult(
+                file_structure=structure,
+                content_preview=content_preview,
+                processing_hints={
+                    "gpt5_analysis": True,
+                    "analysis_timestamp": datetime.now().isoformat()
+                },
+                analysis_confidence=structure.confidence
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to parse GPT-5 raw analysis response: {str(e)}")
+            return self._fallback_raw_analysis("unknown", [], content_preview)
+    
+    def _fallback_raw_analysis(self, file_type: str, identifiers: List[str], content_preview: List[str]) -> 'RawAnalysisResult':
+        """Fallback raw analysis when GPT-5 fails"""
+        from .models import RawAnalysisResult, RawFileStructure
+        
+        return RawAnalysisResult(
+            file_structure=RawFileStructure(
+                header_row=0 if file_type == "csv" else 1,
+                data_start_row=1 if file_type == "csv" else 2,
+                column_hints={},
+                detected_patterns=[f'fallback_{file_type}'],
+                confidence=0.5,
+                recommendations=["Fallback analysis used - manual verification recommended"]
+            ),
+            content_preview=content_preview[:5],
+            processing_hints={"fallback_mode": True},
+            analysis_confidence=0.5
+        )
+    
     async def analyze_columns(
         self, 
         headers: List[str], 

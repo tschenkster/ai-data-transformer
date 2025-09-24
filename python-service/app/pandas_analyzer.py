@@ -45,15 +45,41 @@ class PandasAnalyzer:
         
         logger.info("Pandas analyzer initialized with GPT-5 enhanced German accounting support")
 
-    async def process_tabular_data(self, file_content: bytes, file_type: str, filename: str) -> List[Dict[str, Any]]:
-        """Process XLSX/CSV files using pandas with enhanced German accounting support"""
+    async def process_tabular_data(
+        self, 
+        file_content: bytes, 
+        file_type: str, 
+        filename: str,
+        gpt5_hints: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """Process XLSX/CSV files using pandas with enhanced German accounting support and GPT-5 hints"""
         try:
+            # Use GPT-5 hints if available
+            if gpt5_hints:
+                logger.info(f"Processing with GPT-5 hints: {gpt5_hints}")
+                
+                # Apply sheet selection hint for Excel files
+                if file_type == "xlsx" and gpt5_hints.get('recommended_sheet'):
+                    sheet_name = gpt5_hints['recommended_sheet']
+                    logger.info(f"Using GPT-5 recommended sheet: {sheet_name}")
+                    
+                # Apply header detection hints
+                header_row = gpt5_hints.get('header_row', 0)
+                data_start_row = gpt5_hints.get('data_start_row', 1)
+                logger.info(f"Using GPT-5 detected header row: {header_row}, data start: {data_start_row}")
+                
+            else:
+                logger.info("Processing without GPT-5 hints - using fallback detection")
+                header_row = 0
+                data_start_row = 1
+                sheet_name = None
+                
             logger.info(f"Processing {file_type} file: {filename}")
             
             if file_type == "xlsx":
-                df = await self._read_excel_with_options(file_content, filename)
+                df = await self._read_excel_with_options(file_content, filename, sheet_name, header_row)
             elif file_type == "csv":
-                df = await self._read_csv_with_options(file_content, filename)
+                df = await self._read_csv_with_options(file_content, filename, header_row)
             else:
                 raise ValueError(f"Unsupported file type for pandas processing: {file_type}")
             
@@ -82,15 +108,31 @@ class PandasAnalyzer:
             logger.error(f"Error processing tabular data: {str(e)}")
             raise Exception(f"Tabular data processing failed: {str(e)}")
 
-    async def _read_excel_with_options(self, file_content: bytes, filename: str) -> pd.DataFrame:
+    async def _read_excel_with_options(
+        self, 
+        file_content: bytes, 
+        filename: str, 
+        sheet_name: Optional[str] = None,
+        header_row: Optional[int] = None
+    ) -> pd.DataFrame:
         """Read Excel file with enhanced options for German accounting data"""
         try:
             # Try reading with different options to find the best approach
             excel_file = pd.ExcelFile(io.BytesIO(file_content))
             
-            # Get the best sheet (prioritize sheets with accounting keywords)
-            sheet_name = self._select_best_sheet(excel_file.sheet_names)
-            logger.info(f"Selected sheet: {sheet_name}")
+            # Use GPT-5 recommended sheet or fallback to best sheet selection
+            if sheet_name and sheet_name in excel_file.sheet_names:
+                selected_sheet = sheet_name
+                logger.info(f"Using GPT-5 recommended sheet: {selected_sheet}")
+            else:
+                selected_sheet = self._select_best_sheet(excel_file.sheet_names)
+                logger.info(f"Selected sheet using fallback: {selected_sheet}")
+            
+            # Use GPT-5 header hint or detect automatically
+            if header_row is not None:
+                logger.info(f"Using GPT-5 detected header row: {header_row}")
+            else:
+                header_row = None  # Let pandas detect or clean_and_find_header handle it
             
             # Read with pandas optimizations
             df = pd.read_excel(
@@ -110,7 +152,12 @@ class PandasAnalyzer:
             logger.error(f"Error reading Excel file: {str(e)}")
             raise
 
-    async def _read_csv_with_options(self, file_content: bytes, filename: str) -> pd.DataFrame:
+    async def _read_csv_with_options(
+        self, 
+        file_content: bytes, 
+        filename: str,
+        header_row: Optional[int] = None
+    ) -> pd.DataFrame:
         """Read CSV file with enhanced encoding and delimiter detection"""
         try:
             # Detect encoding
@@ -118,6 +165,11 @@ class PandasAnalyzer:
             encoding_result = charset_normalizer.from_bytes(file_content)
             encoding = encoding_result.best().encoding if encoding_result.best() else 'utf-8'
             logger.info(f"Detected CSV encoding: {encoding}")
+            
+            if header_row is not None:
+                logger.info(f"Using GPT-5 detected header row: {header_row}")
+            else:
+                logger.info("Using automatic header detection")
             
             # Convert to string
             csv_content = file_content.decode(encoding)

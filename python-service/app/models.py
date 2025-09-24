@@ -80,6 +80,22 @@ class ProcessedTrialBalanceRow(BaseModel):
     data_quality_score: Optional[float] = Field(None, ge=0.0, le=1.0)
     processing_metadata: Dict[str, Any] = Field(default_factory=dict)
 
+# Raw File Analysis Models for GPT-5 Pre-processing
+class RawFileStructure(BaseModel):
+    recommended_sheet: Optional[str] = None
+    header_row: Optional[int] = None
+    data_start_row: Optional[int] = None
+    column_hints: Dict[str, str] = Field(default_factory=dict)
+    detected_patterns: List[str] = Field(default_factory=list)
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    recommendations: List[str] = Field(default_factory=list)
+
+class RawAnalysisResult(BaseModel):
+    file_structure: RawFileStructure
+    content_preview: List[str] = Field(default_factory=list)
+    processing_hints: Dict[str, Any] = Field(default_factory=dict)
+    analysis_confidence: float = Field(..., ge=0.0, le=1.0)
+
 class ProcessingResponse(BaseModel):
     success: bool
     data: List[ProcessedTrialBalanceRow] = []
@@ -87,6 +103,7 @@ class ProcessingResponse(BaseModel):
     characteristics: Optional[FileCharacteristics] = None
     validation_results: Optional[ValidationResult] = None
     quality_report: Optional[QualityReport] = None
+    raw_analysis: Optional[RawAnalysisResult] = None
     message: str = ""
     processing_time_seconds: Optional[float] = None
     error: Optional[str] = None

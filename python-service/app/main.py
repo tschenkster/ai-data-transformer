@@ -13,6 +13,7 @@ from .pandas_analyzer import PandasAnalyzer
 from .utils.file_detector import FileDetector
 from .utils.normalizer import DataNormalizer
 from .utils.validator import DataValidator
+from .raw_file_analyzer import RawFileAnalyzer
 
 # Load environment variables
 load_dotenv()
@@ -42,6 +43,7 @@ pandas_analyzer = PandasAnalyzer()
 file_detector = FileDetector()
 normalizer = DataNormalizer()
 validator = DataValidator()
+raw_file_analyzer = RawFileAnalyzer()
 
 @app.get("/health")
 async def health_check():
@@ -67,14 +69,29 @@ async def process_file(
         file_type = await file_detector.detect_file_type(file_content, file.filename)
         logger.info(f"Detected file type: {file_type}")
         
+        # Step 1.5: GPT-5 Raw File Analysis (NEW)
+        raw_analysis = None
+        processing_hints = {}
+        
+        if file_type in ["xlsx", "csv"]:
+            try:
+                from .models import FileType
+                raw_analysis = await raw_file_analyzer.analyze_raw_file_structure(
+                    file_content, FileType(file_type), file.filename
+                )
+                processing_hints = raw_analysis.processing_hints
+                logger.info(f"GPT-5 raw analysis completed with confidence: {raw_analysis.analysis_confidence}")
+            except Exception as e:
+                logger.warning(f"Raw file analysis failed: {str(e)}, proceeding without hints")
+        
         # Step 2: Parse based on file type
         if file_type == "pdf":
             # Use Docling for PDF processing
             parsed_data = await docling_processor.process_pdf(file_content)
         elif file_type in ["xlsx", "csv"]:
-            # Use pandas for tabular data
+            # Use pandas for tabular data with GPT-5 hints
             parsed_data = await pandas_analyzer.process_tabular_data(
-                file_content, file_type, file.filename
+                file_content, file_type, file.filename, processing_hints
             )
         else:
             raise HTTPException(
@@ -109,7 +126,8 @@ async def process_file(
             characteristics=characteristics,
             validation_results=validation_results,
             quality_report=quality_report,
-            message=f"Successfully processed {len(normalized_data)} records using Docling + pandas"
+            raw_analysis=raw_analysis,
+            message=f"Successfully processed {len(normalized_data)} records using Docling + pandas with GPT-5 analysis"
         )
         
     except Exception as e:
