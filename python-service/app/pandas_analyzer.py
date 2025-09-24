@@ -7,17 +7,43 @@ import hashlib
 from datetime import datetime, date
 import re
 from .models import FileCharacteristics, ContentType, ReportingFrequency, ValidationResult, QualityReport, ProcessedTrialBalanceRow
+from .gpt5_column_analyzer import GPT5ColumnAnalyzer, ColumnAnalysis
 
 logger = logging.getLogger(__name__)
 
 class PandasAnalyzer:
     def __init__(self):
-        """Initialize pandas analyzer with optimized settings"""
+        """Initialize pandas analyzer with GPT-5 enhanced German accounting support"""
         # Configure pandas for German accounting formats
         self.decimal_separators = ['.', ',']
         self.thousand_separators = [',', '.', ' ', "'"]
         self.negative_patterns = [r'\((.*?)\)', r'-(.*)', r'(.*)CR$']
-        logger.info("Pandas analyzer initialized with German accounting format support")
+        
+        # Initialize GPT-5 analyzer for intelligent column mapping
+        try:
+            self.gpt5_analyzer = GPT5ColumnAnalyzer()
+            logger.info("GPT-5 Column Analyzer initialized successfully")
+        except Exception as e:
+            logger.warning(f"GPT-5 initialization failed: {str(e)}, using fallback mode")
+            self.gpt5_analyzer = None
+        
+        # Enhanced German keyword patterns from sample data
+        self.enhanced_german_patterns = {
+            'account_description': [
+                'beschriftung', 'bezeichnung', 'beschreibung', 'kontobezeichnung',
+                'zeilen-/kontobezeichnung', 'line_description', 'account_description',
+                'description', 'name', 'text'
+            ],
+            'account_number': [
+                'konto', 'kontonummer', 'sachkonto', 'account', 'zeile', 'line'
+            ],
+            'amounts': [
+                'betrag', 'saldo', 'balance', 'eb-wert', 'wert', 'amount',
+                'opening_balance', 'ending_balance', 'total', 'summe'
+            ]
+        }
+        
+        logger.info("Pandas analyzer initialized with GPT-5 enhanced German accounting support")
 
     async def process_tabular_data(self, file_content: bytes, file_type: str, filename: str) -> List[Dict[str, Any]]:
         """Process XLSX/CSV files using pandas with enhanced German accounting support"""
@@ -259,9 +285,9 @@ class PandasAnalyzer:
             if df.empty:
                 return []
             
-            # Identify key columns using fuzzy matching
-            column_mapping = self._identify_columns(df.columns.tolist())
-            logger.info(f"Column mapping: {column_mapping}")
+            # Identify key columns using GPT-5 enhanced analysis
+            column_mapping = await self._identify_columns(df.columns.tolist(), parsed_data[:3])
+            logger.info(f"Enhanced column mapping: {column_mapping}")
             
             normalized_rows = []
             
@@ -269,7 +295,7 @@ class PandasAnalyzer:
                 try:
                     # Extract and clean core fields
                     account_number = self._extract_account_number(row, column_mapping)
-                    account_description = self._extract_account_description(row, column_mapping)
+                    account_description = await self._extract_account_description(row, column_mapping, account_number)
                     amount = self._extract_amount(row, column_mapping)
                     
                     if not account_number:
@@ -318,33 +344,63 @@ class PandasAnalyzer:
             logger.error(f"Error in data normalization: {str(e)}")
             raise
 
-    def _identify_columns(self, column_names: List[str]) -> Dict[str, str]:
-        """Identify column types using fuzzy matching"""
+    async def _identify_columns(self, column_names: List[str], sample_data: List[Dict[str, Any]] = None) -> Dict[str, str]:
+        """GPT-5 enhanced column identification with German accounting expertise"""
+        
+        # Try GPT-5 enhanced analysis first
+        if self.gpt5_analyzer and sample_data:
+            try:
+                logger.info("Using GPT-5 for intelligent column mapping")
+                analysis = await self.gpt5_analyzer.analyze_columns(
+                    column_names, 
+                    sample_data[:3],  # Send first 3 rows as sample
+                    document_type="German accounting document"
+                )
+                
+                if analysis.confidence > 0.7:
+                    logger.info(f"GPT-5 mapping successful with {analysis.confidence:.2f} confidence")
+                    return analysis.mapping
+                else:
+                    logger.info(f"GPT-5 confidence too low ({analysis.confidence:.2f}), using enhanced fallback")
+                    
+            except Exception as e:
+                logger.warning(f"GPT-5 column analysis failed: {str(e)}, using enhanced fallback")
+        
+        # Enhanced fallback with German patterns from sample data
+        return self._enhanced_pattern_matching(column_names)
+    
+    def _enhanced_pattern_matching(self, column_names: List[str]) -> Dict[str, str]:
+        """Enhanced pattern matching with German accounting expertise"""
         mapping = {}
         
         for col in column_names:
             col_lower = str(col).lower().strip()
             
-            # Account number patterns
-            if any(pattern in col_lower for pattern in ['account', 'konto', 'nummer', 'number', 'code']):
-                if 'account_number' not in mapping:
-                    mapping['account_number'] = col
-            
-            # Description patterns
-            elif any(pattern in col_lower for pattern in ['description', 'bezeichnung', 'beschreibung', 'name', 'text']):
+            # Enhanced account description patterns (CRITICAL FIX)
+            if any(pattern in col_lower for pattern in self.enhanced_german_patterns['account_description']):
                 if 'description' not in mapping:
                     mapping['description'] = col
+                    logger.info(f"Mapped '{col}' to account_description")
+            
+            # Account number patterns
+            elif any(pattern in col_lower for pattern in self.enhanced_german_patterns['account_number']):
+                if 'account_number' not in mapping:
+                    mapping['account_number'] = col
+                    logger.info(f"Mapped '{col}' to account_number")
             
             # Amount patterns
-            elif any(pattern in col_lower for pattern in ['amount', 'betrag', 'saldo', 'balance', 'total', 'summe']):
+            elif any(pattern in col_lower for pattern in self.enhanced_german_patterns['amounts']):
                 if 'amount' not in mapping:
                     mapping['amount'] = col
+                    logger.info(f"Mapped '{col}' to amount")
             
             # Period patterns
             elif any(pattern in col_lower for pattern in ['period', 'periode', 'month', 'monat', 'date', 'datum']):
                 if 'period' not in mapping:
                     mapping['period'] = col
+                    logger.info(f"Mapped '{col}' to period")
         
+        logger.info(f"Enhanced pattern matching result: {mapping}")
         return mapping
 
     def _extract_account_number(self, row: pd.Series, column_mapping: Dict[str, str]) -> Optional[str]:
@@ -366,22 +422,50 @@ class PandasAnalyzer:
         cleaned = re.sub(r'[^0-9A-Za-z]', '', value)
         return cleaned if cleaned else None
 
-    def _extract_account_description(self, row: pd.Series, column_mapping: Dict[str, str]) -> Optional[str]:
-        """Extract and clean account description"""
+    async def _extract_account_description(self, row: pd.Series, column_mapping: Dict[str, str], account_number: Optional[str] = None) -> Optional[str]:
+        """Extract and clean account description with GPT-5 enhancement"""
         desc_col = column_mapping.get('description')
-        if not desc_col or desc_col not in row:
-            # Try to find in text columns
-            for col in row.index:
+        
+        # Primary extraction from mapped column
+        if desc_col and desc_col in row:
+            value = str(row[desc_col]).strip()
+            if value and value.lower() not in ['nan', 'null', '', 'n/a', 'none']:
+                return value[:255]
+        
+        # Secondary: Search in text columns using enhanced patterns
+        for col in row.index:
+            col_lower = str(col).lower()
+            # Check if column name matches German description patterns
+            if any(pattern in col_lower for pattern in self.enhanced_german_patterns['account_description']):
                 value = str(row[col]).strip()
-                if value and len(value) > 5 and not re.match(r'^[0-9.,-]+$', value):
-                    return value[:255]  # Limit length
-            return None
+                if value and len(value) > 2 and not re.match(r'^[0-9.,-]+$', value):
+                    logger.info(f"Found description '{value}' in unmapped column '{col}'")
+                    return value[:255]
         
-        value = str(row[desc_col]).strip()
-        if not value or value.lower() in ['nan', 'null', '']:
-            return None
+        # Tertiary: GPT-5 inference from account number
+        if self.gpt5_analyzer and account_number:
+            try:
+                inferences = await self.gpt5_analyzer.infer_missing_descriptions(
+                    [account_number], 
+                    context="German trial balance"
+                )
+                if account_number in inferences:
+                    inferred_desc = inferences[account_number]
+                    logger.info(f"GPT-5 inferred description for {account_number}: {inferred_desc}")
+                    return inferred_desc[:255]
+            except Exception as e:
+                logger.warning(f"GPT-5 description inference failed: {str(e)}")
         
-        return value[:255]  # Limit description length
+        # Fallback: Use any meaningful text in the row
+        for col in row.index:
+            value = str(row[col]).strip()
+            if (value and len(value) > 5 and 
+                not re.match(r'^[0-9.,-]+$', value) and 
+                not re.match(r'^[0-9A-Za-z]{1,4}$', value)):  # Exclude account numbers
+                logger.info(f"Using fallback description '{value}' from column '{col}'")
+                return value[:255]
+        
+        return None
 
     def _extract_amount(self, row: pd.Series, column_mapping: Dict[str, str]) -> Optional[float]:
         """Extract and normalize amount with German accounting format support"""

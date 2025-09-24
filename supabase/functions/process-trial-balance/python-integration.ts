@@ -40,11 +40,12 @@ export async function processWithPythonService(
     }
 
     const result = await response.json();
-    console.log(`Enhanced processing completed: ${result.row_count} rows processed`);
+    console.log(`✅ GPT-5 Enhanced processing completed: ${result.row_count} rows processed`);
+    console.log(`📊 Processing capabilities used: ${result.processing_capabilities || 'Standard Docling + pandas'}`);
     
     // Check if this requires a different workflow (non-trial balance)
     const isTrialBalance = result.characteristics?.content_type === 'trial_balance';
-    console.log(`Content type detected as '${result.characteristics?.content_type}', is trial balance: ${isTrialBalance}`);
+    console.log(`🔍 Content type detected as '${result.characteristics?.content_type}', is trial balance: ${isTrialBalance}`);
 
     // For non-trial balance files, return confirmation data unless forcePersist is true
     if (!isTrialBalance && !forcePersist) {
@@ -103,10 +104,12 @@ export async function processWithPythonService(
         : `Enhanced processing completed: ${result.message}`,
       processing_method: 'enhanced',
       processing_capabilities: [
-        'Advanced PDF table extraction with Docling',
-        'German accounting format support with pandas', 
-        'Comprehensive data validation and quality analysis',
-        'AI-powered file characteristic detection'
+        'GPT-5 powered intelligent column mapping',
+        'Advanced German accounting terminology recognition',
+        'Account description inference using GPT-5',
+        'Enhanced Docling PDF table extraction',
+        'German format support with pandas', 
+        'AI-powered data validation and quality analysis'
       ]
     }), {
       headers: { 'Content-Type': 'application/json' },

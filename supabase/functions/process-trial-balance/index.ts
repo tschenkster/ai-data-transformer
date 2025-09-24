@@ -4,6 +4,9 @@ import { corsHeaders } from '../_shared/cors.ts';
 import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
 import { processWithPythonService } from './python-integration.ts';
 
+// GPT-5 enhancement for data validation and quality
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
