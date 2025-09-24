@@ -7,6 +7,7 @@ export async function processWithPythonService(
   fileName: string, 
   entityUuid: string,
   persistToDatabase: boolean,
+  forcePersist: boolean,
   pythonServiceUrl: string
 ) {
   console.log('Using enhanced processing with Docling + pandas');
@@ -40,9 +41,42 @@ export async function processWithPythonService(
 
     const result = await response.json();
     console.log(`Enhanced processing completed: ${result.row_count} rows processed`);
+    
+    // Check if this requires a different workflow (non-trial balance)
+    const isTrialBalance = result.characteristics?.content_type === 'trial_balance';
+    console.log(`Content type detected as '${result.characteristics?.content_type}', is trial balance: ${isTrialBalance}`);
 
-    // If persistence requested, save to database
-    if (persistToDatabase && result.data) {
+    // For non-trial balance files, return confirmation data unless forcePersist is true
+    if (!isTrialBalance && !forcePersist) {
+      const previewData = result.data?.slice(0, 5).map((row: any) => ({
+        account_number: row.account_number,
+        account_description: row.account_description,
+        account_type: row.account_type,
+        amount: row.amount,
+        period_key_yyyymm: row.period_key_yyyymm,
+        currency_code: row.currency_code
+      })) || [];
+
+      return new Response(JSON.stringify({
+        success: true,
+        enhanced_processing: true,
+        content_type_warning: true,
+        detected_content_type: result.characteristics?.content_type || 'unknown',
+        message: `This file appears to be a ${(result.characteristics?.content_type || 'unknown').replace('_', ' ')} rather than a trial balance.`,
+        data: result.data,
+        preview_data: previewData,
+        rowCount: result.row_count || 0,
+        characteristics: result.characteristics,
+        processing_method: 'enhanced'
+      }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // If persistence requested and (is trial balance OR forcePersist), save to database
+    if (persistToDatabase && (isTrialBalance || forcePersist)) {
+      console.log(`Persisting ${result.row_count} rows to database for entity ${entityUuid} (forcePersist: ${forcePersist})`);
+      
       const { data: insertResult, error: insertError } = await supabase
         .rpc('insert_trial_balance_data', { p_data: result.data });
 
@@ -51,6 +85,7 @@ export async function processWithPythonService(
         throw new Error(`Failed to save data: ${insertError.message}`);
       }
 
+      console.log('Data saved to database:', insertResult);
       result.persistResult = insertResult;
     }
 
@@ -62,7 +97,11 @@ export async function processWithPythonService(
       rowCount: result.row_count,
       validation_results: result.validation_results,
       quality_report: result.quality_report,
-      message: `Enhanced processing completed: ${result.message}`,
+      persistResult: result.persistResult,
+      message: persistToDatabase 
+        ? `Successfully processed and saved ${result.row_count} trial balance records`
+        : `Enhanced processing completed: ${result.message}`,
+      processing_method: 'enhanced',
       processing_capabilities: [
         'Advanced PDF table extraction with Docling',
         'German accounting format support with pandas', 

@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
 
     const { filePath, fileName, entityUuid, persistToDatabase = false, forcePersist = false } = await req.json();
     
+    console.log('Request parameters:', { filePath, fileName, entityUuid, persistToDatabase, forcePersist });
+    
     // Check if Python service is available (enhanced processing)
     const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL');
     const useEnhancedProcessing = pythonServiceUrl && pythonServiceUrl !== '';
@@ -76,7 +78,7 @@ Deno.serve(async (req) => {
     
     if (useEnhancedProcessing) {
       // Use new Python service with Docling + pandas
-      return await processWithPythonService(supabase, filePath, fileName, entityUuid, persistToDatabase, pythonServiceUrl);
+      return await processWithPythonService(supabase, filePath, fileName, entityUuid, persistToDatabase, forcePersist, pythonServiceUrl);
     }
     
     console.log('Processing trial balance file:', { fileName, entityUuid, persistToDatabase });
@@ -157,18 +159,20 @@ Deno.serve(async (req) => {
         account_type: row.account_type,
         amount: row.amount,
         period_key_yyyymm: row.period_key_yyyymm,
-        as_of_date: row.as_of_date
+        currency_code: row.currency_code
       }));
 
       return new Response(JSON.stringify({
         success: true,
+        enhanced_processing: false,
         content_type_warning: true,
         detected_content_type: characteristics.content_type,
         message: `This file appears to be a ${characteristics.content_type.replace('_', ' ')} rather than a trial balance.`,
         data: transformedData,
         preview_data: previewData,
         rowCount: transformedData.length,
-        characteristics
+        characteristics,
+        processing_method: 'legacy'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

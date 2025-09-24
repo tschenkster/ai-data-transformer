@@ -33,6 +33,7 @@ interface ProcessingResult {
   content_type_warning?: boolean;
   detected_content_type?: string;
   preview_data?: any[];
+  persistResult?: any;
 }
 
 export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanceUploadProps) {
@@ -135,6 +136,7 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
         filePath,
         fileName,
         entityUuid,
+        persistToDatabase: options.persistToDatabase,
         forcePersist: options.forcePersist || false
       }
     });
@@ -169,10 +171,11 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
       
       setUploadProgress(100);
 
-      // Check if we have a content type warning and the user wants to save to database
+      // Check if we have a content type warning and user wants to save to database
       if (result.content_type_warning && persistToDatabase) {
-        setPreviewData(result);
-        setShowPreviewDialog(true);
+        console.log('Content type warning detected, showing confirmation dialog:', result.detected_content_type);
+        setPendingResult(result);
+        setShowConfirmDialog(true);
         setProcessing(false);
         return;
       }
@@ -180,10 +183,13 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
       // If no warning or user chose download only, proceed normally
       let finalResult = result;
       if (persistToDatabase && !result.content_type_warning) {
+        console.log('No content type warning, processing as trial balance with persistence');
         // Re-process with persistToDatabase: true for clean trial balance files
         finalResult = await processFile(filePath, selectedFile.name, { persistToDatabase: true });
       }
 
+      
+      console.log('Final result:', { success: finalResult.success, rowCount: finalResult.rowCount, persistResult: !!finalResult.persistResult });
       setProcessingResult(finalResult);
       
       toast({
@@ -220,10 +226,15 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
       setProcessing(true);
       setShowConfirmDialog(false);
       
-      // Re-process with persistToDatabase: true
+      console.log('Force persisting non-trial balance data to database');
+      // Re-process with persistToDatabase: true and forcePersist: true
       const filePath = await uploadFile(selectedFile);
-      const result = await processFile(filePath, selectedFile.name, { persistToDatabase: true });
+      const result = await processFile(filePath, selectedFile.name, { 
+        persistToDatabase: true, 
+        forcePersist: true 
+      });
       
+      console.log('Force persist result:', { success: result.success, rowCount: result.rowCount, persistResult: !!result.persistResult });
       setProcessingResult(result);
       
       toast({
