@@ -11,7 +11,7 @@ interface TrialBalanceData {
   account_type: string;
   amount_periodicity: string;
   amount_type: string;
-  amount_aggregation_scope: string;
+  aggregation_scope: string;
   period_key_yyyymm: number;
   period_start_date: string;
   period_end_date: string;
@@ -55,7 +55,7 @@ export function useTrialBalanceData(entityUuid?: string) {
         account_type: row.account_type,
         amount_periodicity: row.amount_periodicity,
         amount_type: row.amount_type,
-        amount_aggregation_scope: row.amount_aggregation_scope,
+        aggregation_scope: row.aggregation_scope,
         period_key_yyyymm: row.period_key_yyyymm,
         period_start_date: row.period_start_date,
         period_end_date: row.period_end_date,
