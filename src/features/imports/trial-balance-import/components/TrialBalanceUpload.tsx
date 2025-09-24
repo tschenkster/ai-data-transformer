@@ -6,6 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileSpreadsheet, Upload, Download, Database, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +29,9 @@ interface ProcessingResult {
   processing_capabilities?: string[];
   validation_results?: any;
   quality_report?: any;
+  content_type_warning?: boolean;
+  detected_content_type?: string;
+  preview_data?: any[];
 }
 
 export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanceUploadProps) {
@@ -35,6 +40,8 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
   const [processing, setProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingResult, setProcessingResult] = useState<ProcessingResult | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingResult, setPendingResult] = useState<ProcessingResult | null>(null);
   const { toast } = useToast();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -152,19 +159,38 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
       setProcessing(true);
       setUploadProgress(50);
 
-      const result = await processFile(filePath, selectedFile.name, { persistToDatabase });
+      // Always process with persistToDatabase: false initially to check for warnings
+      const result = await processFile(filePath, selectedFile.name, { 
+        persistToDatabase: false 
+      });
       
       setUploadProgress(100);
-      setProcessingResult(result);
+
+      // Check if we have a content type warning and the user wants to save to database
+      if (result.content_type_warning && persistToDatabase) {
+        setPendingResult(result);
+        setShowConfirmDialog(true);
+        setProcessing(false);
+        return;
+      }
+
+      // If no warning or user chose download only, proceed normally
+      let finalResult = result;
+      if (persistToDatabase && !result.content_type_warning) {
+        // Re-process with persistToDatabase: true for clean trial balance files
+        finalResult = await processFile(filePath, selectedFile.name, { persistToDatabase: true });
+      }
+
+      setProcessingResult(finalResult);
       
       toast({
         title: 'Success',
         description: persistToDatabase 
-          ? `Successfully processed and saved ${result.rowCount} rows`
-          : `Successfully processed ${result.rowCount} rows for download`,
+          ? `Successfully processed and saved ${finalResult.rowCount} rows`
+          : `Successfully processed ${finalResult.rowCount} rows for download`,
       });
 
-      onUploadComplete?.(result);
+      onUploadComplete?.(finalResult);
 
     } catch (error: any) {
       console.error('Processing error:', error);
@@ -182,6 +208,68 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
       setProcessing(false);
       setUploadProgress(0);
     }
+  };
+
+  const handleConfirmSave = async () => {
+    if (!selectedFile || !pendingResult) return;
+    
+    try {
+      setProcessing(true);
+      setShowConfirmDialog(false);
+      
+      // Re-process with persistToDatabase: true
+      const filePath = await uploadFile(selectedFile);
+      const result = await processFile(filePath, selectedFile.name, { persistToDatabase: true });
+      
+      setProcessingResult(result);
+      
+      toast({
+        title: 'Success',
+        description: `Successfully processed and saved ${result.rowCount} rows to database`,
+      });
+
+      onUploadComplete?.(result);
+      setPendingResult(null);
+      
+    } catch (error: any) {
+      console.error('Processing error:', error);
+      setProcessingResult({
+        success: false,
+        error: error.message
+      });
+      toast({
+        title: 'Processing Failed',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleDownloadOnly = () => {
+    if (pendingResult) {
+      setProcessingResult(pendingResult);
+      toast({
+        title: 'Success',
+        description: `Successfully processed ${pendingResult.rowCount} rows for download`,
+      });
+    }
+    setShowConfirmDialog(false);
+    setPendingResult(null);
+  };
+
+  const formatContentType = (contentType: string | undefined): string => {
+    if (!contentType) return 'unknown file type';
+    
+    const typeMap: Record<string, string> = {
+      'pl': 'P&L Report',
+      'balance_sheet': 'Balance Sheet',
+      'cash_flow': 'Cash Flow Statement',
+      'trial_balance': 'Trial Balance'
+    };
+    
+    return typeMap[contentType] || contentType.replace(/_/g, ' ').toUpperCase();
   };
 
   const downloadProcessedData = () => {
@@ -522,6 +610,79 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
           </CardContent>
         </Card>
       )}
+
+      {/* Confirmation Dialog for Non-Trial Balance Files */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>File Type Confirmation</DialogTitle>
+            <DialogDescription>
+              This file appears to be a {formatContentType(pendingResult?.detected_content_type)} rather than a trial balance.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {pendingResult?.preview_data && (
+            <div className="my-4">
+              <h4 className="mb-2 font-medium">Data Preview (first 5 rows):</h4>
+              <div className="border rounded-md overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Account Number</TableHead>
+                      <TableHead>Account Description</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>Account Type</TableHead>
+                      <TableHead>Period</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingResult.preview_data.slice(0, 5).map((row, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{row.account_number || 'N/A'}</TableCell>
+                        <TableCell>{row.account_description || 'N/A'}</TableCell>
+                        <TableCell className="text-right">
+                          {row.amount ? new Intl.NumberFormat('de-DE', { 
+                            style: 'currency', 
+                            currency: row.currency_code || 'EUR' 
+                          }).format(row.amount) : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {row.account_type?.toUpperCase() || 'N/A'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{row.period_key_yyyymm || 'N/A'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+          
+          <p className="text-sm text-muted-foreground">
+            Do you want to save this data to the trial balance table anyway?
+          </p>
+          
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleDownloadOnly}
+            >
+              No, Download Only
+            </Button>
+            <Button onClick={handleConfirmSave}>
+              Yes, Save to Database
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
