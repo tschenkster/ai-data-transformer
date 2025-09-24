@@ -67,6 +67,17 @@ Deno.serve(async (req) => {
 
     const { filePath, fileName, entityUuid, persistToDatabase = false } = await req.json();
     
+    // Check if Python service is available (enhanced processing)
+    const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL');
+    const useEnhancedProcessing = pythonServiceUrl && pythonServiceUrl !== '';
+    
+    console.log(`Processing mode: ${useEnhancedProcessing ? 'Enhanced (Docling + pandas)' : 'Legacy'}`);
+    
+    if (useEnhancedProcessing) {
+      // Use new Python service with Docling + pandas
+      return await processWithPythonService(supabase, filePath, fileName, entityUuid, persistToDatabase, pythonServiceUrl);
+    }
+    
     console.log('Processing trial balance file:', { fileName, entityUuid, persistToDatabase });
 
     // Download file from storage
