@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface TrialBalanceData {
-  trial_balance_uploaded_uuid: string;
+  trial_balance_upload_uuid: string;
+  trial_balance_upload_id: number;
   entity_uuid: string;
   account_number: string;
   account_description?: string;
@@ -46,7 +47,8 @@ export function useTrialBalanceData(entityUuid?: string) {
 
       // Transform data to match interface
       const transformedData: TrialBalanceData[] = (trialBalanceData || []).map((row: any) => ({
-        trial_balance_uploaded_uuid: row.trial_balance_uploaded_uuid,
+        trial_balance_upload_uuid: row.trial_balance_upload_uuid,
+        trial_balance_upload_id: row.trial_balance_upload_id,
         entity_uuid: row.entity_uuid,
         account_number: row.account_number,
         account_description: row.account_description,
@@ -93,7 +95,7 @@ export function useTrialBalanceData(entityUuid?: string) {
 
       if (result?.success) {
         // Remove from local state after successful deletion
-        setData(prev => prev.filter(item => item.trial_balance_uploaded_uuid !== uuid));
+        setData(prev => prev.filter(item => item.trial_balance_upload_uuid !== uuid));
         
         toast({
           title: 'Success',

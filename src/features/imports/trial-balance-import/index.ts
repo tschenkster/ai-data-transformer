@@ -3,7 +3,8 @@ export { TrialBalanceUpload } from './components/TrialBalanceUpload';
 export { useTrialBalanceData } from './hooks/useTrialBalanceData';
 
 export interface TrialBalanceData {
-  trial_balance_uploaded_uuid: string;
+  trial_balance_upload_uuid: string;
+  trial_balance_upload_id: number;
   entity_uuid: string;
   account_number: string;
   account_description?: string;

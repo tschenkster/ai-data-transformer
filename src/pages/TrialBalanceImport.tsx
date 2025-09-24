@@ -94,7 +94,7 @@ export default function TrialBalanceImport() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => deleteRecord(row.original.trial_balance_uploaded_uuid)}
+          onClick={() => deleteRecord(row.original.trial_balance_upload_uuid)}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
