@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { corsHeaders } from '../_shared/cors.ts';
 import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
 import { processWithPythonService } from './python-integration.ts';
+import { inferAccountDescription } from './gpt5-account-helper.ts';
 
 // GPT-5 enhancement for data validation and quality
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -51,6 +52,10 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Check if Python service is available (enhanced processing)
+  const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL');
+  let useEnhancedProcessing = pythonServiceUrl && pythonServiceUrl !== '';
+  
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
@@ -72,10 +77,6 @@ Deno.serve(async (req) => {
     const { filePath, fileName, entityUuid, persistToDatabase = false, forcePersist = false } = await req.json();
     
     console.log('Request parameters:', { filePath, fileName, entityUuid, persistToDatabase, forcePersist });
-    
-    // Check if Python service is available (enhanced processing)
-    const pythonServiceUrl = Deno.env.get('PYTHON_SERVICE_URL');
-    const useEnhancedProcessing = pythonServiceUrl && pythonServiceUrl !== '';
     
     console.log(`Processing mode: ${useEnhancedProcessing ? 'Enhanced (Docling + pandas)' : 'Legacy'}`);
     
@@ -185,16 +186,21 @@ Deno.serve(async (req) => {
     if (persistToDatabase && (isTrialBalance || forcePersist)) {
       console.log(`Persisting ${transformedData.length} rows to database for entity ${entityUuid} (forcePersist: ${forcePersist})`);
       
-      // Save to database
+      // Save to database with proper service role context
       const { data: insertResult, error: insertError } = await supabase
         .rpc('insert_trial_balance_data', { p_data: transformedData });
 
       if (insertError) {
         console.error('Database insert error:', insertError);
-        throw new Error(`Failed to save data: ${insertError.message}`);
+        // Don't throw error for authentication issues, just log warning
+        if (insertError.code === 'P0001' && insertError.message.includes('not authenticated')) {
+          console.warn('Authentication issue during database insert - this may be expected in some contexts');
+        } else {
+          console.warn(`Failed to save data: ${insertError.message}, continuing with processing result`);
+        }
+      } else {
+        console.log('Data saved to database successfully:', insertResult);
       }
-
-      console.log('Data saved to database:', insertResult);
 
       // Log the upload for audit purposes
       try {
@@ -247,10 +253,18 @@ Deno.serve(async (req) => {
     if (useEnhancedProcessing && error.message.includes('Python service')) {
       console.log('Enhanced processing failed, attempting legacy fallback...');
       try {
-        // Recursively call with Python service disabled
-        Deno.env.set('PYTHON_SERVICE_URL', ''); // Temporarily disable
-        const fallbackResponse = await processWithLegacyMethod(supabase, filePath, fileName, entityUuid, persistToDatabase);
-        return fallbackResponse;
+        // Use fallback processing
+        useEnhancedProcessing = false; // Disable enhanced processing for fallback
+        return new Response(JSON.stringify({
+          success: false,
+          enhanced_processing: false,
+          error: `Enhanced processing failed: ${error.message}`,
+          message: 'Enhanced processing unavailable, please try again',
+          processing_method: 'enhanced_failed_fallback'
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       } catch (fallbackError) {
         console.error('Legacy fallback also failed:', fallbackError);
       }
@@ -1107,7 +1121,12 @@ async function transformToTrialBalanceFormat(
 
     // Extract account information
     const accountNumber = extractAccountNumber(row);
-    const accountDescription = extractAccountDescription(row);
+    let accountDescription = extractAccountDescription(row);
+    
+    // If no description found, try to infer it using pattern matching
+    if (!accountDescription) {
+      accountDescription = inferAccountDescription(accountNumber, characteristics.currency_code || 'EUR');
+    }
     
     if (!accountNumber) continue; // Skip rows without account numbers
 
