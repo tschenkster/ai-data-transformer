@@ -1473,18 +1473,30 @@ export type Database = {
         Returns: string
       }
       get_trial_balance_data: {
-        Args: { p_entity_uuid: string }
+        Args: { p_entity_uuid?: string }
         Returns: {
+          account_description: string
+          account_number: string
+          account_type: string
           aggregation_scope: string
-          entity_name: string
+          amount: number
+          amount_periodicity: string
+          amount_time_basis: string
+          amount_type: string
+          as_of_date: string
+          created_at: string
+          currency_code: string
           entity_uuid: string
-          filename: string
-          processed_at: string
-          row_count: number
-          status: string
+          period_end_date: string
+          period_key_yyyymm: number
+          period_start_date: string
+          source_file_name: string
+          source_row_number: number
+          source_system: string
+          trial_balance_upload_id: number
           trial_balance_upload_uuid: string
-          uploaded_at: string
-          uploaded_by_name: string
+          uploaded_by_user_name: string
+          uploaded_by_user_uuid: string
         }[]
       }
       get_user_accessible_entities: {

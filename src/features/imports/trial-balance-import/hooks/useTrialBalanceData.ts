@@ -12,6 +12,7 @@ interface TrialBalanceData {
   amount_periodicity: string;
   amount_type: string;
   aggregation_scope: string;
+  amount_time_basis?: string;
   period_key_yyyymm: number;
   period_start_date: string;
   period_end_date: string;
@@ -22,6 +23,8 @@ interface TrialBalanceData {
   source_file_name: string;
   source_row_number: number;
   created_at: string;
+  uploaded_by_user_uuid?: string;
+  uploaded_by_user_name?: string;
 }
 
 export function useTrialBalanceData(entityUuid?: string) {
@@ -56,6 +59,7 @@ export function useTrialBalanceData(entityUuid?: string) {
         amount_periodicity: row.amount_periodicity,
         amount_type: row.amount_type,
         aggregation_scope: row.aggregation_scope,
+        amount_time_basis: row.amount_time_basis,
         period_key_yyyymm: row.period_key_yyyymm,
         period_start_date: row.period_start_date,
         period_end_date: row.period_end_date,
@@ -65,7 +69,9 @@ export function useTrialBalanceData(entityUuid?: string) {
         source_system: row.source_system,
         source_file_name: row.source_file_name,
         source_row_number: row.source_row_number,
-        created_at: row.created_at
+        created_at: row.created_at,
+        uploaded_by_user_uuid: row.uploaded_by_user_uuid,
+        uploaded_by_user_name: row.uploaded_by_user_name
       }));
       
       setData(transformedData);

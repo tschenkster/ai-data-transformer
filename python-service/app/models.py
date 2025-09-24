@@ -60,6 +60,7 @@ class ProcessedTrialBalanceRow(BaseModel):
     amount_periodicity: str = Field(default="monthly", description="monthly|quarterly|annual")
     amount_type: str = Field(default="ending", description="opening|movement|ending|debit_total|credit_total")
     aggregation_scope: str = Field(default="period", description="period|ytd|qtd|mtd|ltm|ltd|custom_period")
+    amount_time_basis: Optional[str] = Field(default="period", description="period|point_in_time|cumulative")
     period_key_yyyymm: int
     period_start_date: str
     period_end_date: str
@@ -70,6 +71,8 @@ class ProcessedTrialBalanceRow(BaseModel):
     source_file_name: str
     source_row_number: int
     source_hash: str
+    uploaded_by_user_uuid: Optional[str] = None
+    uploaded_by_user_name: Optional[str] = None
     
     # Enhanced provenance and quality fields
     parser_version: str = Field(default="docling-pandas-1.0")

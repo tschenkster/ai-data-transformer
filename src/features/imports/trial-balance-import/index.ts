@@ -11,7 +11,8 @@ export interface TrialBalanceData {
   account_type: 'pl' | 'bs' | 'subledger' | 'statistical';
   amount_periodicity: 'monthly' | 'quarterly' | 'annual';
   amount_type: 'opening' | 'movement' | 'ending' | 'total' | 'debit_total' | 'credit_total';
-  amount_aggregation_scope: 'period' | 'ytd' | 'qtd' | 'mtd' | 'ltm' | 'ltd';
+  aggregation_scope: 'period' | 'ytd' | 'qtd' | 'mtd' | 'ltm' | 'ltd';
+  amount_time_basis?: string;
   period_key_yyyymm: number;
   period_start_date: string;
   period_end_date: string;
@@ -22,4 +23,6 @@ export interface TrialBalanceData {
   source_file_name: string;
   source_row_number: number;
   created_at: string;
+  uploaded_by_user_uuid?: string;
+  uploaded_by_user_name?: string;
 }
