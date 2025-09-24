@@ -1775,9 +1775,9 @@ export type Database = {
           p_entity_uuid: string
           p_file_name: string
           p_file_size: number
-          p_processing_result?: Json
+          p_processing_result: Json
         }
-        Returns: string
+        Returns: undefined
       }
       log_user_data_access: {
         Args: {
