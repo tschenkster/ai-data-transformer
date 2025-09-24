@@ -141,6 +141,7 @@ serve(async (req) => {
     // Query comprehensive database schema information with batching and error handling
     let tablesData = [], columnsData = [], enumsData = [], foreignKeysData = [];
     let rlsPoliciesData = [], dbFunctionsData = [], indexesData = [], constraintsData = [];
+    let schemasData = [];
 
     // Phase 1: Core schema data (critical)
     try {
@@ -148,16 +149,19 @@ serve(async (req) => {
       const coreQueries = await Promise.allSettled([
         supabase.rpc('get_table_info', {}),
         supabase.rpc('get_column_info', {}),
-        supabase.rpc('get_enum_values', {})
+        supabase.rpc('get_enum_values', {}),
+        supabase.rpc('get_schema_info', {})
       ]);
       
       tablesData = coreQueries[0].status === 'fulfilled' ? (coreQueries[0].value.data || []) : [];
       columnsData = coreQueries[1].status === 'fulfilled' ? (coreQueries[1].value.data || []) : [];
       enumsData = coreQueries[2].status === 'fulfilled' ? (coreQueries[2].value.data || []) : [];
+      schemasData = coreQueries[3].status === 'fulfilled' ? (coreQueries[3].value.data || []) : [];
 
       if (coreQueries[0].status === 'rejected') console.error('Tables query failed:', coreQueries[0].reason);
       if (coreQueries[1].status === 'rejected') console.error('Columns query failed:', coreQueries[1].reason);
       if (coreQueries[2].status === 'rejected') console.error('Enums query failed:', coreQueries[2].reason);
+      if (coreQueries[3].status === 'rejected') console.error('Schemas query failed:', coreQueries[3].reason);
 
     } catch (error) {
       console.error('Critical schema queries failed:', error);
@@ -205,12 +209,12 @@ serve(async (req) => {
 
     // Validate we have minimum required data
     if (tablesData.length === 0) {
-      console.warn('No tables found in public schema - this might indicate an issue with schema access');
+      console.warn('No tables found in any accessible schema - this might indicate an issue with schema access');
       // Don't fail completely, generate what we can
     }
 
-    updateProgress('documentation_generation', 55, `Processing ${tablesData.length} tables and ${columnsData.length} columns...`);
-    console.log(`Found ${tablesData.length} tables, ${columnsData.length} columns`);
+    updateProgress('documentation_generation', 55, `Processing ${schemasData.length} schemas, ${tablesData.length} tables and ${columnsData.length} columns...`);
+    console.log(`Found ${schemasData.length} schemas, ${tablesData.length} tables, ${columnsData.length} columns`);
 
     // Generate documentation content with progress tracking
     const documentation = generateDocumentationContent({
@@ -222,6 +226,7 @@ serve(async (req) => {
       dbFunctions: dbFunctionsData,
       indexes: indexesData,
       constraints: constraintsData,
+      schemas: schemasData,
       filename,
       version,
       generatedBy: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'System',
@@ -278,6 +283,7 @@ serve(async (req) => {
             upload_success: true,
             generation_duration_ms: Date.now() - now.getTime(),
             schema_complexity: {
+              schemas_count: schemasData.length,
               enums_count: enumsData.length,
               foreign_keys_count: foreignKeysData.length,
               rls_policies_count: rlsPoliciesData.length,
@@ -449,12 +455,13 @@ function generateDocumentationContent(data: {
   dbFunctions: any[];
   indexes: any[];
   constraints: any[];
+  schemas: any[];
   filename: string;
   version: string;
   generatedBy: string;
   generatedAt: string;
 }): string {
-  const { tables, columns, enums, foreignKeys, rlsPolicies, dbFunctions, indexes, constraints, filename, version, generatedBy, generatedAt } = data;
+  const { tables, columns, enums, foreignKeys, rlsPolicies, dbFunctions, indexes, constraints, schemas, filename, version, generatedBy, generatedAt } = data;
   
   // Group data by table for easier processing
   const tableColumns: { [key: string]: any[] } = {};
@@ -462,6 +469,13 @@ function generateDocumentationContent(data: {
   const tablePolicies: { [key: string]: any[] } = {};
   const tableIndexes: { [key: string]: any[] } = {};
   const tableConstraints: { [key: string]: any[] } = {};
+  
+  // Group tables by schema for better organization
+  const tablesBySchema: { [key: string]: any[] } = {};
+  tables.forEach(table => {
+    if (!tablesBySchema[table.table_schema]) tablesBySchema[table.table_schema] = [];
+    tablesBySchema[table.table_schema].push(table);
+  });
   
   columns.forEach(col => {
     if (!tableColumns[col.table_name]) tableColumns[col.table_name] = [];
@@ -493,13 +507,17 @@ function generateDocumentationContent(data: {
     const sections = [
       '- [Overview](#overview)',
       '  - [Summary Statistics](#summary-statistics)',
+      '- [Schemas Overview](#schemas-overview)',
       '- [Tables Overview](#tables-overview)',
       '- [Table Structures](#table-structures)',
     ];
 
-    // Add table-specific TOC entries
-    tables.forEach(table => {
-      sections.push(`  - [${table.table_name}](#${table.table_name.replace(/_/g, '-')})`);
+    // Add schema-specific TOC entries
+    Object.keys(tablesBySchema).sort().forEach(schema => {
+      sections.push(`  - [${schema} Schema Tables](#${schema.replace(/_/g, '-')}-schema-tables)`);
+      tablesBySchema[schema].forEach(table => {
+        sections.push(`    - [${table.table_name}](#${table.table_name.replace(/_/g, '-')})`);
+      });
     });
 
     sections.push(
@@ -537,6 +555,7 @@ ${generateTableOfContents()}
 This document provides a comprehensive overview of the database structure for the current system.
 
 ### Summary Statistics
+- **Total Schemas**: ${schemas.length}
 - **Total Tables**: ${tables.length}
 - **Total Columns**: ${columns.length}
 - **Total Enums**: ${enums.length}
@@ -545,18 +564,55 @@ This document provides a comprehensive overview of the database structure for th
 - **Total Database Functions**: ${dbFunctions.length}
 - **Total Indexes**: ${indexes.length}
 - **Total Constraints**: ${constraints.length}
-- **Schema**: public
+
+---
+
+## Schemas Overview
+
+${schemas.length > 0 ? (() => {
+  const headers = ['Schema Name', 'Owner', 'Tables', 'Functions', 'Description'];
+  const columnKeys = ['schema_name', 'owner', 'table_count', 'function_count', 'schema_description'];
+  
+  const widths = calculateColumnWidths(schemas, columnKeys, headers);
+  
+  const headerRow = createFixedWidthRow(headers, widths);
+  const separatorRow = createTableSeparator(widths);
+  
+  const dataRows = schemas.map(schema => {
+    const values = [
+      `**${schema.schema_name}**`,
+      schema.owner || 'N/A',
+      String(schema.table_count || 0),
+      String(schema.function_count || 0),
+      schema.schema_description || 'No description'
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})() : 'No schemas found.'}
+
+This database contains multiple schemas, each serving different purposes:
+- **auth**: Authentication and user management (Supabase managed)
+- **extensions**: Database extensions and additional functionality  
+- **public**: Main application data and business logic
+- **storage**: File storage management (Supabase managed)
+- **graphql**: GraphQL API schema definitions
+- **realtime**: Real-time subscriptions and messaging
+- **data**: Custom data processing and analytics (if present)
 
 ---
 
 ## Tables Overview
 
 ${tables.length > 0 ? (() => {
-  const headers = ['Table Name', 'Type', 'Columns', 'Foreign Keys', 'RLS Policies', 'Indexes'];
-  const columnKeys = ['table_name', 'table_type', 'column_count', 'fk_count', 'policy_count', 'index_count'];
+  const headers = ['Schema', 'Table Name', 'Type', 'Columns', 'Foreign Keys', 'RLS Policies', 'Indexes'];
+  const columnKeys = ['table_schema', 'table_name', 'table_type', 'column_count', 'fk_count', 'policy_count', 'index_count'];
   
   // Prepare table data with counts
   const tableData = tables.map(table => ({
+    table_schema: table.table_schema,
     table_name: table.table_name,
     table_type: table.table_type,
     column_count: (tableColumns[table.table_name] || []).length,
@@ -572,7 +628,20 @@ ${tables.length > 0 ? (() => {
   
   const dataRows = tableData.map(table => {
     const values = [
+      table.table_schema,
       `**${table.table_name}**`,
+      table.table_type,
+      String(table.column_count),
+      String(table.fk_count),
+      String(table.policy_count),
+      String(table.index_count)
+    ];
+    
+    return createFixedWidthRow(values, widths);
+  });
+  
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+})() : 'No tables found.'}
       table.table_type,
       String(table.column_count),
       String(table.fk_count),

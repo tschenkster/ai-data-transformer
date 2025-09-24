@@ -1396,6 +1396,16 @@ export type Database = {
           with_check: string
         }[]
       }
+      get_schema_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          function_count: number
+          owner: string
+          schema_description: string
+          schema_name: string
+          table_count: number
+        }[]
+      }
       get_table_constraints: {
         Args: Record<PropertyKey, never>
         Returns: {
