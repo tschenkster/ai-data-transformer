@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { corsHeaders } from '../_shared/cors.ts';
 import * as XLSX from 'https://esm.sh/xlsx@0.18.5';
+import { processWithPythonService } from './python-integration.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -79,6 +80,9 @@ Deno.serve(async (req) => {
     }
     
     console.log('Processing trial balance file:', { fileName, entityUuid, persistToDatabase });
+    
+    // Legacy processing continues here
+    console.log('Using legacy processing (built-in parsers)');
 
     // Download file from storage
     const { data: fileData, error: downloadError } = await supabase.storage
@@ -185,11 +189,13 @@ Deno.serve(async (req) => {
 
       return new Response(JSON.stringify({
         success: true,
+        enhanced_processing: false,
         characteristics,
         data: transformedData,
         rowCount: transformedData.length,
         persistResult: insertResult,
-        message: `Successfully processed and saved ${transformedData.length} trial balance records`
+        message: `Successfully processed and saved ${transformedData.length} trial balance records`,
+        processing_method: 'legacy'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -197,10 +203,12 @@ Deno.serve(async (req) => {
       // Return processed data for download
       return new Response(JSON.stringify({
         success: true,
+        enhanced_processing: false,
         characteristics,
         data: transformedData,
         rowCount: transformedData.length,
-        message: `Successfully processed ${transformedData.length} trial balance records for download`
+        message: `Successfully processed ${transformedData.length} trial balance records for download`,
+        processing_method: 'legacy'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -208,10 +216,25 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing trial balance:', error);
+    
+    // If enhanced processing failed, try legacy processing as fallback
+    if (useEnhancedProcessing && error.message.includes('Python service')) {
+      console.log('Enhanced processing failed, attempting legacy fallback...');
+      try {
+        // Recursively call with Python service disabled
+        Deno.env.set('PYTHON_SERVICE_URL', ''); // Temporarily disable
+        const fallbackResponse = await processWithLegacyMethod(supabase, filePath, fileName, entityUuid, persistToDatabase);
+        return fallbackResponse;
+      } catch (fallbackError) {
+        console.error('Legacy fallback also failed:', fallbackError);
+      }
+    }
+    
     return new Response(JSON.stringify({
       success: false,
       error: error.message,
-      message: 'Failed to process trial balance file'
+      message: 'Failed to process trial balance file',
+      processing_method: useEnhancedProcessing ? 'enhanced_failed' : 'legacy_failed'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

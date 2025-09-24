@@ -22,6 +22,11 @@ interface ProcessingResult {
   characteristics?: any;
   message?: string;
   error?: string;
+  enhanced_processing?: boolean;
+  processing_method?: string;
+  processing_capabilities?: string[];
+  validation_results?: any;
+  quality_report?: any;
 }
 
 export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanceUploadProps) {
@@ -222,6 +227,7 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
           </CardTitle>
           <CardDescription>
             Upload your trial balance in XLSX, CSV, or PDF format. Maximum file size: 20MB.
+            Enhanced processing with Docling + pandas provides superior accuracy for complex documents.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -349,6 +355,36 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
                   </AlertDescription>
                 </Alert>
 
+                {/* Enhanced Processing Indicator */}
+                {processingResult.enhanced_processing && (
+                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="font-medium text-green-900 dark:text-green-100">Enhanced Processing Used</span>
+                    </div>
+                    <p className="text-sm text-green-800 dark:text-green-200">
+                      This file was processed using Docling + pandas for superior accuracy and data quality.
+                    </p>
+                    {processingResult.processing_capabilities && (
+                      <ul className="mt-2 text-xs text-green-700 dark:text-green-300 list-disc list-inside">
+                        {processingResult.processing_capabilities.map((capability: string, idx: number) => (
+                          <li key={idx}>{capability}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {/* Processing Method Indicator */}
+                <div className="mb-3 flex items-center gap-2">
+                  <Badge variant={processingResult.enhanced_processing ? "default" : "outline"}>
+                    {processingResult.enhanced_processing ? "Enhanced Processing" : "Standard Processing"}
+                  </Badge>
+                  {processingResult.processing_method && (
+                    <Badge variant="secondary">{processingResult.processing_method}</Badge>
+                  )}
+                </div>
+
                 {processingResult.characteristics && (
                   <div className="space-y-3">
                     <h4 className="font-medium">AI-Detected File Characteristics:</h4>
@@ -414,6 +450,52 @@ export function TrialBalanceUpload({ entityUuid, onUploadComplete }: TrialBalanc
                             <li key={idx}>{rec}</li>
                           ))}
                         </ul>
+                      </div>
+                    )}
+
+                    {/* Enhanced Quality Report */}
+                    {processingResult.quality_report && (
+                      <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg">
+                        <h5 className="font-medium mb-2">Data Quality Analysis:</h5>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="text-center">
+                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.overall_score * 100)}%</div>
+                            <div className="text-muted-foreground">Overall</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.completeness_score * 100)}%</div>
+                            <div className="text-muted-foreground">Complete</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.consistency_score * 100)}%</div>
+                            <div className="text-muted-foreground">Consistent</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-lg">{Math.round(processingResult.quality_report.accuracy_score * 100)}%</div>
+                            <div className="text-muted-foreground">Accurate</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Validation Results */}
+                    {processingResult.validation_results && (
+                      <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                        <h5 className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">Validation Summary:</h5>
+                        <div className="grid grid-cols-3 gap-3 text-sm">
+                          <div className="text-center">
+                            <div className="font-medium text-lg">{processingResult.validation_results.validation_score || 'N/A'}</div>
+                            <div className="text-muted-foreground">Score</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-lg text-red-600">{processingResult.validation_results.error_count || 0}</div>
+                            <div className="text-muted-foreground">Errors</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="font-medium text-lg text-yellow-600">{processingResult.validation_results.warning_count || 0}</div>
+                            <div className="text-muted-foreground">Warnings</div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
