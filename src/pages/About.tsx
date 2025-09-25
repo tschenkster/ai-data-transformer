@@ -16,7 +16,7 @@ export default function About() {
           <Card>
             <CardHeader>
               <CardTitle className="text-3xl font-bold text-center">
-                Hi, I'm Thomas —<br />the Startup CFO who is building the DATEV Converter app.
+                Hi, I'm Thomas Schenkelberg —<br />the Startup CFO who is building the DATEV Converter app.
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-6">
