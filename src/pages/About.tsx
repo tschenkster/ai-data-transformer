@@ -49,8 +49,8 @@ export default function About() {
               <div>
                 <h3 className="text-lg font-medium mb-3 text-text-heading">{t('HEADING_WHY_EXISTS', 'Why this app exists')}</h3>
                 <p className="text-text-body leading-relaxed">
-                  Before companies have Accounting in‑house or an ERP/BI stack, getting <strong>reliable insight</strong> is oddly hard. 
-                  I kept running into the same wall: messy exports, fragile spreadsheets, zero time for analysis. 
+                  Before companies have Accounting in‑house and an ERP/BI stack, getting <strong>reliable financial insights</strong> is oddly hard. 
+                  I kept running into the same wall: messy (DATEV) exports, fragile Excel / Google Sheet models, zero time for analysis. 
                   So I'm building the tool I always wished I had.
                 </p>
               </div>
