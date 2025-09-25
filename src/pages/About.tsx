@@ -41,29 +41,29 @@ export default function About() {
           </Card>
 
           {/* About DATEV Converter App */}
-          <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
+          <Card className="relative overflow-hidden border-2 border-border bg-gradient-to-br from-background to-muted/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
             <CardHeader className="relative">
-              <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              <CardTitle className="text-3xl font-bold text-center text-foreground">
                 {t('HEADING_ABOUT_APP', 'About DATEV Converter App')}
               </CardTitle>
             </CardHeader>
             <CardContent className="relative space-y-8">
               <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-primary text-lg">💡</span>
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-foreground text-lg">💡</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-text-heading">{t('HEADING_WHY_EXISTS', 'Why this app exists')}</h3>
+                  <h3 className="text-xl font-semibold text-foreground">{t('HEADING_WHY_EXISTS', 'Why this app exists')}</h3>
                 </div>
                 <div className="pl-11">
-                  <p className="text-text-body leading-relaxed text-lg">
-                    Without having Accounting in‑house and an ERP/BI stack, getting <strong className="text-primary">reliable financial insights</strong> is oddly hard.
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    Without having Accounting in‑house and an ERP/BI stack, getting <strong className="text-foreground">reliable financial insights</strong> is oddly hard.
                   </p>
-                  <p className="text-text-body leading-relaxed text-lg mt-4">
+                  <p className="text-muted-foreground leading-relaxed text-lg mt-4">
                     I kept running into the same wall in startups: messy (DATEV) exports, fragile models in Excel / Google Sheets, zero time for analysis.
                   </p>
-                  <p className="text-text-body leading-relaxed text-lg mt-4 font-medium text-primary">
+                  <p className="text-muted-foreground leading-relaxed text-lg mt-4 font-medium text-foreground">
                     So I'm building the tool I always wished I had.
                   </p>
                 </div>
@@ -71,26 +71,26 @@ export default function About() {
               
               <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-primary text-lg">🚀</span>
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-foreground text-lg">🚀</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-text-heading">What I'm building</h3>
+                  <h3 className="text-xl font-semibold text-foreground">What I'm building</h3>
                 </div>
                 <div className="pl-11 space-y-4">
-                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-primary/10">
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs">⚡</span>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-background text-xs">⚡</span>
                     </div>
                     <div>
-                      <span className="text-lg"><strong className="text-primary">Lightweight solution</strong>: No need to implement anything. Upload an xlsx, pdf or csv file. Done.</span>
+                      <span className="text-lg"><strong className="text-foreground">Lightweight solution</strong>: No need to implement anything. Upload an xlsx, pdf or csv file. Done.</span>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-primary/10">
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs">⏱️</span>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-background text-xs">⏱️</span>
                     </div>
                     <div>
-                      <span className="text-lg"><strong className="text-primary">Fast</strong>: Minutes to a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel model.</span>
+                      <span className="text-lg"><strong className="text-foreground">Fast</strong>: Minutes to a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel model.</span>
                     </div>
                   </div>
                 </div>
