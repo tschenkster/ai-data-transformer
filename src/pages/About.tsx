@@ -162,7 +162,7 @@ export default function About() {
                 
                 <div className="flex items-center gap-4">
                   <img 
-                    src="/company-logos/sharecharge-logo.svg" 
+                    src="/company-logos/sharecharge-logo.png" 
                     alt="Share&Charge Foundation logo" 
                     className="w-24 h-8 object-contain bg-white p-1 rounded"
                   />
