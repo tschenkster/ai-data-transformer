@@ -149,7 +149,7 @@ export default function About() {
               <div className="space-y-6 text-text-body">
                 <div className="flex items-center gap-4">
                   <img 
-                    src="/company-logos/eyeo-logo.png" 
+                    src="/company-logos/eyeo-logo.png?v=20250925-2" 
                     alt="eyeo GmbH logo" 
                     className="w-24 h-8 object-contain bg-white p-1 rounded"
                   />
@@ -175,7 +175,7 @@ export default function About() {
                 
                 <div className="flex items-center gap-4">
                   <img 
-                    src="/company-logos/cleverbridge-logo.png" 
+                    src="/company-logos/cleverbridge-logo.png?v=20250925-2" 
                     alt="cleverbridge AG logo" 
                     className="w-24 h-8 object-contain bg-white p-1 rounded"
                   />
@@ -188,7 +188,7 @@ export default function About() {
                 
                 <div className="flex items-center gap-4">
                   <img 
-                    src="/company-logos/roedl-logo.png" 
+                    src="/company-logos/roedl-logo.png?v=20250925-2" 
                     alt="Rödl & Partner logo" 
                     className="w-24 h-8 object-contain bg-white p-1 rounded"
                   />
