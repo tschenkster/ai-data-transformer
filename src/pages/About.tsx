@@ -151,7 +151,7 @@ export default function About() {
                   <img 
                     src="/company-logos/eyeo-logo.png?v=20250925-2" 
                     alt="eyeo GmbH logo" 
-                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                    className="w-32 h-12 object-contain bg-white p-2 rounded"
                   />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">eyeo GmbH (AdTech / SaaS)</h4>
@@ -164,7 +164,7 @@ export default function About() {
                   <img 
                     src="/company-logos/sharecharge-logo.png" 
                     alt="Share&Charge Foundation logo" 
-                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                    className="w-32 h-12 object-contain bg-white p-2 rounded"
                   />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Share&Charge Foundation (Web3 / Crypto)</h4>
@@ -177,7 +177,7 @@ export default function About() {
                   <img 
                     src="/company-logos/cleverbridge-logo.png?v=20250925-2" 
                     alt="cleverbridge AG logo" 
-                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                    className="w-32 h-12 object-contain bg-white p-2 rounded"
                   />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">cleverbridge AG (E‑commerce / SaaS marketplace)</h4>
@@ -190,7 +190,7 @@ export default function About() {
                   <img 
                     src="/company-logos/roedl-logo.png?v=20250925-2" 
                     alt="Rödl & Partner logo" 
-                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                    className="w-32 h-12 object-contain bg-white p-2 rounded"
                   />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Rödl & Partner USA (Audit & Tax Consulting)</h4>
@@ -203,7 +203,7 @@ export default function About() {
                   <img 
                     src="/company-logos/ey-logo.png" 
                     alt="Ernst & Young logo" 
-                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                    className="w-32 h-12 object-contain bg-white p-2 rounded"
                   />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Ernst & Young GER (Tax Accounting, Germany)</h4>
