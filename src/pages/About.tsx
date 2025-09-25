@@ -148,9 +148,11 @@ export default function About() {
             <CardContent className="space-y-6">
               <div className="space-y-6 text-text-body">
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-8 flex items-center justify-center bg-muted rounded px-2">
-                    <span className="text-xs font-semibold text-foreground">eyeo</span>
-                  </div>
+                  <img 
+                    src="/company-logos/eyeo-logo.png" 
+                    alt="eyeo GmbH logo" 
+                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                  />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">eyeo GmbH (AdTech / SaaS)</h4>
                     <p className="text-sm text-text-subtle">VP Finance</p>
@@ -159,9 +161,11 @@ export default function About() {
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-8 flex items-center justify-center bg-green-100 rounded px-2">
-                    <span className="text-xs font-semibold text-green-800">S&C</span>
-                  </div>
+                  <img 
+                    src="/company-logos/sharecharge-logo.svg" 
+                    alt="Share&Charge Foundation logo" 
+                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                  />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Share&Charge Foundation (Web3 / Crypto)</h4>
                     <p className="text-sm text-text-subtle">Co‑Founder & CFO</p>
@@ -170,9 +174,11 @@ export default function About() {
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-8 flex items-center justify-center bg-blue-100 rounded px-2">
-                    <span className="text-xs font-semibold text-blue-800">cleverbridge</span>
-                  </div>
+                  <img 
+                    src="/company-logos/cleverbridge-logo.png" 
+                    alt="cleverbridge AG logo" 
+                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                  />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">cleverbridge AG (E‑commerce / SaaS marketplace)</h4>
                     <p className="text-sm text-text-subtle">Director Finance & Tax</p>
@@ -181,9 +187,11 @@ export default function About() {
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-8 flex items-center justify-center bg-muted rounded px-2">
-                    <span className="text-xs font-semibold text-foreground">R&P</span>
-                  </div>
+                  <img 
+                    src="/company-logos/roedl-logo.png" 
+                    alt="Rödl & Partner logo" 
+                    className="w-24 h-8 object-contain bg-white p-1 rounded"
+                  />
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Rödl & Partner USA (Audit & Tax Consulting)</h4>
                     <p className="text-sm text-text-subtle">Senior Manager</p>
