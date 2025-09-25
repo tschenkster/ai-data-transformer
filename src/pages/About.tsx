@@ -49,9 +49,9 @@ export default function About() {
               <div>
                 <h3 className="text-lg font-medium mb-3 text-text-heading">{t('HEADING_WHY_EXISTS', 'Why this app exists')}</h3>
                 <p className="text-text-body leading-relaxed">
-                  Before companies have Accounting in‑house and an ERP/BI stack, getting <strong>reliable financial insights</strong> is oddly hard.
+                  Without having Accounting in‑house and an ERP/BI stack, getting <strong>reliable financial insights</strong> is oddly hard.
                   <br /><br />
-                  I kept running into the same wall: messy (DATEV) exports, fragile Excel / Google Sheet models, zero time for analysis.
+                  I kept running into the same wall in startups: messy (DATEV) exports, fragile models in Excel / Google Sheets, zero time for analysis.
                   <br /><br />
                   So I'm building the tool I always wished I had.
                 </p>
@@ -66,7 +66,7 @@ export default function About() {
                   </li>
                   <li className="flex items-start">
                     <span className="font-medium mr-2">•</span>
-                    <span><strong>Fast</strong>: Minutes to a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel file.</span>
+                    <span><strong>Fast</strong>: Minutes to a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel model.</span>
                   </li>
                 </ul>
               </div>
@@ -101,9 +101,16 @@ export default function About() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-text-body leading-relaxed">
-                I support tech companies with 30–300 employees as a <strong>Fractional or Interim CFO</strong>. 
-                My sweet spot is when finance needs to grow up quickly — whether a scale‑up is preparing for fundraising, 
-                facing investor pressure, or simply stuck in spreadsheet chaos.
+                Think of me as your senior finance sparring partner. 
+                I share my hands-on experience from working 20+ years in finance. 
+                My sweet spot is tech companies with 30–300 employees. 
+
+                Common Situations
+                <strong>You want to apply AI</strong>  - ..but don't know where to start and where it makes really sense.
+               <strong>Your senior Finance Person Left</strong>  - …and the tax authorities, investors, banks, etc. are still around and want some numbers from you.
+              <strong>Lack of a senior Finance sparring partner</strong>  - You’re leading the Finance team or the entire company. The company is growing and you have to grow the Finance team or make changes to your finance tech stack. You’re looking for a senior sparring partner to bounce off your ideas. 
+              <strong>Lack of Financial Insights</strong> - You’re receiving nothing but confusing (DATEV) reports from your tax firm that are absolutely meaningless to you. Because, let’s face it, these reports are pretty useless. You can’t steer your business and make decisions based on these reports. 
+                <strong>You are paying steep U.S. consulting fees</strong> - 800 USD for a 1 hour meeting and you feel confused.  You’re not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S..
               </p>
               
               <div>
@@ -119,7 +126,7 @@ export default function About() {
               </div>
               
               <p className="text-text-body leading-relaxed font-medium">
-                Think of me as your senior finance sparring partner: fast, pragmatic, and focused on making finance a growth enabler instead of a bottleneck.
+                
               </p>
             </CardContent>
           </Card>
@@ -131,13 +138,12 @@ export default function About() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-text-body">
-                <li><strong>20+ years of experience</strong> across auditing, tax advisory, and CFO roles.</li>
-                <li><strong>Leadership</strong>: Scaled international finance teams from 4 to 17 people across Europe and North America.</li>
-                <li><strong>Transactions</strong>: Led M&A deals (€40m, €10m), secured a €40m credit facility, executed €100m share buyback.</li>
-                <li><strong>Systems</strong>: Migrated companies to modern finance stacks (NetSuite, Power BI, Azure, LucaNet, Agicap).</li>
+                <li><strong>20+ Years of Experience</strong> across leading finance departments in startups & scaleups, auditing, and tax advisory.</li>
+                <li><strong>Leadership</strong>: Scaled international finance teams from 1 to 20 people across Europe and North America.</li>
+                <li><strong>Finance Tech Stack</strong>: Migrated companies to modern finance stacks (NetSuite, Power BI, Azure, LucaNet, Agicap).</li>
                 <li><strong>Governance</strong>: Delivered first‑time Big Four audits, implemented international tax compliance (TP, PE, contractor risks).</li>
                 <li><strong>Board/Investor Engagement</strong>: Built board‑ready reporting, FP&A processes, and liquidity management.</li>
-                <li><strong>Style</strong>: Pragmatic, strategic, and highly data‑driven — with a strong bias for turning complexity into clarity.</li>
+                <li><strong>Style</strong>: Pragmatic, hands-on, and empathetic — with a strong bias for getting things done.</li>
               </ul>
             </CardContent>
           </Card>
@@ -171,7 +177,7 @@ export default function About() {
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Share&Charge Foundation (Web3 / Crypto)</h4>
                     <p className="text-sm text-text-subtle">Co‑Founder & CFO</p>
-                    <p>Built finance from scratch, set up stablecoin, prepared ICO, managed fundraising and compliance.</p>
+                    <p>Grew from 1 → 15 employees, managed fundraising and compliance, set up Euro stablecoin, prepared ICO.</p>
                   </div>
                 </div>
                 
@@ -184,7 +190,7 @@ export default function About() {
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">cleverbridge AG (E‑commerce / SaaS marketplace)</h4>
                     <p className="text-sm text-text-subtle">Director Finance & Tax</p>
-                    <p>Scaled finance team, €60m revenue / €500m GMV, built consolidation and BI systems.</p>
+                    <p>Grew from 100 → 300 employees, scaled finance team, €60m revenue, €500m GMV, built consolidation and BI systems.</p>
                   </div>
                 </div>
                 
@@ -197,7 +203,7 @@ export default function About() {
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Rödl & Partner USA (Audit & Tax Consulting)</h4>
                     <p className="text-sm text-text-subtle">Senior Manager</p>
-                    <p>Advised international clients with U.S.–Germany footprint, managed audits, IFRS/US‑GAAP/GER‑GAAP conversions.</p>
+                    <p>Advised international clients with U.S.–Germany footprint, managed audits, IFRS/US‑GAAP/German‑GAAP conversions.</p>
                   </div>
                 </div>
                 
@@ -210,14 +216,14 @@ export default function About() {
                   <div className="flex-1">
                     <h4 className="font-medium text-text-heading">Ernst & Young GER (Tax Accounting, Germany)</h4>
                     <p className="text-sm text-text-subtle">Senior Assistant</p>
-                    <p>Tax risk reviews, SEC client reporting, US GAAP/IFRS training.</p>
+                    <p>Tax accounting for large international corporations, tax risk reviews, SEC client reporting, US GAAP/IFRS training.</p>
                   </div>
                 </div>
               </div>
               
               <p className="text-sm text-text-subtle mt-4">
                 Other roles include interim CFO mandates at InsurTech, E‑commerce, and SaaS startups, 
-                building finance functions from scratch and optimizing processes in high‑growth environments.
+                building finance functions from scratch and optimizing processes in growth stage.
               </p>
             </CardContent>
           </Card>
