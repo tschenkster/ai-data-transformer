@@ -201,168 +201,6 @@ export default function About() {
             </CardContent>
           </Card>
 
-          {/* Completed Projects & Achievements */}
-          <Card className="relative overflow-hidden border-2 border-border bg-white">
-            <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
-            <CardHeader className="relative">
-              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CV_SUMMARY', 'Completed Projects & Achievements')}</CardTitle>
-            </CardHeader>
-            <CardContent className="relative space-y-6">
-              <div className="space-y-6">
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Rocket className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-foreground">Finance Team Leadership & Development</h4>
-                  </div>
-                  <div className="pl-11">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Grew finance departments from <strong className="text-foreground">1 → 20 employees</strong>, led remote teams across 7 countries, hired 50+ finance professionals, and managed scale-up transformations (Series A → Series C).
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-foreground">Accounting</h4>
-                  </div>
-                  <div className="pl-11">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Transitioned accounting in-house, implemented LucaNet, reduced monthly reporting cycles from <strong className="text-foreground">30 → 6 days</strong>, prepared consolidated statements under German GAAP, US GAAP, and IFRS, delivered Big Four audits with zero findings.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Lightbulb className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-foreground">FP&A, BI & Reporting</h4>
-                  </div>
-                  <div className="pl-11">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Built budgeting and forecasting from scratch, created KPI systems, set up data warehouses and BI dashboards <strong className="text-foreground">(Power BI, BOARD)</strong>, and designed cost/profit center logic.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Zap className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-foreground">Finance Tech & Process Optimization</h4>
-                  </div>
-                  <div className="pl-11">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Automated workflows <strong className="text-foreground">(Circula, Harvest, Candis)</strong>, migrated from DATEV to Scopevisio ERP, implemented high-ROI finance tools, integrated merchant-of-record providers.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <ExternalLink className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-foreground">Tax Compliance & Risk Management</h4>
-                  </div>
-                  <div className="pl-11">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Ran global VAT compliance for <strong className="text-foreground">10m+ transactions (€500m GMV)</strong>, implemented payroll tax strategies across 30+ countries, managed transfer pricing and tax due diligences, filed US voluntary disclosures.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Rocket className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-foreground">Corporate Finance & Treasury</h4>
-                  </div>
-                  <div className="pl-11">
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Supported M&A <strong className="text-foreground">(two acquisitions €10m & €40m)</strong>, managed sell-side due diligences, prepared data rooms, supported €50m credit facility and €100m share buyback with clean, accurate financial data.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tools I've Worked With */}
-          <Card className="bg-white border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_TOOLS', 'About Tools I\'ve Worked With')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-muted-foreground leading-relaxed text-lg">
-                Throughout my career, I've worked hands-on with a wide range of finance, accounting, and business tools. 
-                Here's a selection of the software and platforms I've implemented, managed, or used extensively:
-              </p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {[
-                  { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
-                  { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
-                  { name: "Power BI", category: "Business Intelligence", favicon: "/tool-logos/powerbi-favicon.png" },
-                  { name: "BOARD", category: "CPM Platform", favicon: "/tool-logos/board-favicon-new.png" },
-                  { name: "Circula", category: "Expense Management", favicon: "/tool-logos/circula-favicon.png" },
-                  { name: "CANDIS", category: "Invoice Processing", favicon: "/tool-logos/candis-favicon.ico" },
-                  { name: "DATEV", category: "Accounting Software", favicon: "/tool-logos/datev-favicon.ico" },
-                  { name: "Lexware", category: "Accounting Software", favicon: "/tool-logos/lexware-favicon.ico" },
-                  { name: "Xero", category: "Cloud Accounting", favicon: "/tool-logos/xero-favicon.ico" },
-                  { name: "QuickBooks", category: "Accounting Software", favicon: "/tool-logos/quickbooks-favicon.png" },
-                  { name: "Spendesk", category: "Spend Management", favicon: "/tool-logos/spendesk-favicon.ico" },
-                  { name: "Stripe", category: "Payment Processing", favicon: "/tool-logos/stripe-favicon.ico" },
-                  { name: "SAP", category: "ERP System", favicon: "/tool-logos/sap-favicon.png" },
-                  { name: "Avalara", category: "Tax Compliance", favicon: "/tool-logos/avalara-favicon.png" },
-                  { name: "Jira", category: "Project Management", favicon: "/tool-logos/jira-favicon.ico" },
-                  { name: "Trello", category: "Project Management", favicon: "/tool-logos/trello-favicon.ico" },
-                  { name: "Confluence", category: "Documentation", favicon: "/tool-logos/confluence-favicon.ico" },
-                  { name: "GitHub", category: "Version Control", favicon: "/tool-logos/github-favicon.ico" },
-                  { name: "Mixpanel", category: "Analytics", favicon: "/tool-logos/mixpanel-favicon.ico" },
-                  { name: "Personio", category: "HR Management", favicon: "/tool-logos/personio-favicon.ico" },
-                  { name: "Peakon", category: "Employee Engagement", favicon: "/tool-logos/peakon-favicon.ico" },
-                  { name: "Leapsome", category: "Performance Management", favicon: "/tool-logos/leapsome-favicon.png" },
-                  { name: "Greenhouse", category: "Recruiting", favicon: "/tool-logos/greenhouse-favicon.png" },
-                  { name: "Harvest", category: "Time Tracking", favicon: "/tool-logos/harvest-favicon.ico" }
-                ].map((tool) => (
-                  <div key={tool.name} className="bg-white rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
-                     <div className="h-20 flex items-center justify-center mb-4">
-                       {(tool as any).favicon || (tool as any).logo ? (
-                         <img 
-                           src={(tool as any).favicon || (tool as any).logo} 
-                           alt={`${tool.name} favicon`} 
-                           className="w-16 h-16 object-contain"
-                         />
-                       ) : (
-                         <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
-                           <span className="text-2xl font-bold text-foreground">
-                             {tool.name.charAt(0)}
-                           </span>
-                         </div>
-                       )}
-                     </div>
-                    <h4 className="font-semibold text-foreground text-center mb-1">{tool.name}</h4>
-                    <p className="text-xs text-muted-foreground text-center">{tool.category}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <p className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg border border-border/50">
-                This represents just a selection of the tools I've used. The key is not just knowing the software, 
-                but understanding how to integrate these tools effectively into finance workflows and business processes.
-              </p>
-            </CardContent>
-          </Card>
-
           {/* Companies */}
           <Card className="relative overflow-hidden border-2 border-border bg-white">
             <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
@@ -480,52 +318,160 @@ export default function About() {
             </CardContent>
           </Card>
 
+          {/* Completed Projects & Achievements */}
+          <Card className="relative overflow-hidden border-2 border-border bg-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
+            <CardHeader className="relative">
+              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CV_SUMMARY', 'Completed Projects & Achievements')}</CardTitle>
+            </CardHeader>
+            <CardContent className="relative space-y-6">
+              <div className="space-y-6">
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Rocket className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Finance Team Leadership & Development</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Grew finance departments from <strong className="text-foreground">1 → 20 employees</strong>, led remote teams across 7 countries, hired 50+ finance professionals, and managed scale-up transformations (Series A → Series C).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Accounting</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Transitioned accounting in-house, implemented LucaNet, reduced monthly reporting cycles from <strong className="text-foreground">30 → 6 days</strong>, prepared consolidated statements under German GAAP, US GAAP, and IFRS, delivered Big Four audits with zero findings.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Lightbulb className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">FP&A, BI & Reporting</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Built budgeting and forecasting from scratch, created KPI systems, set up data warehouses and BI dashboards <strong className="text-foreground">(Power BI, BOARD)</strong>, and designed cost/profit center logic.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Zap className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Finance Tech & Process Optimization</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Automated workflows <strong className="text-foreground">(Circula, Harvest, Candis)</strong>, migrated from DATEV to Scopevisio ERP, implemented high-ROI finance tools, integrated merchant-of-record providers.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <ExternalLink className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Tax Compliance & Risk Management</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Ran global VAT compliance for <strong className="text-foreground">10m+ transactions (€500m GMV)</strong>, implemented payroll tax strategies across 30+ countries, managed transfer pricing and tax due diligences, filed US voluntary disclosures.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Rocket className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Corporate Finance & Treasury</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Supported M&A <strong className="text-foreground">(two acquisitions €10m & €40m)</strong>, managed sell-side due diligences, prepared data rooms, supported €50m credit facility and €100m share buyback with clean, accurate financial data.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tools I've Worked With */}
+          <Card className="bg-white border-2 border-border">
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_TOOLS', 'About Tools I\'ve Worked With')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">ERP Systems</h4>
+                  <p className="text-sm text-muted-foreground">DATEV, Scopevisio, SAP, Oracle NetSuite, QuickBooks</p>
+                </div>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Consolidation & Reporting</h4>
+                  <p className="text-sm text-muted-foreground">LucaNet, BOARD, Hyperion, Cognos Controller</p>
+                </div>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">BI & Analytics</h4>
+                  <p className="text-sm text-muted-foreground">Power BI, Tableau, Looker, Google Analytics</p>
+                </div>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Process Automation</h4>
+                  <p className="text-sm text-muted-foreground">Circula, Harvest, Candis, Zapier, Make</p>
+                </div>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Tax & Compliance</h4>
+                  <p className="text-sm text-muted-foreground">Avalara, TaxJar, Vertex, ONESOURCE</p>
+                </div>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Data & Development</h4>
+                  <p className="text-sm text-muted-foreground">SQL, Python, Excel/VBA, Google Sheets</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Completed Projects */}
           <Card className="bg-white border-2 border-border">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_PROJECTS', 'Completed Projects & Achievements')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 text-muted-foreground">
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Finance Team Leadership & Development</h4>
-                  <p>Grew finance departments from 1 → 20 employees, led remote teams across 7 countries, hired 50+ finance professionals, and managed scale‑up transformations (Series A → Series C).</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Team Building</h4>
+                  <p className="text-sm text-muted-foreground">Grew finance teams from 1 → 20 employees, hired 50+ professionals</p>
                 </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Accounting</h4>
-                  <p>Transitioned accounting in‑house, implemented LucaNet, reduced monthly reporting cycles from 30 → 6 days, prepared consolidated statements under German GAAP, US GAAP, and IFRS, delivered Big Four audits with zero findings.</p>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Process Optimization</h4>
+                  <p className="text-sm text-muted-foreground">Reduced monthly close from 30 → 6 days</p>
                 </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">FP&A, BI & Reporting</h4>
-                  <p>Built budgeting and forecasting from scratch, created KPI systems, set up data warehouses and BI dashboards (Power BI, BOARD), and designed cost/profit center logic.</p>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">M&A Support</h4>
+                  <p className="text-sm text-muted-foreground">Led two acquisitions (€10m & €40m), managed due diligences</p>
                 </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Finance Tech & Process Optimization</h4>
-                  <p>Automated workflows (Circula, Harvest, Candis), migrated from DATEV to Scopevisio ERP, implemented high‑ROI finance tools, integrated merchant‑of‑record providers.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Tax Compliance & Risk Management</h4>
-                  <p>Ran global VAT compliance for 10m+ transactions (€500m GMV), implemented payroll tax strategies across 30+ countries, managed transfer pricing and tax due diligences, filed US voluntary disclosures.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Corporate Finance & Treasury</h4>
-                  <p>Supported M&A (two acquisitions €10m & €40m), managed sell‑side due diligences, prepared data rooms, supported €50m credit facility and €100m share buyback with clean, accurate financial data.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Strategic & Entrepreneurial Initiatives</h4>
-                  <p>Co‑founded Web3 e‑mobility startup, prepared an ICO, managed open‑source licensing, and gained hands‑on entrepreneurial experience.</p>
+                <div className="bg-card/50 rounded-lg p-4 border border-border/50">
+                  <h4 className="font-semibold text-foreground mb-2">Global Compliance</h4>
+                  <p className="text-sm text-muted-foreground">VAT compliance for 10m+ transactions across 30+ countries</p>
                 </div>
               </div>
-              
-              <p className="text-muted-foreground font-medium mt-6 p-4 bg-muted/30 rounded-lg border border-border/50">
-                These achievements reflect the core of my CFO work: scaling teams, cleaning up data, building reliable systems, and enabling growth.
-              </p>
             </CardContent>
           </Card>
         </div>
