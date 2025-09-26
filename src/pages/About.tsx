@@ -215,7 +215,7 @@ export default function About() {
                   { name: "DATEV", category: "Accounting Software", favicon: "/tool-logos/datev-favicon.ico" },
                   { name: "Lexware", category: "Accounting Software", favicon: "/tool-logos/lexware-favicon.ico" },
                   { name: "Xero", category: "Cloud Accounting", favicon: "/tool-logos/xero-favicon.ico" },
-                  { name: "QuickBooks", category: "Accounting Software", logo: "/tool-logos/quickbooks-logo.png" },
+                  { name: "QuickBooks", category: "Accounting Software", favicon: "/tool-logos/quickbooks-favicon.png" },
                   { name: "Spendesk", category: "Spend Management", favicon: "/tool-logos/spendesk-favicon.ico" },
                   { name: "Stripe", category: "Payment Processing", favicon: "/tool-logos/stripe-favicon.ico" },
                   { name: "SAP", category: "ERP System", logo: "/tool-logos/sap-logo.png" },
