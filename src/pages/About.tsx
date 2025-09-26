@@ -206,7 +206,7 @@ export default function About() {
               
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[
-                  { name: "LucaNet", category: "Consolidation" },
+                  { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
                   { name: "Power BI", category: "Business Intelligence", logo: "/tool-logos/power-bi-logo.png" },
                   { name: "BOARD", category: "CPM Platform", favicon: "/tool-logos/board-favicon.ico" },
