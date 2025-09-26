@@ -30,7 +30,11 @@ export default function About() {
               </div>
               
               {/* LinkedIn Link */}
-              <Button variant="outline" asChild>
+              <Button 
+                variant="outline" 
+                asChild
+                className="bg-[#0077b5] hover:bg-[#005885] text-white border-[#0077b5] hover:border-[#005885]"
+              >
                 <a href="https://www.linkedin.com/in/thomas-schenkelberg/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
                   <Linkedin className="h-4 w-4" />
                   {t('BTN_CONNECT_LINKEDIN', 'Connect on LinkedIn')}
