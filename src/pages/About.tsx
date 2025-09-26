@@ -189,6 +189,39 @@ export default function About() {
             </CardContent>
           </Card>
 
+          {/* Tools I've Worked With */}
+          <Card className="bg-white border-2 border-border">
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_TOOLS', 'About Tools I\'ve Worked With')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-muted-foreground leading-relaxed text-lg">
+                Throughout my career, I've worked hands-on with a wide range of finance, accounting, and business tools. 
+                Here's a selection of the software and platforms I've implemented, managed, or used extensively:
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  "LucaNet", "AGICAP", "Power BI", "BOARD",
+                  "Circula", "CANDIS", "DATEV", "Lexware", 
+                  "Xero", "QuickBooks", "Spendesk", "Stripe",
+                  "SAP", "Avalara", "Jira", "Trello",
+                  "Confluence", "GitHub", "Mixpanel", "Personio",
+                  "Peakon", "Leapsome", "Greenhouse", "Harvest"
+                ].map((tool) => (
+                  <div key={tool} className="bg-muted/30 rounded-lg p-4 border border-border/50 text-center">
+                    <span className="font-medium text-foreground">{tool}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <p className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg border border-border/50">
+                This represents just a selection of the tools I've used. The key is not just knowing the software, 
+                but understanding how to integrate these tools effectively into finance workflows and business processes.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Companies */}
           <Card className="bg-white border-2 border-border">
             <CardHeader>
