@@ -207,36 +207,36 @@ export default function About() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[
                   { name: "LucaNet", category: "Consolidation" },
-                  { name: "AGICAP", category: "Cash Management" },
+                  { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
                   { name: "Power BI", category: "Business Intelligence", logo: "/tool-logos/power-bi-logo.png" },
-                  { name: "BOARD", category: "CPM Platform" },
+                  { name: "BOARD", category: "CPM Platform", favicon: "/tool-logos/board-favicon.ico" },
                   { name: "Circula", category: "Expense Management" },
-                  { name: "CANDIS", category: "Invoice Processing" },
-                  { name: "DATEV", category: "Accounting Software" },
+                  { name: "CANDIS", category: "Invoice Processing", favicon: "/tool-logos/candis-favicon.ico" },
+                  { name: "DATEV", category: "Accounting Software", favicon: "/tool-logos/datev-favicon.ico" },
                   { name: "Lexware", category: "Accounting Software" },
-                  { name: "Xero", category: "Cloud Accounting", logo: "/tool-logos/xero-logo.png" },
+                  { name: "Xero", category: "Cloud Accounting", favicon: "/tool-logos/xero-favicon.ico" },
                   { name: "QuickBooks", category: "Accounting Software", logo: "/tool-logos/quickbooks-logo.png" },
                   { name: "Spendesk", category: "Spend Management" },
-                  { name: "Stripe", category: "Payment Processing", logo: "/tool-logos/stripe-logo.png" },
+                  { name: "Stripe", category: "Payment Processing", favicon: "/tool-logos/stripe-favicon.ico" },
                   { name: "SAP", category: "ERP System", logo: "/tool-logos/sap-logo.png" },
                   { name: "Avalara", category: "Tax Compliance" },
-                  { name: "Jira", category: "Project Management", logo: "/tool-logos/jira-logo.png" },
-                  { name: "Trello", category: "Project Management", logo: "/tool-logos/trello-logo.png" },
+                  { name: "Jira", category: "Project Management", favicon: "/tool-logos/jira-favicon.ico" },
+                  { name: "Trello", category: "Project Management", favicon: "/tool-logos/trello-favicon.ico" },
                   { name: "Confluence", category: "Documentation" },
-                  { name: "GitHub", category: "Version Control", logo: "/tool-logos/github-logo.png" },
+                  { name: "GitHub", category: "Version Control", favicon: "/tool-logos/github-favicon.ico" },
                   { name: "Mixpanel", category: "Analytics" },
                   { name: "Personio", category: "HR Management" },
                   { name: "Peakon", category: "Employee Engagement" },
                   { name: "Leapsome", category: "Performance Management" },
                   { name: "Greenhouse", category: "Recruiting" },
-                  { name: "Harvest", category: "Time Tracking" }
+                  { name: "Harvest", category: "Time Tracking", favicon: "/tool-logos/harvest-favicon.ico" }
                 ].map((tool) => (
                   <div key={tool.name} className="bg-white rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
                     <div className="h-20 flex items-center justify-center mb-4">
-                      {tool.logo ? (
+                      {tool.favicon || tool.logo ? (
                         <img 
-                          src={tool.logo} 
-                          alt={`${tool.name} logo`} 
+                          src={tool.favicon || tool.logo} 
+                          alt={`${tool.name} favicon`} 
                           className="w-16 h-16 object-contain"
                         />
                       ) : (
