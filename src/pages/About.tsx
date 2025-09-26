@@ -218,7 +218,7 @@ export default function About() {
                   { name: "QuickBooks", category: "Accounting Software", favicon: "/tool-logos/quickbooks-favicon.png" },
                   { name: "Spendesk", category: "Spend Management", favicon: "/tool-logos/spendesk-favicon.ico" },
                   { name: "Stripe", category: "Payment Processing", favicon: "/tool-logos/stripe-favicon.ico" },
-                  { name: "SAP", category: "ERP System", logo: "/tool-logos/sap-logo.png" },
+                  { name: "SAP", category: "ERP System", favicon: "/tool-logos/sap-favicon.png" },
                   { name: "Avalara", category: "Tax Compliance" },
                   { name: "Jira", category: "Project Management", favicon: "/tool-logos/jira-favicon.ico" },
                   { name: "Trello", category: "Project Management", favicon: "/tool-logos/trello-favicon.ico" },
@@ -232,21 +232,21 @@ export default function About() {
                   { name: "Harvest", category: "Time Tracking", favicon: "/tool-logos/harvest-favicon.ico" }
                 ].map((tool) => (
                   <div key={tool.name} className="bg-white rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
-                    <div className="h-20 flex items-center justify-center mb-4">
-                      {tool.favicon || tool.logo ? (
-                        <img 
-                          src={tool.favicon || tool.logo} 
-                          alt={`${tool.name} favicon`} 
-                          className="w-16 h-16 object-contain"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
-                          <span className="text-2xl font-bold text-foreground">
-                            {tool.name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                     <div className="h-20 flex items-center justify-center mb-4">
+                       {(tool as any).favicon || (tool as any).logo ? (
+                         <img 
+                           src={(tool as any).favicon || (tool as any).logo} 
+                           alt={`${tool.name} favicon`} 
+                           className="w-16 h-16 object-contain"
+                         />
+                       ) : (
+                         <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
+                           <span className="text-2xl font-bold text-foreground">
+                             {tool.name.charAt(0)}
+                           </span>
+                         </div>
+                       )}
+                     </div>
                     <h4 className="font-semibold text-foreground text-center mb-1">{tool.name}</h4>
                     <p className="text-xs text-muted-foreground text-center">{tool.category}</p>
                   </div>
