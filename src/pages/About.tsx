@@ -100,8 +100,9 @@ export default function About() {
 
           {/* About Building the App */}
           <Card className="bg-white border-2 border-border">
+            <Card className="bg-white border-2 border-border">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">About Building the App</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_CFO_WORK', 'About my Building the App')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="aspect-video w-full mb-4">
