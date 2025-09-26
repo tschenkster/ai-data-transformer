@@ -373,22 +373,17 @@ export default function About() {
               <div className="space-y-6">
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Rocket className="h-5 w-5 text-foreground" />
-                    </div>
-                    <div className="flex items-center gap-4 flex-1">
-                      <img 
-                        src="/company-logos/eyeo-logo.png?v=20250925-2" 
-                        alt="eyeo GmbH logo" 
-                        className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-foreground">eyeo GmbH (AdTech / SaaS)</h4>
-                        <p className="text-sm font-medium text-muted-foreground">VP Finance</p>
-                      </div>
+                    <img 
+                      src="/company-logos/eyeo-logo.png?v=20250925-2" 
+                      alt="eyeo GmbH logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">eyeo GmbH (AdTech / SaaS)</h4>
+                      <p className="text-sm font-medium text-muted-foreground">VP Finance</p>
                     </div>
                   </div>
-                  <div className="pl-11">
+                  <div>
                     <p className="text-muted-foreground leading-relaxed text-lg">
                       Grew from <strong className="text-foreground">150 → 350 employees</strong>, €100m revenue, scaled finance team, built finance tech stack, led M&A and share buyback.
                     </p>
@@ -397,22 +392,17 @@ export default function About() {
 
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Lightbulb className="h-5 w-5 text-foreground" />
-                    </div>
-                    <div className="flex items-center gap-4 flex-1">
-                      <img 
-                        src="/company-logos/sharecharge-logo.png" 
-                        alt="Share&Charge Foundation logo" 
-                        className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-foreground">Share&Charge Foundation (Web3 / Crypto)</h4>
-                        <p className="text-sm font-medium text-muted-foreground">Co‑Founder & CFO</p>
-                      </div>
+                    <img 
+                      src="/company-logos/sharecharge-logo.png" 
+                      alt="Share&Charge Foundation logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">Share&Charge Foundation (Web3 / Crypto)</h4>
+                      <p className="text-sm font-medium text-muted-foreground">Co‑Founder & CFO</p>
                     </div>
                   </div>
-                  <div className="pl-11">
+                  <div>
                     <p className="text-muted-foreground leading-relaxed text-lg">
                       Grew from <strong className="text-foreground">1 → 15 employees</strong>, managed fundraising and compliance, set up Euro stablecoin, prepared ICO.
                     </p>
@@ -421,22 +411,17 @@ export default function About() {
 
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Zap className="h-5 w-5 text-foreground" />
-                    </div>
-                    <div className="flex items-center gap-4 flex-1">
-                      <img 
-                        src="/company-logos/cleverbridge-logo.png?v=20250925-2" 
-                        alt="cleverbridge AG logo" 
-                        className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-foreground">cleverbridge AG (E‑commerce / SaaS marketplace)</h4>
-                        <p className="text-sm font-medium text-muted-foreground">Director Finance & Tax</p>
-                      </div>
+                    <img 
+                      src="/company-logos/cleverbridge-logo.png?v=20250925-2" 
+                      alt="cleverbridge AG logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">cleverbridge AG (E‑commerce / SaaS marketplace)</h4>
+                      <p className="text-sm font-medium text-muted-foreground">Director Finance & Tax</p>
                     </div>
                   </div>
-                  <div className="pl-11">
+                  <div>
                     <p className="text-muted-foreground leading-relaxed text-lg">
                       Grew from <strong className="text-foreground">100 → 300 employees</strong>, scaled finance team, €60m revenue, €500m GMV, built consolidation and BI systems.
                     </p>
@@ -445,22 +430,17 @@ export default function About() {
 
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <ExternalLink className="h-5 w-5 text-foreground" />
-                    </div>
-                    <div className="flex items-center gap-4 flex-1">
-                      <img 
-                        src="/company-logos/roedl-logo.png?v=20250925-2" 
-                        alt="Rödl & Partner logo" 
-                        className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-foreground">Rödl & Partner USA (Audit & Tax Consulting)</h4>
-                        <p className="text-sm font-medium text-muted-foreground">Senior Manager</p>
-                      </div>
+                    <img 
+                      src="/company-logos/roedl-logo.png?v=20250925-2" 
+                      alt="Rödl & Partner logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">Rödl & Partner USA (Audit & Tax Consulting)</h4>
+                      <p className="text-sm font-medium text-muted-foreground">Senior Manager</p>
                     </div>
                   </div>
-                  <div className="pl-11">
+                  <div>
                     <p className="text-muted-foreground leading-relaxed text-lg">
                       Advised international clients with <strong className="text-foreground">U.S.–Germany footprint</strong>, managed audits, IFRS/US‑GAAP/German‑GAAP conversions.
                     </p>
@@ -469,22 +449,17 @@ export default function About() {
 
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-foreground" />
-                    </div>
-                    <div className="flex items-center gap-4 flex-1">
-                      <img 
-                        src="/company-logos/ey-logo.png" 
-                        alt="Ernst & Young logo" 
-                        className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-foreground">Ernst & Young GER (Tax Accounting, Germany)</h4>
-                        <p className="text-sm font-medium text-muted-foreground">Senior Assistant</p>
-                      </div>
+                    <img 
+                      src="/company-logos/ey-logo.png" 
+                      alt="Ernst & Young logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">Ernst & Young GER (Tax Accounting, Germany)</h4>
+                      <p className="text-sm font-medium text-muted-foreground">Senior Assistant</p>
                     </div>
                   </div>
-                  <div className="pl-11">
+                  <div>
                     <p className="text-muted-foreground leading-relaxed text-lg">
                       Tax accounting for <strong className="text-foreground">large international corporations</strong>, tax risk reviews, SEC client reporting, US GAAP/IFRS training.
                     </p>
@@ -493,13 +468,10 @@ export default function About() {
               </div>
               
               <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Rocket className="h-5 w-5 text-foreground" />
-                  </div>
+                <div className="mb-4">
                   <h3 className="text-xl font-semibold text-foreground">Additional Experience</h3>
                 </div>
-                <div className="pl-11">
+                <div>
                   <p className="text-muted-foreground leading-relaxed text-lg">
                     Other roles include <strong className="text-foreground">interim CFO mandates</strong> at InsurTech, E‑commerce, and SaaS startups, building finance functions from scratch and optimizing processes in growth stage.
                   </p>
