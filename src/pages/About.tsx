@@ -137,31 +137,6 @@ export default function About() {
                 My sweet spot is tech companies with 30–300 employees.
               </p>
 
-              <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-foreground mb-3">Common Situations</h4>
-                
-                <div className="space-y-4">
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You want to apply AI</strong> - but don't know where to start and where it makes really sense.</p>
-                  </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">Your senior finance person left</strong> - and the tax authorities, investors, banks, etc. are still around and want some numbers from you.</p>
-                  </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You need a sounding board for your ideas</strong> - You're leading the Finance team or the entire company. The company is growing and you have to grow the Finance team or make changes to your finance tech stack. You're looking for a senior sparring partner to bounce off your ideas.</p>
-                  </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You are lacking of financial insights</strong> - You're receiving nothing but confusing (DATEV) reports from your tax firm that are absolutely meaningless to you. Because, let's face it, these reports are pretty useless. You can't steer your business and make decisions based on these reports.</p>
-                  </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You are paying steep U.S. consulting fees</strong> - 800 USD for a 1 hour meeting with U.S. tax consultant and you feel confused. You're not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S.</p>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
