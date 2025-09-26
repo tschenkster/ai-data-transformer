@@ -99,11 +99,12 @@ export default function About() {
           </Card>
 
           {/* About Building the App */}
-          <Card className="bg-white border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_CFO_WORK', 'About my Building the App')}</CardTitle>
+          <Card className="relative overflow-hidden border-2 border-border bg-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
+            <CardHeader className="relative">
+              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CFO_WORK', 'About my Building the App')}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative">
               <div className="aspect-video w-full mb-4">
                 <iframe 
                   width="100%" 
