@@ -232,16 +232,16 @@ export default function About() {
                   { name: "Harvest", category: "Time Tracking" }
                 ].map((tool) => (
                   <div key={tool.name} className="bg-white rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
-                    <div className="h-12 flex items-center justify-center mb-3">
+                    <div className="h-20 flex items-center justify-center mb-4">
                       {tool.logo ? (
                         <img 
                           src={tool.logo} 
                           alt={`${tool.name} logo`} 
-                          className="w-10 h-10 object-contain"
+                          className="w-16 h-16 object-contain"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                          <span className="text-lg font-bold text-foreground">
+                        <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
+                          <span className="text-2xl font-bold text-foreground">
                             {tool.name.charAt(0)}
                           </span>
                         </div>
