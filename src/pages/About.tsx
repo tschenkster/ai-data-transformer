@@ -22,11 +22,11 @@ export default function About() {
             <CardContent className="text-center space-y-6">
               {/* Thomas's Photo */}
               <div className="flex justify-center">
-                <img 
-                  src="/lovable-uploads/9a572706-2163-4eff-83f4-31746c12f3a9.png" 
-                  alt="Thomas Schenkelberg - Startup CFO" 
-                  className="w-48 h-48 rounded-full object-cover border-2 border-border"
-                />
+                 <img 
+                   src="/profile-picture-thomas.png" 
+                   alt="Thomas Schenkelberg - Startup CFO" 
+                   className="w-48 h-48 rounded-full object-cover border-2 border-border"
+                 />
               </div>
               
               {/* LinkedIn Link */}
