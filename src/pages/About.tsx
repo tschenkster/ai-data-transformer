@@ -86,7 +86,7 @@ export default function About() {
                       <Zap className="h-4 w-4 text-background" />
                     </div>
                     <div>
-                      <span className="text-lg"><strong className="text-foreground">Lightweight solution</strong>: No need to implement anything. Upload an xlsx, pdf or csv file. Done.</span>
+                      <span className="text-lg"><strong className="text-foreground">An app that is lightweight</strong>: I don't need to implement anything. I upload an xlsx, pdf or csv file. Done.</span>
                     </div>
                   </div>
                   <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
@@ -94,7 +94,7 @@ export default function About() {
                       <Clock className="h-4 w-4 text-background" />
                     </div>
                     <div>
-                      <span className="text-lg"><strong className="text-foreground">Fast</strong>: Minutes to a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel model.</span>
+                      <span className="text-lg"><strong className="text-foreground">An app that speeds up my work</strong>: In minutes I get a usable P&L/Balance Sheet — no need to set up and maintain a complicated Excel model.</span>
                     </div>
                   </div>
                 </div>
@@ -150,7 +150,7 @@ export default function About() {
                   </div>
                   
                   <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">Lack of a senior Finance sparring partner</strong> - You're leading the Finance team or the entire company. The company is growing and you have to grow the Finance team or make changes to your finance tech stack. You're looking for a senior sparring partner to bounce off your ideas.</p>
+                    <p className="text-muted-foreground"><strong className="text-foreground">You need a sounding board for your ideas</strong> - You're leading the Finance team or the entire company. The company is growing and you have to grow the Finance team or make changes to your finance tech stack. You're looking for a senior sparring partner to bounce off your ideas.</p>
                   </div>
                   
                   <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
