@@ -201,20 +201,98 @@ export default function About() {
             </CardContent>
           </Card>
 
-          {/* CV Summary */}
-          <Card className="bg-white border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_CV_SUMMARY', 'CV Summary — Thomas Schenkelberg')}</CardTitle>
+          {/* Completed Projects & Achievements */}
+          <Card className="relative overflow-hidden border-2 border-border bg-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
+            <CardHeader className="relative">
+              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CV_SUMMARY', 'Completed Projects & Achievements')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-3 text-muted-foreground">
-                <li><strong className="text-foreground">20+ Years of Experience</strong> across leading finance departments in startups & scaleups, auditing, and tax advisory.</li>
-                <li><strong className="text-foreground">Leadership</strong>: Scaled international finance teams from 1 to 20 people across Europe and North America.</li>
-                <li><strong className="text-foreground">Finance Tech Stack</strong>: Migrated companies to modern finance stacks (NetSuite, Power BI, Azure, LucaNet, Agicap).</li>
-                <li><strong className="text-foreground">Governance</strong>: Delivered first‑time Big Four audits, implemented international tax compliance (TP, PE, contractor risks).</li>
-                <li><strong className="text-foreground">Board/Investor Engagement</strong>: Built board‑ready reporting, FP&A processes, and liquidity management.</li>
-                <li><strong className="text-foreground">Style</strong>: Pragmatic, hands-on, and empathetic — with a strong bias for getting things done.</li>
-              </ul>
+            <CardContent className="relative space-y-6">
+              <div className="space-y-6">
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Rocket className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Finance Team Leadership & Development</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Grew finance departments from <strong className="text-foreground">1 → 20 employees</strong>, led remote teams across 7 countries, hired 50+ finance professionals, and managed scale-up transformations (Series A → Series C).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Accounting</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Transitioned accounting in-house, implemented LucaNet, reduced monthly reporting cycles from <strong className="text-foreground">30 → 6 days</strong>, prepared consolidated statements under German GAAP, US GAAP, and IFRS, delivered Big Four audits with zero findings.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Lightbulb className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">FP&A, BI & Reporting</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Built budgeting and forecasting from scratch, created KPI systems, set up data warehouses and BI dashboards <strong className="text-foreground">(Power BI, BOARD)</strong>, and designed cost/profit center logic.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Zap className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Finance Tech & Process Optimization</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Automated workflows <strong className="text-foreground">(Circula, Harvest, Candis)</strong>, migrated from DATEV to Scopevisio ERP, implemented high-ROI finance tools, integrated merchant-of-record providers.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <ExternalLink className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Tax Compliance & Risk Management</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Ran global VAT compliance for <strong className="text-foreground">10m+ transactions (€500m GMV)</strong>, implemented payroll tax strategies across 30+ countries, managed transfer pricing and tax due diligences, filed US voluntary disclosures.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Rocket className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-foreground">Corporate Finance & Treasury</h4>
+                  </div>
+                  <div className="pl-11">
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      Supported M&A <strong className="text-foreground">(two acquisitions €10m & €40m)</strong>, managed sell-side due diligences, prepared data rooms, supported €50m credit facility and €100m share buyback with clean, accurate financial data.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
