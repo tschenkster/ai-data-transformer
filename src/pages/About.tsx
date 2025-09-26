@@ -210,7 +210,7 @@ export default function About() {
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
                   { name: "Power BI", category: "Business Intelligence", favicon: "/tool-logos/powerbi-favicon.png" },
                   { name: "BOARD", category: "CPM Platform", favicon: "/tool-logos/board-favicon-new.png" },
-                  { name: "Circula", category: "Expense Management" },
+                  { name: "Circula", category: "Expense Management", favicon: "/tool-logos/circula-favicon.png" },
                   { name: "CANDIS", category: "Invoice Processing", favicon: "/tool-logos/candis-favicon.ico" },
                   { name: "DATEV", category: "Accounting Software", favicon: "/tool-logos/datev-favicon.ico" },
                   { name: "Lexware", category: "Accounting Software", favicon: "/tool-logos/lexware-favicon.ico" },
