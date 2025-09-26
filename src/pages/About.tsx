@@ -208,7 +208,7 @@ export default function About() {
                 {[
                   { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
-                  { name: "Power BI", category: "Business Intelligence", logo: "/tool-logos/power-bi-logo.png" },
+                  { name: "Power BI", category: "Business Intelligence", favicon: "/tool-logos/powerbi-favicon.png" },
                   { name: "BOARD", category: "CPM Platform", favicon: "/tool-logos/board-favicon.ico" },
                   { name: "Circula", category: "Expense Management" },
                   { name: "CANDIS", category: "Invoice Processing", favicon: "/tool-logos/candis-favicon.ico" },
