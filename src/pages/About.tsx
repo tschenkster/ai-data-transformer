@@ -200,17 +200,43 @@ export default function About() {
                 Here's a selection of the software and platforms I've implemented, managed, or used extensively:
               </p>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[
-                  "LucaNet", "AGICAP", "Power BI", "BOARD",
-                  "Circula", "CANDIS", "DATEV", "Lexware", 
-                  "Xero", "QuickBooks", "Spendesk", "Stripe",
-                  "SAP", "Avalara", "Jira", "Trello",
-                  "Confluence", "GitHub", "Mixpanel", "Personio",
-                  "Peakon", "Leapsome", "Greenhouse", "Harvest"
+                  { name: "LucaNet", category: "Consolidation" },
+                  { name: "AGICAP", category: "Cash Management" },
+                  { name: "Power BI", category: "Business Intelligence" },
+                  { name: "BOARD", category: "CPM Platform" },
+                  { name: "Circula", category: "Expense Management" },
+                  { name: "CANDIS", category: "Invoice Processing" },
+                  { name: "DATEV", category: "Accounting Software" },
+                  { name: "Lexware", category: "Accounting Software" },
+                  { name: "Xero", category: "Cloud Accounting" },
+                  { name: "QuickBooks", category: "Accounting Software" },
+                  { name: "Spendesk", category: "Spend Management" },
+                  { name: "Stripe", category: "Payment Processing" },
+                  { name: "SAP", category: "ERP System" },
+                  { name: "Avalara", category: "Tax Compliance" },
+                  { name: "Jira", category: "Project Management" },
+                  { name: "Trello", category: "Project Management" },
+                  { name: "Confluence", category: "Documentation" },
+                  { name: "GitHub", category: "Version Control" },
+                  { name: "Mixpanel", category: "Analytics" },
+                  { name: "Personio", category: "HR Management" },
+                  { name: "Peakon", category: "Employee Engagement" },
+                  { name: "Leapsome", category: "Performance Management" },
+                  { name: "Greenhouse", category: "Recruiting" },
+                  { name: "Harvest", category: "Time Tracking" }
                 ].map((tool) => (
-                  <div key={tool} className="bg-muted/30 rounded-lg p-4 border border-border/50 text-center">
-                    <span className="font-medium text-foreground">{tool}</span>
+                  <div key={tool.name} className="bg-white rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
+                    <div className="h-12 flex items-center justify-center mb-3">
+                      <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                        <span className="text-lg font-bold text-foreground">
+                          {tool.name.charAt(0)}
+                        </span>
+                      </div>
+                    </div>
+                    <h4 className="font-semibold text-foreground text-center mb-1">{tool.name}</h4>
+                    <p className="text-xs text-muted-foreground text-center">{tool.category}</p>
                   </div>
                 ))}
               </div>
