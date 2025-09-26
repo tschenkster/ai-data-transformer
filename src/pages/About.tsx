@@ -219,7 +219,7 @@ export default function About() {
                   { name: "Spendesk", category: "Spend Management", favicon: "/tool-logos/spendesk-favicon.ico" },
                   { name: "Stripe", category: "Payment Processing", favicon: "/tool-logos/stripe-favicon.ico" },
                   { name: "SAP", category: "ERP System", favicon: "/tool-logos/sap-favicon.png" },
-                  { name: "Avalara", category: "Tax Compliance" },
+                  { name: "Avalara", category: "Tax Compliance", favicon: "/tool-logos/avalara-favicon.png" },
                   { name: "Jira", category: "Project Management", favicon: "/tool-logos/jira-favicon.ico" },
                   { name: "Trello", category: "Project Management", favicon: "/tool-logos/trello-favicon.ico" },
                   { name: "Confluence", category: "Documentation", favicon: "/tool-logos/confluence-favicon.ico" },
