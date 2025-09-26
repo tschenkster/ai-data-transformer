@@ -125,42 +125,79 @@ export default function About() {
           </Card>
 
           {/* About Fractional CFO Work */}
-          <Card className="bg-white border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_CFO_WORK', 'About my Fractional CFO Work')}</CardTitle>
+          <Card className="relative overflow-hidden border-2 border-border bg-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
+            <CardHeader className="relative">
+              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CFO_WORK', 'About my Fractional CFO Work')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-muted-foreground leading-relaxed text-lg">
-                
-                I earn my living by sharing my hands-on experience from working 20+ years in finance. 
-                Think of me as your senior finance sparring partner. 
-                My sweet spot is tech companies with 30–300 employees.
-              </p>
-
-              <div className="space-y-4">
-                <div className="space-y-4">
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You want to apply AI</strong> - but don't know where to start and where it makes really sense.</p>
+            <CardContent className="relative space-y-8">
+              <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <Lightbulb className="h-5 w-5 text-foreground" />
                   </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">Your senior finance person left</strong> - and the tax authorities, investors, banks, etc. are still around and want some numbers from you.</p>
+                  <h3 className="text-xl font-semibold text-foreground">My Approach</h3>
+                </div>
+                <div className="pl-11">
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    I earn my living by sharing my hands-on experience from working <strong className="text-foreground">20+ years in finance</strong>.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed text-lg mt-4">
+                    Think of me as your <strong className="text-foreground">senior finance sparring partner</strong>. My sweet spot is tech companies with 30–300 employees.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <Rocket className="h-5 w-5 text-foreground" />
                   </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You need a sounding board for your ideas</strong> - You're leading the Finance team or the entire company. The company is growing and you have to grow the Finance team or make changes to your finance tech stack. You're looking for a senior sparring partner to bounce off your ideas.</p>
+                  <h3 className="text-xl font-semibold text-foreground">Common Scenarios Where I Help</h3>
+                </div>
+                <div className="pl-11 space-y-4">
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="h-4 w-4 text-background" />
+                    </div>
+                    <div>
+                      <span className="text-lg"><strong className="text-foreground">You want to apply AI</strong> — but don't know where to start and where it makes really sense.</span>
+                    </div>
                   </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You are lacking of financial insights</strong> - You're receiving nothing but confusing (DATEV) reports from your tax firm that are absolutely meaningless to you. Because, let's face it, these reports are pretty useless. You can't steer your business and make decisions based on these reports.</p>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Clock className="h-4 w-4 text-background" />
+                    </div>
+                    <div>
+                      <span className="text-lg"><strong className="text-foreground">Your senior finance person left</strong> — and the tax authorities, investors, banks, etc. are still around and want some numbers from you.</span>
+                    </div>
                   </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You are paying steep U.S. consulting fees</strong> - 800 USD for a 1 hour meeting with U.S. tax consultant and you feel confused. You're not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S.</p>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <ExternalLink className="h-4 w-4 text-background" />
+                    </div>
+                    <div>
+                      <span className="text-lg"><strong className="text-foreground">You need a sounding board for your ideas</strong> — You're leading the Finance team or the entire company. The company is growing and you have to grow the Finance team or make changes to your finance tech stack. You're looking for a senior sparring partner to bounce off your ideas.</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Lightbulb className="h-4 w-4 text-background" />
+                    </div>
+                    <div>
+                      <span className="text-lg"><strong className="text-foreground">You are lacking of financial insights</strong> — You're receiving nothing but confusing (DATEV) reports from your tax firm that are absolutely meaningless to you. Because, let's face it, these reports are pretty useless. You can't steer your business and make decisions based on these reports.</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Rocket className="h-4 w-4 text-background" />
+                    </div>
+                    <div>
+                      <span className="text-lg"><strong className="text-foreground">You are paying steep U.S. consulting fees</strong> — 800 USD for a 1 hour meeting with U.S. tax consultant and you feel confused. You're not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S.</span>
+                    </div>
                   </div>
                 </div>
               </div>
-
             </CardContent>
           </Card>
 
