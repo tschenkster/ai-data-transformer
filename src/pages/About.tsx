@@ -227,7 +227,7 @@ export default function About() {
                   { name: "Mixpanel", category: "Analytics", favicon: "/tool-logos/mixpanel-favicon.ico" },
                   { name: "Personio", category: "HR Management", favicon: "/tool-logos/personio-favicon.ico" },
                   { name: "Peakon", category: "Employee Engagement", favicon: "/tool-logos/peakon-favicon.ico" },
-                  { name: "Leapsome", category: "Performance Management" },
+                  { name: "Leapsome", category: "Performance Management", favicon: "/tool-logos/leapsome-favicon.png" },
                   { name: "Greenhouse", category: "Recruiting" },
                   { name: "Harvest", category: "Time Tracking", favicon: "/tool-logos/harvest-favicon.ico" }
                 ].map((tool) => (
