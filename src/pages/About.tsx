@@ -41,7 +41,7 @@ export default function About() {
           </Card>
 
           {/* About DATEV Converter App */}
-          <Card className="relative overflow-hidden border-2 border-border bg-gradient-to-br from-background to-muted/30">
+          <Card className="relative overflow-hidden border-2 border-border bg-white">
             <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
             <CardHeader className="relative">
               <CardTitle className="text-3xl font-bold text-center text-foreground">
