@@ -162,18 +162,6 @@ export default function About() {
                   </div>
                 </div>
               </div>
-              
-              <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                <h4 className="text-lg font-semibold mb-4 text-foreground">What I bring:</h4>
-                <ul className="space-y-3 text-muted-foreground">
-                  <li><strong className="text-foreground">Hands‑on leadership</strong>: Built and led finance teams up to 20 people across 7 countries.</li>
-                  <li><strong className="text-foreground">End‑to‑end finance expertise</strong>: Accounting, FP&A, tax, treasury, and corporate finance.</li>
-                  <li><strong className="text-foreground">Data & insights</strong>: From cleaning up messy numbers to building BI dashboards that actually help run the business.</li>
-                  <li><strong className="text-foreground">Transformation & scaling</strong>: Took multiple companies from Series A to Series C structures, set up in‑house accounting, and reduced reporting cycles from 30 to 6 days.</li>
-                  <li><strong className="text-foreground">Compliance & audits</strong>: Delivered first‑time consolidated audits with zero adjustments; ensured global VAT and payroll tax compliance in 30+ countries.</li>
-                  <li><strong className="text-foreground">Corporate finance projects</strong>: Supported acquisitions, credit facilities, and share buybacks by preparing clean, reliable data.</li>
-                </ul>
-              </div>
             </CardContent>
           </Card>
 
