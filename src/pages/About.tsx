@@ -102,7 +102,7 @@ export default function About() {
           <Card className="relative overflow-hidden border-2 border-border bg-white">
             <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-transparent"></div>
             <CardHeader className="relative">
-              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CFO_WORK', 'About my Building the App')}</CardTitle>
+              <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CFO_WORK', 'About Building the App')}</CardTitle>
             </CardHeader>
             <CardContent className="relative space-y-6">
               <div className="aspect-video w-full mb-4 mt-6">
