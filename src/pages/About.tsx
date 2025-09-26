@@ -208,22 +208,22 @@ export default function About() {
                 {[
                   { name: "LucaNet", category: "Consolidation" },
                   { name: "AGICAP", category: "Cash Management" },
-                  { name: "Power BI", category: "Business Intelligence" },
+                  { name: "Power BI", category: "Business Intelligence", logo: "/tool-logos/power-bi-logo.png" },
                   { name: "BOARD", category: "CPM Platform" },
                   { name: "Circula", category: "Expense Management" },
                   { name: "CANDIS", category: "Invoice Processing" },
                   { name: "DATEV", category: "Accounting Software" },
                   { name: "Lexware", category: "Accounting Software" },
-                  { name: "Xero", category: "Cloud Accounting" },
-                  { name: "QuickBooks", category: "Accounting Software" },
+                  { name: "Xero", category: "Cloud Accounting", logo: "/tool-logos/xero-logo.png" },
+                  { name: "QuickBooks", category: "Accounting Software", logo: "/tool-logos/quickbooks-logo.png" },
                   { name: "Spendesk", category: "Spend Management" },
-                  { name: "Stripe", category: "Payment Processing" },
-                  { name: "SAP", category: "ERP System" },
+                  { name: "Stripe", category: "Payment Processing", logo: "/tool-logos/stripe-logo.png" },
+                  { name: "SAP", category: "ERP System", logo: "/tool-logos/sap-logo.png" },
                   { name: "Avalara", category: "Tax Compliance" },
-                  { name: "Jira", category: "Project Management" },
-                  { name: "Trello", category: "Project Management" },
+                  { name: "Jira", category: "Project Management", logo: "/tool-logos/jira-logo.png" },
+                  { name: "Trello", category: "Project Management", logo: "/tool-logos/trello-logo.png" },
                   { name: "Confluence", category: "Documentation" },
-                  { name: "GitHub", category: "Version Control" },
+                  { name: "GitHub", category: "Version Control", logo: "/tool-logos/github-logo.png" },
                   { name: "Mixpanel", category: "Analytics" },
                   { name: "Personio", category: "HR Management" },
                   { name: "Peakon", category: "Employee Engagement" },
@@ -233,11 +233,19 @@ export default function About() {
                 ].map((tool) => (
                   <div key={tool.name} className="bg-white rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow">
                     <div className="h-12 flex items-center justify-center mb-3">
-                      <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                        <span className="text-lg font-bold text-foreground">
-                          {tool.name.charAt(0)}
-                        </span>
-                      </div>
+                      {tool.logo ? (
+                        <img 
+                          src={tool.logo} 
+                          alt={`${tool.name} logo`} 
+                          className="w-10 h-10 object-contain"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                          <span className="text-lg font-bold text-foreground">
+                            {tool.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <h4 className="font-semibold text-foreground text-center mb-1">{tool.name}</h4>
                     <p className="text-xs text-muted-foreground text-center">{tool.category}</p>
