@@ -131,8 +131,9 @@ export default function About() {
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-muted-foreground leading-relaxed text-lg">
+                
+                I earn my living by sharing my hands-on experience from working 20+ years in finance. 
                 Think of me as your senior finance sparring partner. 
-                I share my hands-on experience from working 20+ years in finance. 
                 My sweet spot is tech companies with 30–300 employees.
               </p>
 
@@ -145,7 +146,7 @@ export default function About() {
                   </div>
                   
                   <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">Your senior Finance Person Left</strong> - and the tax authorities, investors, banks, etc. are still around and want some numbers from you.</p>
+                    <p className="text-muted-foreground"><strong className="text-foreground">Your senior finance person left</strong> - and the tax authorities, investors, banks, etc. are still around and want some numbers from you.</p>
                   </div>
                   
                   <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
@@ -153,11 +154,11 @@ export default function About() {
                   </div>
                   
                   <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">Lack of Financial Insights</strong> - You're receiving nothing but confusing (DATEV) reports from your tax firm that are absolutely meaningless to you. Because, let's face it, these reports are pretty useless. You can't steer your business and make decisions based on these reports.</p>
+                    <p className="text-muted-foreground"><strong className="text-foreground">You are lacking of financial insights</strong> - You're receiving nothing but confusing (DATEV) reports from your tax firm that are absolutely meaningless to you. Because, let's face it, these reports are pretty useless. You can't steer your business and make decisions based on these reports.</p>
                   </div>
                   
                   <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                    <p className="text-muted-foreground"><strong className="text-foreground">You are paying steep U.S. consulting fees</strong> - 800 USD for a 1 hour meeting and you feel confused. You're not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S.</p>
+                    <p className="text-muted-foreground"><strong className="text-foreground">You are paying steep U.S. consulting fees</strong> - 800 USD for a 1 hour meeting with U.S. tax consultant and you feel confused. You're not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S.</p>
                   </div>
                 </div>
               </div>
