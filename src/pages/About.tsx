@@ -104,8 +104,8 @@ export default function About() {
             <CardHeader className="relative">
               <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_CFO_WORK', 'About my Building the App')}</CardTitle>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="aspect-video w-full mb-4">
+            <CardContent className="relative space-y-6">
+              <div className="aspect-video w-full mb-4 mt-6">
                 <iframe 
                   width="100%" 
                   height="100%" 
