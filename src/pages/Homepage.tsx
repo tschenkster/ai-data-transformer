@@ -685,45 +685,63 @@ const Homepage = () => {
                 </div>
 
                 {/* Trust indicators */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-primary-foreground/20">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <Shield className="h-5 w-5" />
-                      <span className="font-semibold">SOC 2</span>
+                <div className="relative pt-8 border-t border-primary-foreground/20">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8 blur-sm">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <Shield className="h-5 w-5" />
+                        <span className="font-semibold">SOC 2</span>
+                      </div>
+                      <div className="text-sm opacity-80">Compliant</div>
                     </div>
-                    <div className="text-sm opacity-80">Compliant</div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <Clock className="h-5 w-5" />
+                        <span className="font-semibold">90%</span>
+                      </div>
+                      <div className="text-sm opacity-80">Faster reporting</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <Star className="h-5 w-5" />
+                        <span className="font-semibold">4.9/5</span>
+                      </div>
+                      <div className="text-sm opacity-80">User rating</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <Users className="h-5 w-5" />
+                        <span className="font-semibold">500+</span>
+                      </div>
+                      <div className="text-sm opacity-80">CFOs trust us</div>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <Clock className="h-5 w-5" />
-                      <span className="font-semibold">90%</span>
+                  {/* Blur overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+                    <div className="text-center text-white">
+                      <div className="text-sm font-medium">Coming soon</div>
+                      <div className="text-xs opacity-80">Real metrics from actual users</div>
                     </div>
-                    <div className="text-sm opacity-80">Faster reporting</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <Star className="h-5 w-5" />
-                      <span className="font-semibold">4.9/5</span>
-                    </div>
-                    <div className="text-sm opacity-80">User rating</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <Users className="h-5 w-5" />
-                      <span className="font-semibold">500+</span>
-                    </div>
-                    <div className="text-sm opacity-80">CFOs trust us</div>
                   </div>
                 </div>
 
                 {/* Social proof */}
-                <div className="pt-8 border-t border-primary-foreground/20">
-                  <p className="text-sm opacity-80 mb-4">Trusted by finance teams at:</p>
-                  <div className="flex flex-wrap justify-center items-center gap-8 opacity-70">
-                    <div className="text-lg font-semibold">TechCorp</div>
-                    <div className="text-lg font-semibold">StartupX</div>
-                    <div className="text-lg font-semibold">ScaleUp Inc</div>
-                    <div className="text-lg font-semibold">GrowthCo</div>
+                <div className="relative pt-8 border-t border-primary-foreground/20">
+                  <div className="blur-sm">
+                    <p className="text-sm opacity-80 mb-4">Trusted by finance teams at:</p>
+                    <div className="flex flex-wrap justify-center items-center gap-8 opacity-70">
+                      <div className="text-lg font-semibold">TechCorp</div>
+                      <div className="text-lg font-semibold">StartupX</div>
+                      <div className="text-lg font-semibold">ScaleUp Inc</div>
+                      <div className="text-lg font-semibold">GrowthCo</div>
+                    </div>
+                  </div>
+                  {/* Blur overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-lg">
+                    <div className="text-center text-white">
+                      <div className="text-sm font-medium">Coming soon</div>
+                      <div className="text-xs opacity-80">Real customer logos</div>
+                    </div>
                   </div>
                 </div>
               </div>
