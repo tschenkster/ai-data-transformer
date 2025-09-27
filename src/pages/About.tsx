@@ -481,54 +481,6 @@ export default function About() {
           </Card>
 
 
-          {/* Completed Projects */}
-          <Card className="bg-white border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_PROJECTS', 'Completed Projects & Achievements')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 text-muted-foreground">
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Finance Team Leadership & Development</h4>
-                  <p>Grew finance departments from 1 → 20 employees, led remote teams across 7 countries, hired 50+ finance professionals, and managed scale‑up transformations (Series A → Series C).</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Accounting</h4>
-                  <p>Transitioned accounting in‑house, implemented LucaNet, reduced monthly reporting cycles from 30 → 6 days, prepared consolidated statements under German GAAP, US GAAP, and IFRS, delivered Big Four audits with zero findings.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">FP&A, BI & Reporting</h4>
-                  <p>Built budgeting and forecasting from scratch, created KPI systems, set up data warehouses and BI dashboards (Power BI, BOARD), and designed cost/profit center logic.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Finance Tech & Process Optimization</h4>
-                  <p>Automated workflows (Circula, Harvest, Candis), migrated from DATEV to Scopevisio ERP, implemented high‑ROI finance tools, integrated merchant‑of‑record providers.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Tax Compliance & Risk Management</h4>
-                  <p>Ran global VAT compliance for 10m+ transactions (€500m GMV), implemented payroll tax strategies across 30+ countries, managed transfer pricing and tax due diligences, filed US voluntary disclosures.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Corporate Finance & Treasury</h4>
-                  <p>Supported M&A (two acquisitions €10m & €40m), managed sell‑side due diligences, prepared data rooms, supported €50m credit facility and €100m share buyback with clean, accurate financial data.</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-2">Strategic & Entrepreneurial Initiatives</h4>
-                  <p>Co‑founded Web3 e‑mobility startup, prepared an ICO, managed open‑source licensing, and gained hands‑on entrepreneurial experience.</p>
-                </div>
-              </div>
-              
-              <p className="text-muted-foreground font-medium mt-6 p-4 bg-muted/30 rounded-lg border border-border/50">
-                These achievements reflect the core of my CFO work: scaling teams, cleaning up data, building reliable systems, and enabling growth.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
