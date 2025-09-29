@@ -296,54 +296,60 @@ export default function About() {
                   </ul>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-card/50 rounded-lg p-5 border border-border/50">
-                    <div className="flex items-center gap-3 mb-4">
-                      <img 
-                        src="/company-logos/roedl-logo.png?v=20250925-2" 
-                        alt="Rödl & Partner logo" 
-                        className="w-20 h-6 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-foreground">Rödl & Partner USA</h4>
-                        <p className="text-xs text-muted-foreground">Senior Manager • Audit & Tax</p>
-                      </div>
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-4 mb-5">
+                    <img 
+                      src="/company-logos/roedl-logo.png?v=20250925-2" 
+                      alt="Rödl & Partner logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">Rödl & Partner USA</h4>
+                      <p className="text-sm text-muted-foreground">Senior Manager • Audit & Tax Consulting</p>
                     </div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span>U.S.–Germany cross-border consulting</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span>IFRS/US‑GAAP conversions</span>
-                      </li>
-                    </ul>
                   </div>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>U.S.–Germany cross-border consulting expertise</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>IFRS/US‑GAAP/German‑GAAP conversions</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>International audit management</span>
+                    </li>
+                  </ul>
+                </div>
 
-                  <div className="bg-card/50 rounded-lg p-5 border border-border/50">
-                    <div className="flex items-center gap-3 mb-4">
-                      <img 
-                        src="/company-logos/ey-logo.png" 
-                        alt="Ernst & Young logo" 
-                        className="w-20 h-6 object-contain bg-white p-1 rounded border border-border/30"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-foreground">Ernst & Young</h4>
-                        <p className="text-xs text-muted-foreground">Senior Assistant • Tax Accounting</p>
-                      </div>
+                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
+                  <div className="flex items-center gap-4 mb-5">
+                    <img 
+                      src="/company-logos/ey-logo.png" 
+                      alt="Ernst & Young logo" 
+                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-foreground">Ernst & Young</h4>
+                      <p className="text-sm text-muted-foreground">Senior Assistant • Tax Accounting (Germany)</p>
                     </div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span>Large international corporations</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
-                        <span>SEC reporting & GAAP training</span>
-                      </li>
-                    </ul>
                   </div>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Tax accounting for large international corporations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>SEC client reporting and compliance</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>US GAAP/IFRS training and implementation</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
               
