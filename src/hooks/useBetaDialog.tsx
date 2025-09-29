@@ -22,8 +22,8 @@ export function useBetaDialog() {
           {/* Header with icon */}
           <div className="mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg">
-                <AlertTriangle className="h-6 w-6 text-white" />
+              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center shadow-sm">
+                <AlertTriangle className="h-6 w-6 text-muted-foreground" />
               </div>
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 Heads up!
@@ -43,9 +43,8 @@ export function useBetaDialog() {
                   <img 
                     src="/profile-picture-thomas-updated.png" 
                     alt="Thomas Schenkelberg - Startup CFO" 
-                    className="w-16 h-16 rounded-full object-cover border-2 border-primary/20 shadow-lg"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-border shadow-sm"
                   />
-                  <div className="absolute inset-0 rounded-full ring-1 ring-primary/10 ring-offset-1 ring-offset-background"></div>
                 </div>
                 <a 
                   href="https://www.linkedin.com/in/thomas-schenkelberg/" 
@@ -65,8 +64,7 @@ export function useBetaDialog() {
             </div>
 
             <p className="text-lg">
-              Don't let DATEV drive you crazy — help is on the way soon. 
-              <span className="ml-2">⚡</span>
+              Don't let DATEV drive you crazy — help is on the way soon.
             </p>
           </div>
 
@@ -84,7 +82,8 @@ export function useBetaDialog() {
           <div className="mt-8 flex justify-center">
             <Button 
               onClick={hideBetaDialog}
-              className="px-8 py-2.5 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover-scale"
+              variant="outline"
+              className="px-8 py-2.5 rounded-full font-medium transition-all duration-200"
               size="lg"
             >
               Got it
