@@ -2,7 +2,7 @@ import React from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Linkedin, Lightbulb, Rocket, Zap, Clock } from 'lucide-react';
+import { ExternalLink, Linkedin, Lightbulb, Zap, Clock, Target, HandHeart, DollarSign, Users, Building2 } from 'lucide-react';
 import { useUITranslations } from '@/hooks/useUITranslations';
 
 export default function About() {
@@ -79,7 +79,7 @@ export default function About() {
               <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Rocket className="h-5 w-5 text-foreground" />
+                    <Target className="h-5 w-5 text-foreground" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">What I'm building</h3>
                 </div>
@@ -154,7 +154,7 @@ export default function About() {
               <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Rocket className="h-5 w-5 text-foreground" />
+                    <HandHeart className="h-5 w-5 text-foreground" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">Common Scenarios Where I Help</h3>
                 </div>
@@ -193,7 +193,7 @@ export default function About() {
                   </div>
                   <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
                     <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Rocket className="h-4 w-4 text-background" />
+                      <DollarSign className="h-4 w-4 text-background" />
                     </div>
                     <div>
                       <span className="text-lg"><strong className="text-foreground">You are paying steep U.S. consulting fees</strong> — 800 USD for a 1 hour meeting with U.S. tax consultant and you feel confused. You're not speaking the same language. In many ways. You need someone with pragmatic advice on what to do in the U.S.</span>
@@ -332,7 +332,7 @@ export default function About() {
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Rocket className="h-5 w-5 text-foreground" />
+                      <Users className="h-5 w-5 text-foreground" />
                     </div>
                     <h4 className="text-xl font-semibold text-foreground">Finance Team Leadership & Development</h4>
                   </div>
@@ -402,7 +402,7 @@ export default function About() {
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Rocket className="h-5 w-5 text-foreground" />
+                      <Building2 className="h-5 w-5 text-foreground" />
                     </div>
                     <h4 className="text-xl font-semibold text-foreground">Corporate Finance & Treasury</h4>
                   </div>
