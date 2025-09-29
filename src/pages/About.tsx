@@ -471,7 +471,7 @@ export default function About() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[
                   { name: "N8N", category: "AI Workflow Automation", favicon: "/tool-logos/n8n-favicon.png" },
-                  { name: "Lovable", category: "Vibe Coding Tool", favicon: null },
+                  { name: "Lovable", category: "Vibe Coding Tool", favicon: "/tool-logos/lovable-favicon.png" },
                   { name: "Google Workspace & GCP", category: "Cloud Platform", favicon: null },
                   { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
