@@ -84,7 +84,7 @@ export function Hero() {
       <section className="py-16 md:py-24">
         <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-12 md:mb-16">
-            {t('HERO_UPLOAD_TITLE', 'Convert useless DATEV reports')}
+            {t('HERO_UPLOAD_TITLE', 'Convert DATEV reports')}
           </h1>
 
           {/* Upload Box - Visual Center of Gravity */}
