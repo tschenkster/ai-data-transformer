@@ -460,7 +460,7 @@ export default function About() {
           {/* Tools I've Worked With */}
           <Card className="bg-white border-2 border-border">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-foreground">{t('HEADING_TOOLS', 'About Tools I\'ve Worked With')}</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-foreground text-center">{t('HEADING_TOOLS', 'About Tools I\'ve Worked With')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-muted-foreground leading-relaxed text-lg">
@@ -470,6 +470,9 @@ export default function About() {
               
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[
+                  { name: "N8N", category: "AI Workflow Automation", favicon: null },
+                  { name: "Lovable", category: "Vibe Coding Tool", favicon: null },
+                  { name: "Google Workspace & GCP", category: "Cloud Platform", favicon: null },
                   { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
                   { name: "Power BI", category: "Business Intelligence", favicon: "/tool-logos/powerbi-favicon.png" },
