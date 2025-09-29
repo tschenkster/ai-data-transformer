@@ -24,7 +24,7 @@ export default function About() {
               <div className="flex justify-center">
                  <div className="relative">
                    <img 
-                     src="/profile-picture-thomas-updated.png" 
+                     src="/profile-picture-thomas-new.png" 
                      alt="Thomas Schenkelberg - Startup CFO" 
                      className="w-48 h-48 rounded-full object-cover border-4 border-primary/20 shadow-lg"
                    />

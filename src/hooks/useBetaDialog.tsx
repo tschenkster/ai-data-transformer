@@ -41,7 +41,7 @@ export function useBetaDialog() {
               <div className="flex flex-col items-center gap-6">
                 <div className="relative">
                   <img 
-                    src="/profile-picture-thomas-updated.png" 
+                    src="/profile-picture-thomas-new.png" 
                     alt="Thomas Schenkelberg - Startup CFO" 
                     className="w-24 h-24 rounded-full object-cover border-3 border-background shadow-md ring-2 ring-border/20"
                   />
