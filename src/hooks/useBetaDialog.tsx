@@ -16,8 +16,8 @@ export function useBetaDialog() {
 
   const BetaDialog = useCallback(() => (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent className="sm:max-w-lg border-0 bg-background/95 backdrop-blur-xl shadow-2xl animate-scale-in">
-        <div className="relative p-6 sm:p-8">
+      <DialogContent className="sm:max-w-lg border-0 bg-background/95 backdrop-blur-xl shadow-2xl">
+        <div className="relative p-6 sm:p-8 text-center">
           {/* Close button */}
           <button
             onClick={hideBetaDialog}
@@ -29,7 +29,7 @@ export function useBetaDialog() {
 
           {/* Header with icon */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center justify-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg">
                 <span className="text-2xl">🚧</span>
               </div>
@@ -73,10 +73,10 @@ export function useBetaDialog() {
 
           {/* Signature */}
           <div className="mt-8 pt-6 border-t border-border/20">
-            <div className="text-right">
-              <p className="text-foreground font-medium mb-1">-Thomas</p>
+            <div className="text-center">
+              <p className="text-foreground font-medium mb-1">-Thomas Schenkelberg</p>
               <p className="text-sm text-muted-foreground italic">
-                *Chief DATEV Therapist*
+                Chief DATEV Therapist
               </p>
             </div>
           </div>
