@@ -472,7 +472,7 @@ export default function About() {
                 {[
                   { name: "N8N", category: "AI Workflow Automation", favicon: "/tool-logos/n8n-favicon.png" },
                   { name: "Lovable", category: "Vibe Coding Tool", favicon: "/tool-logos/lovable-favicon.png" },
-                  { name: "Google Workspace & GCP", category: "Cloud Platform", favicon: null },
+                  { name: "Google Workspace & GCP", category: "Cloud Platform", favicon: "/tool-logos/google-workspace-favicon.png" },
                   { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
                   { name: "Power BI", category: "Business Intelligence", favicon: "/tool-logos/powerbi-favicon.png" },
