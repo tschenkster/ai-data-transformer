@@ -473,7 +473,7 @@ export default function About() {
                   { name: "N8N", category: "AI Workflow Automation", favicon: "/tool-logos/n8n-favicon.png" },
                   { name: "Lovable", category: "Vibe Coding Tool", favicon: "/tool-logos/lovable-favicon.png" },
                   { name: "Google Workspace & GCP", category: "Cloud Platform", favicon: "/tool-logos/google-workspace-favicon.png" },
-                  { name: "OpenAI", category: "Gen AI Dev Platform", favicon: "/tool-logos/openai-favicon.ico" },
+                  { name: "OpenAI", category: "Gen AI Dev Platform", favicon: "/tool-logos/openai-favicon.png" },
                   { name: "Anthropic", category: "Gen AI Dev Platform", favicon: "/tool-logos/anthropic-favicon.ico" },
                   { name: "Gemini", category: "Gen AI Dev Platform", favicon: "/tool-logos/gemini-favicon.ico" },
                   { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
