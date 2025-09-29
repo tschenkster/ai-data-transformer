@@ -18,14 +18,6 @@ export function useBetaDialog() {
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogContent className="sm:max-w-lg border-0 bg-background/95 backdrop-blur-xl shadow-2xl">
         <div className="relative p-6 sm:p-8 text-center">
-          {/* Close button */}
-          <button
-            onClick={hideBetaDialog}
-            className="absolute right-4 top-4 rounded-full p-2 hover:bg-muted/50 transition-colors"
-            aria-label="Close"
-          >
-            <X className="h-4 w-4 text-muted-foreground" />
-          </button>
 
           {/* Header with icon */}
           <div className="mb-8">
