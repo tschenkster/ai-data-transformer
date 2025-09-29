@@ -474,7 +474,7 @@ export default function About() {
                   { name: "Lovable", category: "Vibe Coding Tool", favicon: "/tool-logos/lovable-favicon.png" },
                   { name: "Google Workspace & GCP", category: "Cloud Platform", favicon: "/tool-logos/google-workspace-favicon.png" },
                   { name: "OpenAI", category: "Gen AI Dev Platform", favicon: "/tool-logos/openai-favicon.png" },
-                  { name: "Anthropic", category: "Gen AI Dev Platform", favicon: "/tool-logos/anthropic-favicon.ico" },
+                  { name: "Anthropic", category: "Gen AI Dev Platform", favicon: "/tool-logos/anthropic-favicon.png" },
                   { name: "Gemini", category: "Gen AI Dev Platform", favicon: "/tool-logos/gemini-favicon.ico" },
                   { name: "LucaNet", category: "Consolidation", favicon: "/tool-logos/lucanet-favicon.png" },
                   { name: "AGICAP", category: "Cash Management", favicon: "/tool-logos/agicap-favicon.ico" },
