@@ -211,112 +211,147 @@ export default function About() {
               <CardTitle className="text-3xl font-bold text-center text-foreground">{t('HEADING_COMPANIES', 'Companies I used to work for')}</CardTitle>
             </CardHeader>
             <CardContent className="relative space-y-8">
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-4 mb-5">
                     <img 
                       src="/company-logos/eyeo-logo.png?v=20250925-2" 
                       alt="eyeo GmbH logo" 
                       className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
                     />
                     <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-foreground">eyeo GmbH (AdTech / SaaS)</h4>
-                      <p className="text-sm font-medium text-muted-foreground">VP Finance</p>
+                      <h4 className="text-xl font-semibold text-foreground">eyeo GmbH</h4>
+                      <p className="text-sm text-muted-foreground">VP Finance • AdTech / SaaS</p>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Grew from <strong className="text-foreground">150 → 350 employees</strong>, €100m revenue, scaled finance team, built finance tech stack, led M&A and share buyback.
-                    </p>
-                  </div>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Scaled company from 150 to 350 employees at €100m revenue</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Built comprehensive finance tech stack and processes</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Led M&A transactions and share buyback initiatives</span>
+                    </li>
+                  </ul>
                 </div>
 
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-4 mb-5">
                     <img 
                       src="/company-logos/sharecharge-logo.png" 
                       alt="Share&Charge Foundation logo" 
                       className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
                     />
                     <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-foreground">Share&Charge Foundation (Web3 / Crypto)</h4>
-                      <p className="text-sm font-medium text-muted-foreground">Co‑Founder & CFO</p>
+                      <h4 className="text-xl font-semibold text-foreground">Share&Charge Foundation</h4>
+                      <p className="text-sm text-muted-foreground">Co‑Founder & CFO • Web3 / Crypto</p>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Grew from <strong className="text-foreground">1 → 15 employees</strong>, managed fundraising and compliance, set up Euro stablecoin, prepared ICO.
-                    </p>
-                  </div>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Grew from startup to 15 employees as founding team member</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Managed fundraising rounds and regulatory compliance</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Set up Euro stablecoin infrastructure and prepared ICO</span>
+                    </li>
+                  </ul>
                 </div>
 
                 <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-4 mb-5">
                     <img 
                       src="/company-logos/cleverbridge-logo.png?v=20250925-2" 
                       alt="cleverbridge AG logo" 
                       className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
                     />
                     <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-foreground">cleverbridge AG (E‑commerce / SaaS marketplace)</h4>
-                      <p className="text-sm font-medium text-muted-foreground">Director Finance & Tax</p>
+                      <h4 className="text-xl font-semibold text-foreground">cleverbridge AG</h4>
+                      <p className="text-sm text-muted-foreground">Director Finance & Tax • E‑commerce / SaaS</p>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Grew from <strong className="text-foreground">100 → 300 employees</strong>, scaled finance team, €60m revenue, €500m GMV, built consolidation and BI systems.
-                    </p>
-                  </div>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Scaled operations from 100 to 300 employees</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Managed €60m revenue and €500m GMV operations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                      <span>Built consolidation systems and BI infrastructure</span>
+                    </li>
+                  </ul>
                 </div>
 
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-4 mb-4">
-                    <img 
-                      src="/company-logos/roedl-logo.png?v=20250925-2" 
-                      alt="Rödl & Partner logo" 
-                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                    />
-                    <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-foreground">Rödl & Partner USA (Audit & Tax Consulting)</h4>
-                      <p className="text-sm font-medium text-muted-foreground">Senior Manager</p>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-card/50 rounded-lg p-5 border border-border/50">
+                    <div className="flex items-center gap-3 mb-4">
+                      <img 
+                        src="/company-logos/roedl-logo.png?v=20250925-2" 
+                        alt="Rödl & Partner logo" 
+                        className="w-20 h-6 object-contain bg-white p-1 rounded border border-border/30"
+                      />
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-foreground">Rödl & Partner USA</h4>
+                        <p className="text-xs text-muted-foreground">Senior Manager • Audit & Tax</p>
+                      </div>
                     </div>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
+                        <span>U.S.–Germany cross-border consulting</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
+                        <span>IFRS/US‑GAAP conversions</span>
+                      </li>
+                    </ul>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Advised international clients with <strong className="text-foreground">U.S.–Germany footprint</strong>, managed audits, IFRS/US‑GAAP/German‑GAAP conversions.
-                    </p>
-                  </div>
-                </div>
 
-                <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                  <div className="flex items-center gap-4 mb-4">
-                    <img 
-                      src="/company-logos/ey-logo.png" 
-                      alt="Ernst & Young logo" 
-                      className="w-24 h-8 object-contain bg-white p-1 rounded border border-border/30"
-                    />
-                    <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-foreground">Ernst & Young GER (Tax Accounting, Germany)</h4>
-                      <p className="text-sm font-medium text-muted-foreground">Senior Assistant</p>
+                  <div className="bg-card/50 rounded-lg p-5 border border-border/50">
+                    <div className="flex items-center gap-3 mb-4">
+                      <img 
+                        src="/company-logos/ey-logo.png" 
+                        alt="Ernst & Young logo" 
+                        className="w-20 h-6 object-contain bg-white p-1 rounded border border-border/30"
+                      />
+                      <div className="flex-1">
+                        <h4 className="text-lg font-semibold text-foreground">Ernst & Young</h4>
+                        <p className="text-xs text-muted-foreground">Senior Assistant • Tax Accounting</p>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      Tax accounting for <strong className="text-foreground">large international corporations</strong>, tax risk reviews, SEC client reporting, US GAAP/IFRS training.
-                    </p>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
+                        <span>Large international corporations</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1 h-1 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0"></span>
+                        <span>SEC reporting & GAAP training</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
               
               <div className="bg-card/50 rounded-lg p-6 border border-border/50">
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold text-foreground">Additional Experience</h3>
-                </div>
-                <div>
-                  <p className="text-muted-foreground leading-relaxed text-lg">
-                    Other roles include <strong className="text-foreground">interim CFO mandates</strong> at InsurTech, E‑commerce, and SaaS startups, building finance functions from scratch and optimizing processes in growth stage.
-                  </p>
-                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-4">Additional Experience</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Multiple interim CFO mandates at InsurTech, E‑commerce, and SaaS startups, building finance functions from scratch and optimizing processes during growth phases.
+                </p>
               </div>
             </CardContent>
           </Card>
